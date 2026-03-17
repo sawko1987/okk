@@ -224,3 +224,10 @@
 - [ ] Проверено, что нет редактирования завершенных проверок
 - [ ] Проверено, что нет автоматического разрешения сложных конфликтов
 - [ ] Проверено, что нет прямой печати из мобильного приложения
+> Status note, 2026-03-16:
+> Foundation code now includes schema v2, sync foundation tables, and relative
+> media/PDF path helpers.
+> `flutter analyze` and `flutter test` pass.
+> `flutter build windows` is currently blocked by missing ATL headers required by
+> `flutter_secure_storage_windows`.
+> `flutter build apk --release` is currently blocked by an invalid `JAVA_HOME`.

@@ -18,4 +18,19 @@ void main() {
     expect(paths.logsDir.existsSync(), isTrue);
     expect(paths.databaseFile.path, endsWith(p.join('db', 'main.db')));
   });
+
+  test('converts between absolute and relative app_data paths', () async {
+    final tempDir = await Directory.systemTemp.createTemp('okk_qc_paths_');
+    addTearDown(() => tempDir.delete(recursive: true));
+
+    final paths = AppPaths.forTesting(p.join(tempDir.path, 'app_data'));
+    await paths.ensureCreated();
+
+    final relativePath = paths.reportRelativePath('inspection-1', 'report.pdf');
+    final absolutePath = paths.resolveRelativePath(relativePath);
+
+    expect(relativePath, p.join('media', 'reports', 'inspection-1', 'report.pdf'));
+    expect(absolutePath, p.join(paths.rootDir.path, relativePath));
+    expect(paths.relativeToRoot(absolutePath), relativePath);
+  });
 }

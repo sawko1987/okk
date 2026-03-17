@@ -5,12 +5,32 @@ import 'package:drift/native.dart';
 
 import '../../core/config/app_constants.dart';
 import 'tables/app_settings.dart';
+import 'tables/component_images.dart';
 import 'tables/device_info.dart';
+import 'tables/inspection_files.dart';
+import 'tables/inspection_signatures.dart';
+import 'tables/locks.dart';
 import 'tables/roles.dart';
+import 'tables/sync_queue.dart';
+import 'tables/sync_state.dart';
+import 'tables/users.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Roles, AppSettings, DeviceInfo])
+@DriftDatabase(
+  tables: [
+    Roles,
+    AppSettings,
+    DeviceInfo,
+    Users,
+    SyncState,
+    SyncQueue,
+    Locks,
+    ComponentImages,
+    InspectionSignatures,
+    InspectionFiles,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
@@ -34,6 +54,17 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (migrator) async {
       await migrator.createAll();
+    },
+    onUpgrade: (migrator, from, to) async {
+      if (from < 2) {
+        await migrator.createTable(users);
+        await migrator.createTable(syncState);
+        await migrator.createTable(syncQueue);
+        await migrator.createTable(locks);
+        await migrator.createTable(componentImages);
+        await migrator.createTable(inspectionSignatures);
+        await migrator.createTable(inspectionFiles);
+      }
     },
   );
 
@@ -113,6 +144,15 @@ class AppDatabase extends _$AppDatabase {
         syncSchemaVersion: AppConstants.syncSchemaVersion,
         rootPath: rootPath,
         createdAt: now,
+        updatedAt: now,
+      ),
+    );
+
+    await into(syncState).insertOnConflictUpdate(
+      SyncStateCompanion.insert(
+        id: '$deviceId-sync-state',
+        deviceId: deviceId,
+        schemaVersion: AppConstants.syncSchemaVersion,
         updatedAt: now,
       ),
     );

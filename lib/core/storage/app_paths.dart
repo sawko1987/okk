@@ -25,6 +25,46 @@ class AppPaths {
   File get databaseFile => File(p.join(dbDir.path, 'main.db'));
   File get logFile => File(p.join(logsDir.path, 'app.log'));
 
+  String relativeToRoot(String absolutePath) {
+    final normalizedPath = p.normalize(absolutePath);
+    final normalizedRoot = p.normalize(rootDir.path);
+
+    if (!p.isWithin(normalizedRoot, normalizedPath) &&
+        normalizedPath != normalizedRoot) {
+      throw ArgumentError.value(
+        absolutePath,
+        'absolutePath',
+        'Path must be inside the application root directory.',
+      );
+    }
+
+    return p.relative(normalizedPath, from: normalizedRoot);
+  }
+
+  String resolveRelativePath(String relativePath) {
+    if (!p.isRelative(relativePath)) {
+      throw ArgumentError.value(
+        relativePath,
+        'relativePath',
+        'Only relative paths may be resolved from app_data.',
+      );
+    }
+
+    return p.normalize(p.join(rootDir.path, relativePath));
+  }
+
+  String componentImageRelativePath(String componentId, String fileName) {
+    return p.join('media', 'components', componentId, fileName);
+  }
+
+  String signatureRelativePath(String inspectionId, String fileName) {
+    return p.join('media', 'signatures', inspectionId, fileName);
+  }
+
+  String reportRelativePath(String inspectionId, String fileName) {
+    return p.join('media', 'reports', inspectionId, fileName);
+  }
+
   Future<void> ensureCreated() async {
     final directories = [
       rootDir,
