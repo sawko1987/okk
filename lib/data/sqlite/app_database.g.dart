@@ -679,6 +679,634 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   }
 }
 
+class $AuditLogTable extends AuditLog
+    with TableInfo<$AuditLogTable, AuditLogData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AuditLogTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _happenedAtMeta = const VerificationMeta(
+    'happenedAt',
+  );
+  @override
+  late final GeneratedColumn<String> happenedAt = GeneratedColumn<String>(
+    'happened_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
+    'deviceId',
+  );
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+    'device_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _actionTypeMeta = const VerificationMeta(
+    'actionType',
+  );
+  @override
+  late final GeneratedColumn<String> actionType = GeneratedColumn<String>(
+    'action_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entityTypeMeta = const VerificationMeta(
+    'entityType',
+  );
+  @override
+  late final GeneratedColumn<String> entityType = GeneratedColumn<String>(
+    'entity_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _entityIdMeta = const VerificationMeta(
+    'entityId',
+  );
+  @override
+  late final GeneratedColumn<String> entityId = GeneratedColumn<String>(
+    'entity_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _resultStatusMeta = const VerificationMeta(
+    'resultStatus',
+  );
+  @override
+  late final GeneratedColumn<String> resultStatus = GeneratedColumn<String>(
+    'result_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _messageMeta = const VerificationMeta(
+    'message',
+  );
+  @override
+  late final GeneratedColumn<String> message = GeneratedColumn<String>(
+    'message',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _payloadJsonMeta = const VerificationMeta(
+    'payloadJson',
+  );
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+    'payload_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    happenedAt,
+    userId,
+    deviceId,
+    actionType,
+    entityType,
+    entityId,
+    resultStatus,
+    message,
+    payloadJson,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'audit_log';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AuditLogData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('happened_at')) {
+      context.handle(
+        _happenedAtMeta,
+        happenedAt.isAcceptableOrUnknown(data['happened_at']!, _happenedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_happenedAtMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    }
+    if (data.containsKey('device_id')) {
+      context.handle(
+        _deviceIdMeta,
+        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
+      );
+    }
+    if (data.containsKey('action_type')) {
+      context.handle(
+        _actionTypeMeta,
+        actionType.isAcceptableOrUnknown(data['action_type']!, _actionTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_actionTypeMeta);
+    }
+    if (data.containsKey('entity_type')) {
+      context.handle(
+        _entityTypeMeta,
+        entityType.isAcceptableOrUnknown(data['entity_type']!, _entityTypeMeta),
+      );
+    }
+    if (data.containsKey('entity_id')) {
+      context.handle(
+        _entityIdMeta,
+        entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta),
+      );
+    }
+    if (data.containsKey('result_status')) {
+      context.handle(
+        _resultStatusMeta,
+        resultStatus.isAcceptableOrUnknown(
+          data['result_status']!,
+          _resultStatusMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_resultStatusMeta);
+    }
+    if (data.containsKey('message')) {
+      context.handle(
+        _messageMeta,
+        message.isAcceptableOrUnknown(data['message']!, _messageMeta),
+      );
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+        _payloadJsonMeta,
+        payloadJson.isAcceptableOrUnknown(
+          data['payload_json']!,
+          _payloadJsonMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AuditLogData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AuditLogData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      happenedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}happened_at'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      ),
+      deviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_id'],
+      ),
+      actionType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}action_type'],
+      )!,
+      entityType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity_type'],
+      ),
+      entityId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity_id'],
+      ),
+      resultStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}result_status'],
+      )!,
+      message: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}message'],
+      ),
+      payloadJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payload_json'],
+      ),
+    );
+  }
+
+  @override
+  $AuditLogTable createAlias(String alias) {
+    return $AuditLogTable(attachedDatabase, alias);
+  }
+}
+
+class AuditLogData extends DataClass implements Insertable<AuditLogData> {
+  final String id;
+  final String happenedAt;
+  final String? userId;
+  final String? deviceId;
+  final String actionType;
+  final String? entityType;
+  final String? entityId;
+  final String resultStatus;
+  final String? message;
+  final String? payloadJson;
+  const AuditLogData({
+    required this.id,
+    required this.happenedAt,
+    this.userId,
+    this.deviceId,
+    required this.actionType,
+    this.entityType,
+    this.entityId,
+    required this.resultStatus,
+    this.message,
+    this.payloadJson,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['happened_at'] = Variable<String>(happenedAt);
+    if (!nullToAbsent || userId != null) {
+      map['user_id'] = Variable<String>(userId);
+    }
+    if (!nullToAbsent || deviceId != null) {
+      map['device_id'] = Variable<String>(deviceId);
+    }
+    map['action_type'] = Variable<String>(actionType);
+    if (!nullToAbsent || entityType != null) {
+      map['entity_type'] = Variable<String>(entityType);
+    }
+    if (!nullToAbsent || entityId != null) {
+      map['entity_id'] = Variable<String>(entityId);
+    }
+    map['result_status'] = Variable<String>(resultStatus);
+    if (!nullToAbsent || message != null) {
+      map['message'] = Variable<String>(message);
+    }
+    if (!nullToAbsent || payloadJson != null) {
+      map['payload_json'] = Variable<String>(payloadJson);
+    }
+    return map;
+  }
+
+  AuditLogCompanion toCompanion(bool nullToAbsent) {
+    return AuditLogCompanion(
+      id: Value(id),
+      happenedAt: Value(happenedAt),
+      userId: userId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userId),
+      deviceId: deviceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deviceId),
+      actionType: Value(actionType),
+      entityType: entityType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(entityType),
+      entityId: entityId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(entityId),
+      resultStatus: Value(resultStatus),
+      message: message == null && nullToAbsent
+          ? const Value.absent()
+          : Value(message),
+      payloadJson: payloadJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(payloadJson),
+    );
+  }
+
+  factory AuditLogData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AuditLogData(
+      id: serializer.fromJson<String>(json['id']),
+      happenedAt: serializer.fromJson<String>(json['happenedAt']),
+      userId: serializer.fromJson<String?>(json['userId']),
+      deviceId: serializer.fromJson<String?>(json['deviceId']),
+      actionType: serializer.fromJson<String>(json['actionType']),
+      entityType: serializer.fromJson<String?>(json['entityType']),
+      entityId: serializer.fromJson<String?>(json['entityId']),
+      resultStatus: serializer.fromJson<String>(json['resultStatus']),
+      message: serializer.fromJson<String?>(json['message']),
+      payloadJson: serializer.fromJson<String?>(json['payloadJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'happenedAt': serializer.toJson<String>(happenedAt),
+      'userId': serializer.toJson<String?>(userId),
+      'deviceId': serializer.toJson<String?>(deviceId),
+      'actionType': serializer.toJson<String>(actionType),
+      'entityType': serializer.toJson<String?>(entityType),
+      'entityId': serializer.toJson<String?>(entityId),
+      'resultStatus': serializer.toJson<String>(resultStatus),
+      'message': serializer.toJson<String?>(message),
+      'payloadJson': serializer.toJson<String?>(payloadJson),
+    };
+  }
+
+  AuditLogData copyWith({
+    String? id,
+    String? happenedAt,
+    Value<String?> userId = const Value.absent(),
+    Value<String?> deviceId = const Value.absent(),
+    String? actionType,
+    Value<String?> entityType = const Value.absent(),
+    Value<String?> entityId = const Value.absent(),
+    String? resultStatus,
+    Value<String?> message = const Value.absent(),
+    Value<String?> payloadJson = const Value.absent(),
+  }) => AuditLogData(
+    id: id ?? this.id,
+    happenedAt: happenedAt ?? this.happenedAt,
+    userId: userId.present ? userId.value : this.userId,
+    deviceId: deviceId.present ? deviceId.value : this.deviceId,
+    actionType: actionType ?? this.actionType,
+    entityType: entityType.present ? entityType.value : this.entityType,
+    entityId: entityId.present ? entityId.value : this.entityId,
+    resultStatus: resultStatus ?? this.resultStatus,
+    message: message.present ? message.value : this.message,
+    payloadJson: payloadJson.present ? payloadJson.value : this.payloadJson,
+  );
+  AuditLogData copyWithCompanion(AuditLogCompanion data) {
+    return AuditLogData(
+      id: data.id.present ? data.id.value : this.id,
+      happenedAt: data.happenedAt.present
+          ? data.happenedAt.value
+          : this.happenedAt,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      actionType: data.actionType.present
+          ? data.actionType.value
+          : this.actionType,
+      entityType: data.entityType.present
+          ? data.entityType.value
+          : this.entityType,
+      entityId: data.entityId.present ? data.entityId.value : this.entityId,
+      resultStatus: data.resultStatus.present
+          ? data.resultStatus.value
+          : this.resultStatus,
+      message: data.message.present ? data.message.value : this.message,
+      payloadJson: data.payloadJson.present
+          ? data.payloadJson.value
+          : this.payloadJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AuditLogData(')
+          ..write('id: $id, ')
+          ..write('happenedAt: $happenedAt, ')
+          ..write('userId: $userId, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('actionType: $actionType, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('resultStatus: $resultStatus, ')
+          ..write('message: $message, ')
+          ..write('payloadJson: $payloadJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    happenedAt,
+    userId,
+    deviceId,
+    actionType,
+    entityType,
+    entityId,
+    resultStatus,
+    message,
+    payloadJson,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AuditLogData &&
+          other.id == this.id &&
+          other.happenedAt == this.happenedAt &&
+          other.userId == this.userId &&
+          other.deviceId == this.deviceId &&
+          other.actionType == this.actionType &&
+          other.entityType == this.entityType &&
+          other.entityId == this.entityId &&
+          other.resultStatus == this.resultStatus &&
+          other.message == this.message &&
+          other.payloadJson == this.payloadJson);
+}
+
+class AuditLogCompanion extends UpdateCompanion<AuditLogData> {
+  final Value<String> id;
+  final Value<String> happenedAt;
+  final Value<String?> userId;
+  final Value<String?> deviceId;
+  final Value<String> actionType;
+  final Value<String?> entityType;
+  final Value<String?> entityId;
+  final Value<String> resultStatus;
+  final Value<String?> message;
+  final Value<String?> payloadJson;
+  final Value<int> rowid;
+  const AuditLogCompanion({
+    this.id = const Value.absent(),
+    this.happenedAt = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.actionType = const Value.absent(),
+    this.entityType = const Value.absent(),
+    this.entityId = const Value.absent(),
+    this.resultStatus = const Value.absent(),
+    this.message = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AuditLogCompanion.insert({
+    required String id,
+    required String happenedAt,
+    this.userId = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    required String actionType,
+    this.entityType = const Value.absent(),
+    this.entityId = const Value.absent(),
+    required String resultStatus,
+    this.message = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       happenedAt = Value(happenedAt),
+       actionType = Value(actionType),
+       resultStatus = Value(resultStatus);
+  static Insertable<AuditLogData> custom({
+    Expression<String>? id,
+    Expression<String>? happenedAt,
+    Expression<String>? userId,
+    Expression<String>? deviceId,
+    Expression<String>? actionType,
+    Expression<String>? entityType,
+    Expression<String>? entityId,
+    Expression<String>? resultStatus,
+    Expression<String>? message,
+    Expression<String>? payloadJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (happenedAt != null) 'happened_at': happenedAt,
+      if (userId != null) 'user_id': userId,
+      if (deviceId != null) 'device_id': deviceId,
+      if (actionType != null) 'action_type': actionType,
+      if (entityType != null) 'entity_type': entityType,
+      if (entityId != null) 'entity_id': entityId,
+      if (resultStatus != null) 'result_status': resultStatus,
+      if (message != null) 'message': message,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AuditLogCompanion copyWith({
+    Value<String>? id,
+    Value<String>? happenedAt,
+    Value<String?>? userId,
+    Value<String?>? deviceId,
+    Value<String>? actionType,
+    Value<String?>? entityType,
+    Value<String?>? entityId,
+    Value<String>? resultStatus,
+    Value<String?>? message,
+    Value<String?>? payloadJson,
+    Value<int>? rowid,
+  }) {
+    return AuditLogCompanion(
+      id: id ?? this.id,
+      happenedAt: happenedAt ?? this.happenedAt,
+      userId: userId ?? this.userId,
+      deviceId: deviceId ?? this.deviceId,
+      actionType: actionType ?? this.actionType,
+      entityType: entityType ?? this.entityType,
+      entityId: entityId ?? this.entityId,
+      resultStatus: resultStatus ?? this.resultStatus,
+      message: message ?? this.message,
+      payloadJson: payloadJson ?? this.payloadJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (happenedAt.present) {
+      map['happened_at'] = Variable<String>(happenedAt.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
+    if (actionType.present) {
+      map['action_type'] = Variable<String>(actionType.value);
+    }
+    if (entityType.present) {
+      map['entity_type'] = Variable<String>(entityType.value);
+    }
+    if (entityId.present) {
+      map['entity_id'] = Variable<String>(entityId.value);
+    }
+    if (resultStatus.present) {
+      map['result_status'] = Variable<String>(resultStatus.value);
+    }
+    if (message.present) {
+      map['message'] = Variable<String>(message.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AuditLogCompanion(')
+          ..write('id: $id, ')
+          ..write('happenedAt: $happenedAt, ')
+          ..write('userId: $userId, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('actionType: $actionType, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('resultStatus: $resultStatus, ')
+          ..write('message: $message, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $DeviceInfoTable extends DeviceInfo
     with TableInfo<$DeviceInfoTable, DeviceInfoData> {
   @override
@@ -12177,11 +12805,608 @@ class InspectionFilesCompanion extends UpdateCompanion<InspectionFile> {
   }
 }
 
+class $TrashBinTable extends TrashBin
+    with TableInfo<$TrashBinTable, TrashBinData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TrashBinTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entityTypeMeta = const VerificationMeta(
+    'entityType',
+  );
+  @override
+  late final GeneratedColumn<String> entityType = GeneratedColumn<String>(
+    'entity_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entityIdMeta = const VerificationMeta(
+    'entityId',
+  );
+  @override
+  late final GeneratedColumn<String> entityId = GeneratedColumn<String>(
+    'entity_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _snapshotJsonMeta = const VerificationMeta(
+    'snapshotJson',
+  );
+  @override
+  late final GeneratedColumn<String> snapshotJson = GeneratedColumn<String>(
+    'snapshot_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedByUserIdMeta = const VerificationMeta(
+    'deletedByUserId',
+  );
+  @override
+  late final GeneratedColumn<String> deletedByUserId = GeneratedColumn<String>(
+    'deleted_by_user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<String> deletedAt = GeneratedColumn<String>(
+    'deleted_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _restoredAtMeta = const VerificationMeta(
+    'restoredAt',
+  );
+  @override
+  late final GeneratedColumn<String> restoredAt = GeneratedColumn<String>(
+    'restored_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _permanentlyDeletedAtMeta =
+      const VerificationMeta('permanentlyDeletedAt');
+  @override
+  late final GeneratedColumn<String> permanentlyDeletedAt =
+      GeneratedColumn<String>(
+        'permanently_deleted_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    entityType,
+    entityId,
+    displayName,
+    snapshotJson,
+    deletedByUserId,
+    deletedAt,
+    restoredAt,
+    permanentlyDeletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'trash_bin';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TrashBinData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('entity_type')) {
+      context.handle(
+        _entityTypeMeta,
+        entityType.isAcceptableOrUnknown(data['entity_type']!, _entityTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityTypeMeta);
+    }
+    if (data.containsKey('entity_id')) {
+      context.handle(
+        _entityIdMeta,
+        entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityIdMeta);
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_displayNameMeta);
+    }
+    if (data.containsKey('snapshot_json')) {
+      context.handle(
+        _snapshotJsonMeta,
+        snapshotJson.isAcceptableOrUnknown(
+          data['snapshot_json']!,
+          _snapshotJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_snapshotJsonMeta);
+    }
+    if (data.containsKey('deleted_by_user_id')) {
+      context.handle(
+        _deletedByUserIdMeta,
+        deletedByUserId.isAcceptableOrUnknown(
+          data['deleted_by_user_id']!,
+          _deletedByUserIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_deletedAtMeta);
+    }
+    if (data.containsKey('restored_at')) {
+      context.handle(
+        _restoredAtMeta,
+        restoredAt.isAcceptableOrUnknown(data['restored_at']!, _restoredAtMeta),
+      );
+    }
+    if (data.containsKey('permanently_deleted_at')) {
+      context.handle(
+        _permanentlyDeletedAtMeta,
+        permanentlyDeletedAt.isAcceptableOrUnknown(
+          data['permanently_deleted_at']!,
+          _permanentlyDeletedAtMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TrashBinData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TrashBinData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      entityType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity_type'],
+      )!,
+      entityId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity_id'],
+      )!,
+      displayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name'],
+      )!,
+      snapshotJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}snapshot_json'],
+      )!,
+      deletedByUserId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}deleted_by_user_id'],
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}deleted_at'],
+      )!,
+      restoredAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}restored_at'],
+      ),
+      permanentlyDeletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}permanently_deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $TrashBinTable createAlias(String alias) {
+    return $TrashBinTable(attachedDatabase, alias);
+  }
+}
+
+class TrashBinData extends DataClass implements Insertable<TrashBinData> {
+  final String id;
+  final String entityType;
+  final String entityId;
+  final String displayName;
+  final String snapshotJson;
+  final String? deletedByUserId;
+  final String deletedAt;
+  final String? restoredAt;
+  final String? permanentlyDeletedAt;
+  const TrashBinData({
+    required this.id,
+    required this.entityType,
+    required this.entityId,
+    required this.displayName,
+    required this.snapshotJson,
+    this.deletedByUserId,
+    required this.deletedAt,
+    this.restoredAt,
+    this.permanentlyDeletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['entity_type'] = Variable<String>(entityType);
+    map['entity_id'] = Variable<String>(entityId);
+    map['display_name'] = Variable<String>(displayName);
+    map['snapshot_json'] = Variable<String>(snapshotJson);
+    if (!nullToAbsent || deletedByUserId != null) {
+      map['deleted_by_user_id'] = Variable<String>(deletedByUserId);
+    }
+    map['deleted_at'] = Variable<String>(deletedAt);
+    if (!nullToAbsent || restoredAt != null) {
+      map['restored_at'] = Variable<String>(restoredAt);
+    }
+    if (!nullToAbsent || permanentlyDeletedAt != null) {
+      map['permanently_deleted_at'] = Variable<String>(permanentlyDeletedAt);
+    }
+    return map;
+  }
+
+  TrashBinCompanion toCompanion(bool nullToAbsent) {
+    return TrashBinCompanion(
+      id: Value(id),
+      entityType: Value(entityType),
+      entityId: Value(entityId),
+      displayName: Value(displayName),
+      snapshotJson: Value(snapshotJson),
+      deletedByUserId: deletedByUserId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedByUserId),
+      deletedAt: Value(deletedAt),
+      restoredAt: restoredAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(restoredAt),
+      permanentlyDeletedAt: permanentlyDeletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(permanentlyDeletedAt),
+    );
+  }
+
+  factory TrashBinData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TrashBinData(
+      id: serializer.fromJson<String>(json['id']),
+      entityType: serializer.fromJson<String>(json['entityType']),
+      entityId: serializer.fromJson<String>(json['entityId']),
+      displayName: serializer.fromJson<String>(json['displayName']),
+      snapshotJson: serializer.fromJson<String>(json['snapshotJson']),
+      deletedByUserId: serializer.fromJson<String?>(json['deletedByUserId']),
+      deletedAt: serializer.fromJson<String>(json['deletedAt']),
+      restoredAt: serializer.fromJson<String?>(json['restoredAt']),
+      permanentlyDeletedAt: serializer.fromJson<String?>(
+        json['permanentlyDeletedAt'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'entityType': serializer.toJson<String>(entityType),
+      'entityId': serializer.toJson<String>(entityId),
+      'displayName': serializer.toJson<String>(displayName),
+      'snapshotJson': serializer.toJson<String>(snapshotJson),
+      'deletedByUserId': serializer.toJson<String?>(deletedByUserId),
+      'deletedAt': serializer.toJson<String>(deletedAt),
+      'restoredAt': serializer.toJson<String?>(restoredAt),
+      'permanentlyDeletedAt': serializer.toJson<String?>(permanentlyDeletedAt),
+    };
+  }
+
+  TrashBinData copyWith({
+    String? id,
+    String? entityType,
+    String? entityId,
+    String? displayName,
+    String? snapshotJson,
+    Value<String?> deletedByUserId = const Value.absent(),
+    String? deletedAt,
+    Value<String?> restoredAt = const Value.absent(),
+    Value<String?> permanentlyDeletedAt = const Value.absent(),
+  }) => TrashBinData(
+    id: id ?? this.id,
+    entityType: entityType ?? this.entityType,
+    entityId: entityId ?? this.entityId,
+    displayName: displayName ?? this.displayName,
+    snapshotJson: snapshotJson ?? this.snapshotJson,
+    deletedByUserId: deletedByUserId.present
+        ? deletedByUserId.value
+        : this.deletedByUserId,
+    deletedAt: deletedAt ?? this.deletedAt,
+    restoredAt: restoredAt.present ? restoredAt.value : this.restoredAt,
+    permanentlyDeletedAt: permanentlyDeletedAt.present
+        ? permanentlyDeletedAt.value
+        : this.permanentlyDeletedAt,
+  );
+  TrashBinData copyWithCompanion(TrashBinCompanion data) {
+    return TrashBinData(
+      id: data.id.present ? data.id.value : this.id,
+      entityType: data.entityType.present
+          ? data.entityType.value
+          : this.entityType,
+      entityId: data.entityId.present ? data.entityId.value : this.entityId,
+      displayName: data.displayName.present
+          ? data.displayName.value
+          : this.displayName,
+      snapshotJson: data.snapshotJson.present
+          ? data.snapshotJson.value
+          : this.snapshotJson,
+      deletedByUserId: data.deletedByUserId.present
+          ? data.deletedByUserId.value
+          : this.deletedByUserId,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      restoredAt: data.restoredAt.present
+          ? data.restoredAt.value
+          : this.restoredAt,
+      permanentlyDeletedAt: data.permanentlyDeletedAt.present
+          ? data.permanentlyDeletedAt.value
+          : this.permanentlyDeletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TrashBinData(')
+          ..write('id: $id, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('displayName: $displayName, ')
+          ..write('snapshotJson: $snapshotJson, ')
+          ..write('deletedByUserId: $deletedByUserId, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('restoredAt: $restoredAt, ')
+          ..write('permanentlyDeletedAt: $permanentlyDeletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    entityType,
+    entityId,
+    displayName,
+    snapshotJson,
+    deletedByUserId,
+    deletedAt,
+    restoredAt,
+    permanentlyDeletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TrashBinData &&
+          other.id == this.id &&
+          other.entityType == this.entityType &&
+          other.entityId == this.entityId &&
+          other.displayName == this.displayName &&
+          other.snapshotJson == this.snapshotJson &&
+          other.deletedByUserId == this.deletedByUserId &&
+          other.deletedAt == this.deletedAt &&
+          other.restoredAt == this.restoredAt &&
+          other.permanentlyDeletedAt == this.permanentlyDeletedAt);
+}
+
+class TrashBinCompanion extends UpdateCompanion<TrashBinData> {
+  final Value<String> id;
+  final Value<String> entityType;
+  final Value<String> entityId;
+  final Value<String> displayName;
+  final Value<String> snapshotJson;
+  final Value<String?> deletedByUserId;
+  final Value<String> deletedAt;
+  final Value<String?> restoredAt;
+  final Value<String?> permanentlyDeletedAt;
+  final Value<int> rowid;
+  const TrashBinCompanion({
+    this.id = const Value.absent(),
+    this.entityType = const Value.absent(),
+    this.entityId = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.snapshotJson = const Value.absent(),
+    this.deletedByUserId = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.restoredAt = const Value.absent(),
+    this.permanentlyDeletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TrashBinCompanion.insert({
+    required String id,
+    required String entityType,
+    required String entityId,
+    required String displayName,
+    required String snapshotJson,
+    this.deletedByUserId = const Value.absent(),
+    required String deletedAt,
+    this.restoredAt = const Value.absent(),
+    this.permanentlyDeletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       entityType = Value(entityType),
+       entityId = Value(entityId),
+       displayName = Value(displayName),
+       snapshotJson = Value(snapshotJson),
+       deletedAt = Value(deletedAt);
+  static Insertable<TrashBinData> custom({
+    Expression<String>? id,
+    Expression<String>? entityType,
+    Expression<String>? entityId,
+    Expression<String>? displayName,
+    Expression<String>? snapshotJson,
+    Expression<String>? deletedByUserId,
+    Expression<String>? deletedAt,
+    Expression<String>? restoredAt,
+    Expression<String>? permanentlyDeletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (entityType != null) 'entity_type': entityType,
+      if (entityId != null) 'entity_id': entityId,
+      if (displayName != null) 'display_name': displayName,
+      if (snapshotJson != null) 'snapshot_json': snapshotJson,
+      if (deletedByUserId != null) 'deleted_by_user_id': deletedByUserId,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (restoredAt != null) 'restored_at': restoredAt,
+      if (permanentlyDeletedAt != null)
+        'permanently_deleted_at': permanentlyDeletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TrashBinCompanion copyWith({
+    Value<String>? id,
+    Value<String>? entityType,
+    Value<String>? entityId,
+    Value<String>? displayName,
+    Value<String>? snapshotJson,
+    Value<String?>? deletedByUserId,
+    Value<String>? deletedAt,
+    Value<String?>? restoredAt,
+    Value<String?>? permanentlyDeletedAt,
+    Value<int>? rowid,
+  }) {
+    return TrashBinCompanion(
+      id: id ?? this.id,
+      entityType: entityType ?? this.entityType,
+      entityId: entityId ?? this.entityId,
+      displayName: displayName ?? this.displayName,
+      snapshotJson: snapshotJson ?? this.snapshotJson,
+      deletedByUserId: deletedByUserId ?? this.deletedByUserId,
+      deletedAt: deletedAt ?? this.deletedAt,
+      restoredAt: restoredAt ?? this.restoredAt,
+      permanentlyDeletedAt: permanentlyDeletedAt ?? this.permanentlyDeletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (entityType.present) {
+      map['entity_type'] = Variable<String>(entityType.value);
+    }
+    if (entityId.present) {
+      map['entity_id'] = Variable<String>(entityId.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (snapshotJson.present) {
+      map['snapshot_json'] = Variable<String>(snapshotJson.value);
+    }
+    if (deletedByUserId.present) {
+      map['deleted_by_user_id'] = Variable<String>(deletedByUserId.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<String>(deletedAt.value);
+    }
+    if (restoredAt.present) {
+      map['restored_at'] = Variable<String>(restoredAt.value);
+    }
+    if (permanentlyDeletedAt.present) {
+      map['permanently_deleted_at'] = Variable<String>(
+        permanentlyDeletedAt.value,
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TrashBinCompanion(')
+          ..write('id: $id, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('displayName: $displayName, ')
+          ..write('snapshotJson: $snapshotJson, ')
+          ..write('deletedByUserId: $deletedByUserId, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('restoredAt: $restoredAt, ')
+          ..write('permanentlyDeletedAt: $permanentlyDeletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $RolesTable roles = $RolesTable(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
+  late final $AuditLogTable auditLog = $AuditLogTable(this);
   late final $DeviceInfoTable deviceInfo = $DeviceInfoTable(this);
   late final $UsersTable users = $UsersTable(this);
   late final $DepartmentsTable departments = $DepartmentsTable(this);
@@ -12207,6 +13432,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $InspectionFilesTable inspectionFiles = $InspectionFilesTable(
     this,
   );
+  late final $TrashBinTable trashBin = $TrashBinTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -12214,6 +13440,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     roles,
     appSettings,
+    auditLog,
     deviceInfo,
     users,
     departments,
@@ -12231,6 +13458,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     componentImages,
     inspectionSignatures,
     inspectionFiles,
+    trashBin,
   ];
 }
 
@@ -12608,6 +13836,311 @@ typedef $$AppSettingsTableProcessedTableManager =
         BaseReferences<_$AppDatabase, $AppSettingsTable, AppSetting>,
       ),
       AppSetting,
+      PrefetchHooks Function()
+    >;
+typedef $$AuditLogTableCreateCompanionBuilder =
+    AuditLogCompanion Function({
+      required String id,
+      required String happenedAt,
+      Value<String?> userId,
+      Value<String?> deviceId,
+      required String actionType,
+      Value<String?> entityType,
+      Value<String?> entityId,
+      required String resultStatus,
+      Value<String?> message,
+      Value<String?> payloadJson,
+      Value<int> rowid,
+    });
+typedef $$AuditLogTableUpdateCompanionBuilder =
+    AuditLogCompanion Function({
+      Value<String> id,
+      Value<String> happenedAt,
+      Value<String?> userId,
+      Value<String?> deviceId,
+      Value<String> actionType,
+      Value<String?> entityType,
+      Value<String?> entityId,
+      Value<String> resultStatus,
+      Value<String?> message,
+      Value<String?> payloadJson,
+      Value<int> rowid,
+    });
+
+class $$AuditLogTableFilterComposer
+    extends Composer<_$AppDatabase, $AuditLogTable> {
+  $$AuditLogTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get happenedAt => $composableBuilder(
+    column: $table.happenedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get actionType => $composableBuilder(
+    column: $table.actionType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resultStatus => $composableBuilder(
+    column: $table.resultStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get message => $composableBuilder(
+    column: $table.message,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AuditLogTableOrderingComposer
+    extends Composer<_$AppDatabase, $AuditLogTable> {
+  $$AuditLogTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get happenedAt => $composableBuilder(
+    column: $table.happenedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get actionType => $composableBuilder(
+    column: $table.actionType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resultStatus => $composableBuilder(
+    column: $table.resultStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get message => $composableBuilder(
+    column: $table.message,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AuditLogTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AuditLogTable> {
+  $$AuditLogTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get happenedAt => $composableBuilder(
+    column: $table.happenedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get deviceId =>
+      $composableBuilder(column: $table.deviceId, builder: (column) => column);
+
+  GeneratedColumn<String> get actionType => $composableBuilder(
+    column: $table.actionType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => column);
+
+  GeneratedColumn<String> get resultStatus => $composableBuilder(
+    column: $table.resultStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get message =>
+      $composableBuilder(column: $table.message, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => column,
+  );
+}
+
+class $$AuditLogTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AuditLogTable,
+          AuditLogData,
+          $$AuditLogTableFilterComposer,
+          $$AuditLogTableOrderingComposer,
+          $$AuditLogTableAnnotationComposer,
+          $$AuditLogTableCreateCompanionBuilder,
+          $$AuditLogTableUpdateCompanionBuilder,
+          (
+            AuditLogData,
+            BaseReferences<_$AppDatabase, $AuditLogTable, AuditLogData>,
+          ),
+          AuditLogData,
+          PrefetchHooks Function()
+        > {
+  $$AuditLogTableTableManager(_$AppDatabase db, $AuditLogTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AuditLogTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AuditLogTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AuditLogTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> happenedAt = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                Value<String?> deviceId = const Value.absent(),
+                Value<String> actionType = const Value.absent(),
+                Value<String?> entityType = const Value.absent(),
+                Value<String?> entityId = const Value.absent(),
+                Value<String> resultStatus = const Value.absent(),
+                Value<String?> message = const Value.absent(),
+                Value<String?> payloadJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AuditLogCompanion(
+                id: id,
+                happenedAt: happenedAt,
+                userId: userId,
+                deviceId: deviceId,
+                actionType: actionType,
+                entityType: entityType,
+                entityId: entityId,
+                resultStatus: resultStatus,
+                message: message,
+                payloadJson: payloadJson,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String happenedAt,
+                Value<String?> userId = const Value.absent(),
+                Value<String?> deviceId = const Value.absent(),
+                required String actionType,
+                Value<String?> entityType = const Value.absent(),
+                Value<String?> entityId = const Value.absent(),
+                required String resultStatus,
+                Value<String?> message = const Value.absent(),
+                Value<String?> payloadJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AuditLogCompanion.insert(
+                id: id,
+                happenedAt: happenedAt,
+                userId: userId,
+                deviceId: deviceId,
+                actionType: actionType,
+                entityType: entityType,
+                entityId: entityId,
+                resultStatus: resultStatus,
+                message: message,
+                payloadJson: payloadJson,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AuditLogTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AuditLogTable,
+      AuditLogData,
+      $$AuditLogTableFilterComposer,
+      $$AuditLogTableOrderingComposer,
+      $$AuditLogTableAnnotationComposer,
+      $$AuditLogTableCreateCompanionBuilder,
+      $$AuditLogTableUpdateCompanionBuilder,
+      (
+        AuditLogData,
+        BaseReferences<_$AppDatabase, $AuditLogTable, AuditLogData>,
+      ),
+      AuditLogData,
       PrefetchHooks Function()
     >;
 typedef $$DeviceInfoTableCreateCompanionBuilder =
@@ -18118,6 +19651,294 @@ typedef $$InspectionFilesTableProcessedTableManager =
       InspectionFile,
       PrefetchHooks Function()
     >;
+typedef $$TrashBinTableCreateCompanionBuilder =
+    TrashBinCompanion Function({
+      required String id,
+      required String entityType,
+      required String entityId,
+      required String displayName,
+      required String snapshotJson,
+      Value<String?> deletedByUserId,
+      required String deletedAt,
+      Value<String?> restoredAt,
+      Value<String?> permanentlyDeletedAt,
+      Value<int> rowid,
+    });
+typedef $$TrashBinTableUpdateCompanionBuilder =
+    TrashBinCompanion Function({
+      Value<String> id,
+      Value<String> entityType,
+      Value<String> entityId,
+      Value<String> displayName,
+      Value<String> snapshotJson,
+      Value<String?> deletedByUserId,
+      Value<String> deletedAt,
+      Value<String?> restoredAt,
+      Value<String?> permanentlyDeletedAt,
+      Value<int> rowid,
+    });
+
+class $$TrashBinTableFilterComposer
+    extends Composer<_$AppDatabase, $TrashBinTable> {
+  $$TrashBinTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deletedByUserId => $composableBuilder(
+    column: $table.deletedByUserId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get restoredAt => $composableBuilder(
+    column: $table.restoredAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get permanentlyDeletedAt => $composableBuilder(
+    column: $table.permanentlyDeletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TrashBinTableOrderingComposer
+    extends Composer<_$AppDatabase, $TrashBinTable> {
+  $$TrashBinTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deletedByUserId => $composableBuilder(
+    column: $table.deletedByUserId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get restoredAt => $composableBuilder(
+    column: $table.restoredAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get permanentlyDeletedAt => $composableBuilder(
+    column: $table.permanentlyDeletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TrashBinTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TrashBinTable> {
+  $$TrashBinTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get deletedByUserId => $composableBuilder(
+    column: $table.deletedByUserId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get restoredAt => $composableBuilder(
+    column: $table.restoredAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get permanentlyDeletedAt => $composableBuilder(
+    column: $table.permanentlyDeletedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$TrashBinTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TrashBinTable,
+          TrashBinData,
+          $$TrashBinTableFilterComposer,
+          $$TrashBinTableOrderingComposer,
+          $$TrashBinTableAnnotationComposer,
+          $$TrashBinTableCreateCompanionBuilder,
+          $$TrashBinTableUpdateCompanionBuilder,
+          (
+            TrashBinData,
+            BaseReferences<_$AppDatabase, $TrashBinTable, TrashBinData>,
+          ),
+          TrashBinData,
+          PrefetchHooks Function()
+        > {
+  $$TrashBinTableTableManager(_$AppDatabase db, $TrashBinTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TrashBinTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TrashBinTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TrashBinTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> entityType = const Value.absent(),
+                Value<String> entityId = const Value.absent(),
+                Value<String> displayName = const Value.absent(),
+                Value<String> snapshotJson = const Value.absent(),
+                Value<String?> deletedByUserId = const Value.absent(),
+                Value<String> deletedAt = const Value.absent(),
+                Value<String?> restoredAt = const Value.absent(),
+                Value<String?> permanentlyDeletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TrashBinCompanion(
+                id: id,
+                entityType: entityType,
+                entityId: entityId,
+                displayName: displayName,
+                snapshotJson: snapshotJson,
+                deletedByUserId: deletedByUserId,
+                deletedAt: deletedAt,
+                restoredAt: restoredAt,
+                permanentlyDeletedAt: permanentlyDeletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String entityType,
+                required String entityId,
+                required String displayName,
+                required String snapshotJson,
+                Value<String?> deletedByUserId = const Value.absent(),
+                required String deletedAt,
+                Value<String?> restoredAt = const Value.absent(),
+                Value<String?> permanentlyDeletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TrashBinCompanion.insert(
+                id: id,
+                entityType: entityType,
+                entityId: entityId,
+                displayName: displayName,
+                snapshotJson: snapshotJson,
+                deletedByUserId: deletedByUserId,
+                deletedAt: deletedAt,
+                restoredAt: restoredAt,
+                permanentlyDeletedAt: permanentlyDeletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TrashBinTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TrashBinTable,
+      TrashBinData,
+      $$TrashBinTableFilterComposer,
+      $$TrashBinTableOrderingComposer,
+      $$TrashBinTableAnnotationComposer,
+      $$TrashBinTableCreateCompanionBuilder,
+      $$TrashBinTableUpdateCompanionBuilder,
+      (
+        TrashBinData,
+        BaseReferences<_$AppDatabase, $TrashBinTable, TrashBinData>,
+      ),
+      TrashBinData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -18126,6 +19947,8 @@ class $AppDatabaseManager {
       $$RolesTableTableManager(_db, _db.roles);
   $$AppSettingsTableTableManager get appSettings =>
       $$AppSettingsTableTableManager(_db, _db.appSettings);
+  $$AuditLogTableTableManager get auditLog =>
+      $$AuditLogTableTableManager(_db, _db.auditLog);
   $$DeviceInfoTableTableManager get deviceInfo =>
       $$DeviceInfoTableTableManager(_db, _db.deviceInfo);
   $$UsersTableTableManager get users =>
@@ -18160,4 +19983,6 @@ class $AppDatabaseManager {
       $$InspectionSignaturesTableTableManager(_db, _db.inspectionSignatures);
   $$InspectionFilesTableTableManager get inspectionFiles =>
       $$InspectionFilesTableTableManager(_db, _db.inspectionFiles);
+  $$TrashBinTableTableManager get trashBin =>
+      $$TrashBinTableTableManager(_db, _db.trashBin);
 }

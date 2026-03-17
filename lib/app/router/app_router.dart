@@ -1,11 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/platform/app_platform.dart';
+import '../../features/auth/presentation/app_entry_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/catalog/presentation/windows_admin_sections.dart';
 import '../../features/catalog/presentation/windows_admin_shell.dart';
-import '../../features/inspections/presentation/android_inspection_shell.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/sync/presentation/sync_diagnostics_screen.dart';
 
@@ -14,17 +13,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) {
-          final appPlatform = getAppPlatform();
-
-          if (appPlatform == AppPlatform.windows) {
-            return const WindowsAdminShell(
-              section: WindowsAdminSection.dashboard,
-            );
-          }
-
-          return const AndroidInspectionShell();
-        },
+        builder: (context, state) => const AppEntryScreen(),
       ),
       GoRoute(
         path: '/windows',

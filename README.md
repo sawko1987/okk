@@ -4,13 +4,16 @@ Local-first Flutter application for Windows administration and Android quality i
 
 ## Current Stage
 
-The repository is in foundation stage completion:
+The repository is now beyond foundation and in Stage 3 Windows master-data:
 
 - Flutter app scaffolded for Windows and Android
+- Drift-based SQLite bootstrap with schema v4
 - local storage layout under `app_data/`
-- Drift-based SQLite bootstrap
-- base routing and platform shells
-- diagnostics and settings stubs
+- local login/session flow with seeded default administrator
+- Windows admin sections for structure, objects, components, checklists, users, roles, audit, trash, and sync/export
+- component image import into local `media/components`
+- local reference package export into `sync/outgoing`
+- diagnostics, settings, audit log, and trash recovery screens
 
 Detailed scope and implementation phases are documented in:
 
@@ -62,3 +65,10 @@ The application creates a local `app_data/` root with these directories:
 - `logs/`
 
 SQLite stores relative media/report paths; absolute filesystem paths are resolved from `app_data/` at runtime.
+
+## Verification
+
+Current local verification status:
+
+- `flutter analyze` passes
+- `flutter test` passes

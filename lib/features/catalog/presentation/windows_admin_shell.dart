@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../admin/presentation/audit_log_screen.dart';
+import '../../admin/presentation/roles_admin_screen.dart';
+import '../../admin/presentation/sync_admin_screen.dart';
+import '../../admin/presentation/trash_bin_screen.dart';
+import '../../admin/presentation/users_admin_screen.dart';
+import '../../auth/data/auth_service.dart';
 import '../../../data/sqlite/database_provider.dart';
 import '../../../data/storage/app_paths_provider.dart';
 import 'checklists_admin_screen.dart';
@@ -23,18 +29,37 @@ class WindowsAdminShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final paths = ref.watch(appPathsProvider);
     final database = ref.watch(appDatabaseProvider);
+    final session = ref.watch(activeSessionProvider).valueOrNull;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Windows админка: ${section.label}'),
+        title: Text('Windows admin: ${section.label}'),
         actions: [
+          if (session != null)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text('${session.fullName} (${session.roleName})'),
+              ),
+            ),
           TextButton(
             onPressed: () => context.go('/diagnostics'),
-            child: const Text('Диагностика'),
+            child: const Text('Diagnostics'),
           ),
           TextButton(
             onPressed: () => context.go('/settings'),
-            child: const Text('Настройки'),
+            child: const Text('Settings'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await ref.read(authServiceProvider).logout();
+              refreshAuthProviders(ref);
+              if (!context.mounted) {
+                return;
+              }
+              context.go('/login');
+            },
+            child: const Text('Logout'),
           ),
         ],
       ),
@@ -75,6 +100,16 @@ class WindowsAdminShell extends ConsumerWidget {
                   const ComponentsAdminScreen(key: ValueKey('components')),
                 WindowsAdminSection.checklists =>
                   const ChecklistsAdminScreen(key: ValueKey('checklists')),
+                WindowsAdminSection.users =>
+                  const UsersAdminScreen(key: ValueKey('users')),
+                WindowsAdminSection.roles =>
+                  const RolesAdminScreen(key: ValueKey('roles')),
+                WindowsAdminSection.audit =>
+                  const AuditLogScreen(key: ValueKey('audit')),
+                WindowsAdminSection.trash =>
+                  const TrashBinScreen(key: ValueKey('trash')),
+                WindowsAdminSection.sync =>
+                  const SyncAdminScreen(key: ValueKey('sync')),
               },
             ),
           ),

@@ -29,7 +29,7 @@ void main() {
     expect(syncState.schemaVersion, AppConstants.syncSchemaVersion);
   });
 
-  test('migrates schema version 1 databases to version 3', () async {
+  test('migrates schema version 1 databases to version 4', () async {
     final executor = NativeDatabase.memory(
       setup: (rawDb) {
         rawDb.execute('''
@@ -79,11 +79,11 @@ void main() {
           "'inspection_signatures', 'inspection_files', 'departments', "
           "'workshops', 'sections', 'objects', 'object_relations', "
           "'components', 'checklists', 'checklist_items', "
-          "'checklist_bindings')",
+          "'checklist_bindings', 'audit_log', 'trash_bin')",
         )
         .get();
 
-    expect(stateTables, hasLength(16));
+    expect(stateTables, hasLength(18));
     final versionRow =
         await database.customSelect('PRAGMA user_version;').getSingle();
     expect(versionRow.data['user_version'], AppConstants.appSchemaVersion);

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/sqlite/app_database.dart';
 import '../../../data/sqlite/database_provider.dart';
+import '../../../data/sqlite/repository_support.dart';
 
 export '../../../data/sqlite/app_database.dart'
     show
@@ -248,14 +249,16 @@ class EnterpriseStructureRepository {
     required String name,
     String? code,
     required int sortOrder,
+    String? actorUserId,
   }) async {
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
 
     if (id == null) {
+      final departmentId = _generateId('department');
       await _db.into(_db.departments).insert(
             DepartmentsCompanion.insert(
-              id: _generateId('department'),
+              id: departmentId,
               name: name.trim(),
               code: Value(cleanedCode),
               sortOrder: Value(sortOrder),
@@ -263,6 +266,15 @@ class EnterpriseStructureRepository {
               updatedAt: now,
             ),
           );
+      await recordAudit(
+        _db,
+        actionType: 'department.create',
+        resultStatus: 'success',
+        userId: actorUserId,
+        entityType: 'department',
+        entityId: departmentId,
+        message: 'Department created',
+      );
       return;
     }
 
@@ -276,9 +288,18 @@ class EnterpriseStructureRepository {
         updatedAt: Value(now),
       ),
     );
+    await recordAudit(
+      _db,
+      actionType: 'department.update',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'department',
+      entityId: id,
+      message: 'Department updated',
+    );
   }
 
-  Future<void> deleteDepartment(String id) async {
+  Future<void> deleteDepartment(String id, {String? actorUserId}) async {
     final activeWorkshops = await (_db.select(_db.workshops)
           ..where(
             (tbl) => tbl.departmentId.equals(id) & tbl.isDeleted.equals(false),
@@ -299,6 +320,24 @@ class EnterpriseStructureRepository {
         version: Value(existing.version + 1),
       ),
     );
+    await addTrashEntry(
+      _db,
+      entityType: 'department',
+      entityId: id,
+      displayName: existing.name,
+      deletedByUserId: actorUserId,
+      deletedAt: now,
+      snapshot: {'id': existing.id, 'name': existing.name, 'code': existing.code},
+    );
+    await recordAudit(
+      _db,
+      actionType: 'department.delete',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'department',
+      entityId: id,
+      message: 'Department moved to trash',
+    );
   }
 
   Future<void> saveWorkshop({
@@ -307,14 +346,16 @@ class EnterpriseStructureRepository {
     required String name,
     String? code,
     required int sortOrder,
+    String? actorUserId,
   }) async {
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
 
     if (id == null) {
+      final workshopId = _generateId('workshop');
       await _db.into(_db.workshops).insert(
             WorkshopsCompanion.insert(
-              id: _generateId('workshop'),
+              id: workshopId,
               departmentId: departmentId,
               name: name.trim(),
               code: Value(cleanedCode),
@@ -323,6 +364,15 @@ class EnterpriseStructureRepository {
               updatedAt: now,
             ),
           );
+      await recordAudit(
+        _db,
+        actionType: 'workshop.create',
+        resultStatus: 'success',
+        userId: actorUserId,
+        entityType: 'workshop',
+        entityId: workshopId,
+        message: 'Workshop created',
+      );
       return;
     }
 
@@ -337,9 +387,18 @@ class EnterpriseStructureRepository {
         updatedAt: Value(now),
       ),
     );
+    await recordAudit(
+      _db,
+      actionType: 'workshop.update',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'workshop',
+      entityId: id,
+      message: 'Workshop updated',
+    );
   }
 
-  Future<void> deleteWorkshop(String id) async {
+  Future<void> deleteWorkshop(String id, {String? actorUserId}) async {
     final activeSections = await (_db.select(_db.sections)
           ..where(
             (tbl) => tbl.workshopId.equals(id) & tbl.isDeleted.equals(false),
@@ -360,6 +419,29 @@ class EnterpriseStructureRepository {
         version: Value(existing.version + 1),
       ),
     );
+    await addTrashEntry(
+      _db,
+      entityType: 'workshop',
+      entityId: id,
+      displayName: existing.name,
+      deletedByUserId: actorUserId,
+      deletedAt: now,
+      snapshot: {
+        'id': existing.id,
+        'department_id': existing.departmentId,
+        'name': existing.name,
+        'code': existing.code,
+      },
+    );
+    await recordAudit(
+      _db,
+      actionType: 'workshop.delete',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'workshop',
+      entityId: id,
+      message: 'Workshop moved to trash',
+    );
   }
 
   Future<void> saveSection({
@@ -368,14 +450,16 @@ class EnterpriseStructureRepository {
     required String name,
     String? code,
     required int sortOrder,
+    String? actorUserId,
   }) async {
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
 
     if (id == null) {
+      final sectionId = _generateId('section');
       await _db.into(_db.sections).insert(
             SectionsCompanion.insert(
-              id: _generateId('section'),
+              id: sectionId,
               workshopId: workshopId,
               name: name.trim(),
               code: Value(cleanedCode),
@@ -384,6 +468,15 @@ class EnterpriseStructureRepository {
               updatedAt: now,
             ),
           );
+      await recordAudit(
+        _db,
+        actionType: 'section.create',
+        resultStatus: 'success',
+        userId: actorUserId,
+        entityType: 'section',
+        entityId: sectionId,
+        message: 'Section created',
+      );
       return;
     }
 
@@ -398,9 +491,18 @@ class EnterpriseStructureRepository {
         updatedAt: Value(now),
       ),
     );
+    await recordAudit(
+      _db,
+      actionType: 'section.update',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'section',
+      entityId: id,
+      message: 'Section updated',
+    );
   }
 
-  Future<void> deleteSection(String id) async {
+  Future<void> deleteSection(String id, {String? actorUserId}) async {
     final activeObjects = await (_db.select(_db.catalogObjects)
           ..where(
             (tbl) => tbl.sectionId.equals(id) & tbl.isDeleted.equals(false),
@@ -420,6 +522,29 @@ class EnterpriseStructureRepository {
         updatedAt: Value(now),
         version: Value(existing.version + 1),
       ),
+    );
+    await addTrashEntry(
+      _db,
+      entityType: 'section',
+      entityId: id,
+      displayName: existing.name,
+      deletedByUserId: actorUserId,
+      deletedAt: now,
+      snapshot: {
+        'id': existing.id,
+        'workshop_id': existing.workshopId,
+        'name': existing.name,
+        'code': existing.code,
+      },
+    );
+    await recordAudit(
+      _db,
+      actionType: 'section.delete',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'section',
+      entityId: id,
+      message: 'Section moved to trash',
     );
   }
 
@@ -502,6 +627,7 @@ class ObjectsRepository {
     String? description,
     required int sortOrder,
     required bool isActive,
+    String? actorUserId,
   }) async {
     final now = _nowIso();
     final cleanedSectionId = _nullableText(sectionId);
@@ -545,6 +671,15 @@ class ObjectsRepository {
           childId: newId,
           newParentId: cleanedParentId,
         );
+        await recordAudit(
+          _db,
+          actionType: 'object.create',
+          resultStatus: 'success',
+          userId: actorUserId,
+          entityType: 'object',
+          entityId: newId,
+          message: 'Object created',
+        );
         return;
       }
 
@@ -569,10 +704,19 @@ class ObjectsRepository {
         childId: id,
         newParentId: cleanedParentId,
       );
+      await recordAudit(
+        _db,
+        actionType: 'object.update',
+        resultStatus: 'success',
+        userId: actorUserId,
+        entityType: 'object',
+        entityId: id,
+        message: 'Object updated',
+      );
     });
   }
 
-  Future<void> deleteObject(String id) async {
+  Future<void> deleteObject(String id, {String? actorUserId}) async {
     final children = await (_db.select(_db.catalogObjects)
           ..where(
             (tbl) => tbl.parentId.equals(id) & tbl.isDeleted.equals(false),
@@ -589,17 +733,17 @@ class ObjectsRepository {
       throw StateError('Нельзя удалить объект, пока у него есть компоненты.');
     }
 
+    final existing = await _getObject(id);
+    final now = _nowIso();
     await _db.transaction(() async {
-      final existing = await _getObject(id);
-      final now = _nowIso();
       await (_db.update(_db.catalogObjects)
             ..where((tbl) => tbl.id.equals(id)))
           .write(
         CatalogObjectsCompanion(
-          isDeleted: const Value(true),
-          deletedAt: Value(now),
-          updatedAt: Value(now),
-          version: Value(existing.version + 1),
+            isDeleted: const Value(true),
+            deletedAt: Value(now),
+            updatedAt: Value(now),
+            version: Value(existing.version + 1),
         ),
       );
 
@@ -619,10 +763,33 @@ class ObjectsRepository {
             deletedAt: Value(now),
             updatedAt: Value(now),
             version: Value(relation.version + 1),
-          ),
-        );
+              ),
+            );
       }
     });
+    await addTrashEntry(
+      _db,
+      entityType: 'object',
+      entityId: id,
+      displayName: existing.name,
+      deletedByUserId: actorUserId,
+      deletedAt: now,
+      snapshot: {
+        'id': existing.id,
+        'type': existing.type,
+        'name': existing.name,
+        'parent_id': existing.parentId,
+      },
+    );
+    await recordAudit(
+      _db,
+      actionType: 'object.delete',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'object',
+      entityId: id,
+      message: 'Object moved to trash',
+    );
   }
 
   Future<void> _replaceParentRelation({
@@ -726,15 +893,17 @@ class ComponentsRepository {
     String? description,
     required int sortOrder,
     required bool isRequired,
+    String? actorUserId,
   }) async {
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
     final cleanedDescription = _nullableText(description);
 
     if (id == null) {
+      final componentId = _generateId('component');
       await _db.into(_db.components).insert(
             ComponentsCompanion.insert(
-              id: _generateId('component'),
+              id: componentId,
               objectId: objectId,
               name: name.trim(),
               code: Value(cleanedCode),
@@ -745,6 +914,15 @@ class ComponentsRepository {
               updatedAt: now,
             ),
           );
+      await recordAudit(
+        _db,
+        actionType: 'component.create',
+        resultStatus: 'success',
+        userId: actorUserId,
+        entityType: 'component',
+        entityId: componentId,
+        message: 'Component created',
+      );
       return;
     }
 
@@ -761,9 +939,18 @@ class ComponentsRepository {
         updatedAt: Value(now),
       ),
     );
+    await recordAudit(
+      _db,
+      actionType: 'component.update',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'component',
+      entityId: id,
+      message: 'Component updated',
+    );
   }
 
-  Future<void> deleteComponent(String id) async {
+  Future<void> deleteComponent(String id, {String? actorUserId}) async {
     final checklistItems = await (_db.select(_db.checklistItems)
           ..where(
             (tbl) => tbl.componentId.equals(id) & tbl.isDeleted.equals(false),
@@ -783,6 +970,29 @@ class ComponentsRepository {
         updatedAt: Value(now),
         version: Value(existing.version + 1),
       ),
+    );
+    await addTrashEntry(
+      _db,
+      entityType: 'component',
+      entityId: id,
+      displayName: existing.name,
+      deletedByUserId: actorUserId,
+      deletedAt: now,
+      snapshot: {
+        'id': existing.id,
+        'object_id': existing.objectId,
+        'name': existing.name,
+        'code': existing.code,
+      },
+    );
+    await recordAudit(
+      _db,
+      actionType: 'component.delete',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'component',
+      entityId: id,
+      message: 'Component moved to trash',
     );
   }
 
@@ -869,6 +1079,7 @@ class ChecklistsRepository {
     required String name,
     String? description,
     required bool isActive,
+    String? actorUserId,
   }) async {
     final now = _nowIso();
     final cleanedDescription = _nullableText(description);
@@ -885,6 +1096,15 @@ class ChecklistsRepository {
               updatedAt: now,
             ),
           );
+      await recordAudit(
+        _db,
+        actionType: 'checklist.create',
+        resultStatus: 'success',
+        userId: actorUserId,
+        entityType: 'checklist',
+        entityId: newId,
+        message: 'Checklist created',
+      );
       return newId;
     }
 
@@ -898,10 +1118,19 @@ class ChecklistsRepository {
         updatedAt: Value(now),
       ),
     );
+    await recordAudit(
+      _db,
+      actionType: 'checklist.update',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'checklist',
+      entityId: id,
+      message: 'Checklist updated',
+    );
     return id;
   }
 
-  Future<void> deleteChecklist(String id) async {
+  Future<void> deleteChecklist(String id, {String? actorUserId}) async {
     final checklist = await _getChecklist(id);
     final now = _nowIso();
 
@@ -951,6 +1180,24 @@ class ChecklistsRepository {
         );
       }
     });
+    await addTrashEntry(
+      _db,
+      entityType: 'checklist',
+      entityId: id,
+      displayName: checklist.name,
+      deletedByUserId: actorUserId,
+      deletedAt: now,
+      snapshot: {'id': checklist.id, 'name': checklist.name},
+    );
+    await recordAudit(
+      _db,
+      actionType: 'checklist.delete',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'checklist',
+      entityId: id,
+      message: 'Checklist moved to trash',
+    );
   }
 
   Future<void> saveChecklistItem({
@@ -963,6 +1210,7 @@ class ChecklistsRepository {
     required String resultType,
     required bool isRequired,
     required int sortOrder,
+    String? actorUserId,
   }) async {
     final now = _nowIso();
     final cleanedComponentId = _nullableText(componentId);
@@ -970,9 +1218,10 @@ class ChecklistsRepository {
     final cleanedExpectedResult = _nullableText(expectedResult);
 
     if (id == null) {
+      final itemId = _generateId('checkitem');
       await _db.into(_db.checklistItems).insert(
             ChecklistItemsCompanion.insert(
-              id: _generateId('checkitem'),
+              id: itemId,
               checklistId: checklistId,
               componentId: Value(cleanedComponentId),
               title: title.trim(),
@@ -985,6 +1234,15 @@ class ChecklistsRepository {
               updatedAt: now,
             ),
           );
+      await recordAudit(
+        _db,
+        actionType: 'checklist_item.create',
+        resultStatus: 'success',
+        userId: actorUserId,
+        entityType: 'checklist_item',
+        entityId: itemId,
+        message: 'Checklist item created',
+      );
       return;
     }
 
@@ -1004,9 +1262,18 @@ class ChecklistsRepository {
         updatedAt: Value(now),
       ),
     );
+    await recordAudit(
+      _db,
+      actionType: 'checklist_item.update',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'checklist_item',
+      entityId: id,
+      message: 'Checklist item updated',
+    );
   }
 
-  Future<void> deleteChecklistItem(String id) async {
+  Future<void> deleteChecklistItem(String id, {String? actorUserId}) async {
     final existing = await _getChecklistItem(id);
     final now = _nowIso();
     await (_db.update(_db.checklistItems)..where((tbl) => tbl.id.equals(id))).write(
@@ -1016,6 +1283,28 @@ class ChecklistsRepository {
         updatedAt: Value(now),
         version: Value(existing.version + 1),
       ),
+    );
+    await addTrashEntry(
+      _db,
+      entityType: 'checklist_item',
+      entityId: id,
+      displayName: existing.title,
+      deletedByUserId: actorUserId,
+      deletedAt: now,
+      snapshot: {
+        'id': existing.id,
+        'checklist_id': existing.checklistId,
+        'title': existing.title,
+      },
+    );
+    await recordAudit(
+      _db,
+      actionType: 'checklist_item.delete',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'checklist_item',
+      entityId: id,
+      message: 'Checklist item moved to trash',
     );
   }
 
@@ -1027,6 +1316,7 @@ class ChecklistsRepository {
     String? targetObjectType,
     required int priority,
     required bool isRequired,
+    String? actorUserId,
   }) async {
     final now = _nowIso();
     final cleanedTargetId = _nullableText(targetId);
@@ -1045,9 +1335,10 @@ class ChecklistsRepository {
     }
 
     if (id == null) {
+      final bindingId = _generateId('binding');
       await _db.into(_db.checklistBindings).insert(
             ChecklistBindingsCompanion.insert(
-              id: _generateId('binding'),
+              id: bindingId,
               checklistId: checklistId,
               targetType: targetType,
               targetId: Value(cleanedTargetId),
@@ -1058,6 +1349,15 @@ class ChecklistsRepository {
               updatedAt: now,
             ),
           );
+      await recordAudit(
+        _db,
+        actionType: 'checklist_binding.create',
+        resultStatus: 'success',
+        userId: actorUserId,
+        entityType: 'checklist_binding',
+        entityId: bindingId,
+        message: 'Checklist binding created',
+      );
       return;
     }
 
@@ -1075,9 +1375,18 @@ class ChecklistsRepository {
         updatedAt: Value(now),
       ),
     );
+    await recordAudit(
+      _db,
+      actionType: 'checklist_binding.update',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'checklist_binding',
+      entityId: id,
+      message: 'Checklist binding updated',
+    );
   }
 
-  Future<void> deleteChecklistBinding(String id) async {
+  Future<void> deleteChecklistBinding(String id, {String? actorUserId}) async {
     final existing = await _getChecklistBinding(id);
     final now = _nowIso();
     await (_db.update(_db.checklistBindings)
@@ -1089,6 +1398,28 @@ class ChecklistsRepository {
         updatedAt: Value(now),
         version: Value(existing.version + 1),
       ),
+    );
+    await addTrashEntry(
+      _db,
+      entityType: 'checklist_binding',
+      entityId: id,
+      displayName: '${existing.targetType}:${existing.targetId ?? existing.targetObjectType ?? '-'}',
+      deletedByUserId: actorUserId,
+      deletedAt: now,
+      snapshot: {
+        'id': existing.id,
+        'checklist_id': existing.checklistId,
+        'target_type': existing.targetType,
+      },
+    );
+    await recordAudit(
+      _db,
+      actionType: 'checklist_binding.delete',
+      resultStatus: 'success',
+      userId: actorUserId,
+      entityType: 'checklist_binding',
+      entityId: id,
+      message: 'Checklist binding moved to trash',
     );
   }
 

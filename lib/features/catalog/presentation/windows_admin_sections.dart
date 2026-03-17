@@ -6,6 +6,11 @@ enum WindowsAdminSection {
   objects,
   components,
   checklists,
+  users,
+  roles,
+  audit,
+  trash,
+  sync,
 }
 
 const windowsAdminSections = <WindowsAdminSection>[
@@ -14,6 +19,11 @@ const windowsAdminSections = <WindowsAdminSection>[
   WindowsAdminSection.objects,
   WindowsAdminSection.components,
   WindowsAdminSection.checklists,
+  WindowsAdminSection.users,
+  WindowsAdminSection.roles,
+  WindowsAdminSection.audit,
+  WindowsAdminSection.trash,
+  WindowsAdminSection.sync,
 ];
 
 extension WindowsAdminSectionX on WindowsAdminSection {
@@ -23,14 +33,24 @@ extension WindowsAdminSectionX on WindowsAdminSection {
         WindowsAdminSection.objects => 'objects',
         WindowsAdminSection.components => 'components',
         WindowsAdminSection.checklists => 'checklists',
+        WindowsAdminSection.users => 'users',
+        WindowsAdminSection.roles => 'roles',
+        WindowsAdminSection.audit => 'audit',
+        WindowsAdminSection.trash => 'trash',
+        WindowsAdminSection.sync => 'sync',
       };
 
   String get label => switch (this) {
-        WindowsAdminSection.dashboard => 'Главная',
-        WindowsAdminSection.structure => 'Структура',
-        WindowsAdminSection.objects => 'Объекты',
-        WindowsAdminSection.components => 'Компоненты',
-        WindowsAdminSection.checklists => 'Чек-листы',
+        WindowsAdminSection.dashboard => 'Dashboard',
+        WindowsAdminSection.structure => 'Structure',
+        WindowsAdminSection.objects => 'Objects',
+        WindowsAdminSection.components => 'Components',
+        WindowsAdminSection.checklists => 'Checklists',
+        WindowsAdminSection.users => 'Users',
+        WindowsAdminSection.roles => 'Roles',
+        WindowsAdminSection.audit => 'Audit',
+        WindowsAdminSection.trash => 'Trash',
+        WindowsAdminSection.sync => 'Sync',
       };
 
   IconData get icon => switch (this) {
@@ -39,6 +59,11 @@ extension WindowsAdminSectionX on WindowsAdminSection {
         WindowsAdminSection.objects => Icons.device_hub_outlined,
         WindowsAdminSection.components => Icons.memory_outlined,
         WindowsAdminSection.checklists => Icons.checklist_outlined,
+        WindowsAdminSection.users => Icons.people_outline,
+        WindowsAdminSection.roles => Icons.badge_outlined,
+        WindowsAdminSection.audit => Icons.history_outlined,
+        WindowsAdminSection.trash => Icons.delete_sweep_outlined,
+        WindowsAdminSection.sync => Icons.sync_outlined,
       };
 
   String get routePath => this == WindowsAdminSection.dashboard

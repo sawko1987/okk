@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 
 import '../../core/config/app_constants.dart';
 import 'tables/app_settings.dart';
+import 'tables/audit_log.dart';
 import 'tables/catalog_objects.dart';
 import 'tables/checklist_bindings.dart';
 import 'tables/checklist_items.dart';
@@ -21,6 +22,7 @@ import 'tables/roles.dart';
 import 'tables/sections.dart';
 import 'tables/sync_queue.dart';
 import 'tables/sync_state.dart';
+import 'tables/trash_bin.dart';
 import 'tables/users.dart';
 import 'tables/workshops.dart';
 
@@ -30,6 +32,7 @@ part 'app_database.g.dart';
   tables: [
     Roles,
     AppSettings,
+    AuditLog,
     DeviceInfo,
     Users,
     Departments,
@@ -47,6 +50,7 @@ part 'app_database.g.dart';
     ComponentImages,
     InspectionSignatures,
     InspectionFiles,
+    TrashBin,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -73,6 +77,7 @@ class AppDatabase extends _$AppDatabase {
     onCreate: (migrator) async {
       await migrator.createAll();
       await _createCustomIndexes();
+      await _createAdminIndexes();
     },
     onUpgrade: (migrator, from, to) async {
       if (from < 2) {
@@ -96,6 +101,12 @@ class AppDatabase extends _$AppDatabase {
         await migrator.createTable(checklistItems);
         await migrator.createTable(checklistBindings);
         await _createCustomIndexes();
+      }
+
+      if (from < 4) {
+        await migrator.createTable(auditLog);
+        await migrator.createTable(trashBin);
+        await _createAdminIndexes();
       }
     },
   );
@@ -151,6 +162,24 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  Future<void> _createAdminIndexes() async {
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_audit_log_happened_at ON audit_log (happened_at);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_audit_log_action_type ON audit_log (action_type);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_audit_log_entity ON audit_log (entity_type, entity_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_trash_bin_entity ON trash_bin (entity_type, entity_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_trash_bin_deleted_at ON trash_bin (deleted_at);',
+    );
+  }
+
   Future<void> ensureBootstrapData({
     required String deviceId,
     required String deviceName,
@@ -195,6 +224,16 @@ class AppDatabase extends _$AppDatabase {
           code: 'viewer',
           name: 'Просмотр',
           description: const Value('Только чтение доступных данных.'),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ], mode: InsertMode.insertOrIgnore);
+      batch.insertAll(users, [
+        UsersCompanion.insert(
+          id: 'user-default-admin',
+          fullName: 'Default Administrator',
+          shortName: const Value('Admin'),
+          roleId: 'role-administrator',
           createdAt: now,
           updatedAt: now,
         ),

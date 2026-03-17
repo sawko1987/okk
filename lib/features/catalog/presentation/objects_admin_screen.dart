@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../auth/data/auth_service.dart';
 import '../data/master_data_repositories.dart';
 
 final _selectedObjectIdProvider = StateProvider<String?>((ref) => null);
@@ -11,6 +12,7 @@ class ObjectsAdminScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dataAsync = ref.watch(objectsViewDataProvider);
+    final canEdit = ref.watch(isAdministratorProvider);
 
     return dataAsync.when(
       data: (data) {
@@ -33,31 +35,41 @@ class ObjectsAdminScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (!canEdit)
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 12),
+                            child: Text(
+                              'Editing is available only for the administrator role.',
+                            ),
+                          ),
                         Row(
                           children: [
                             Expanded(
                               child: Text(
-                                'Дерево объектов',
+                                'Object tree',
                                 style: Theme.of(context).textTheme.titleLarge,
                               ),
                             ),
                             FilledButton.icon(
-                              onPressed: () => _editObject(context, ref, data: data),
+                              onPressed: canEdit
+                                  ? () => _editObject(context, ref, data: data)
+                                  : null,
                               icon: const Icon(Icons.add),
-                              label: const Text('Добавить'),
+                              label: const Text('Add'),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
                         if (data.allObjects.isEmpty)
-                          const Text('Объекты еще не созданы.')
+                          const Expanded(
+                            child: Center(child: Text('No objects created yet.')),
+                          )
                         else
                           Expanded(
                             child: ListView(
                               children: [
                                 for (final node in data.roots)
                                   ..._buildObjectTiles(
-                                    context,
                                     ref,
                                     node,
                                     selectedObject.id,
@@ -78,7 +90,7 @@ class ObjectsAdminScreen extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: data.allObjects.isEmpty
-                        ? const Text('Выберите или создайте объект.')
+                        ? const Text('Create the first object to start structuring products.')
                         : Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -91,44 +103,39 @@ class ObjectsAdminScreen extends ConsumerWidget {
                                     ),
                                   ),
                                   IconButton(
-                                    onPressed: () => _editObject(
-                                      context,
-                                      ref,
-                                      data: data,
-                                      object: selectedObject,
-                                    ),
+                                    onPressed: canEdit
+                                        ? () => _editObject(
+                                              context,
+                                              ref,
+                                              data: data,
+                                              object: selectedObject,
+                                            )
+                                        : null,
                                     icon: const Icon(Icons.edit_outlined),
                                   ),
                                   IconButton(
-                                    onPressed: () => _deleteObject(
-                                      context,
-                                      ref,
-                                      selectedObject.id,
-                                    ),
+                                    onPressed: canEdit
+                                        ? () => _deleteObject(
+                                              context,
+                                              ref,
+                                              selectedObject.id,
+                                            )
+                                        : null,
                                     icon: const Icon(Icons.delete_outline),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              _DetailRow('Тип', selectedObject.type),
-                              _DetailRow('Код', selectedObject.code ?? 'Без кода'),
+                              _DetailRow('Type', selectedObject.type),
+                              _DetailRow('Code', selectedObject.code ?? 'No code'),
+                              _DetailRow('Section', _sectionName(data, selectedObject.sectionId)),
+                              _DetailRow('Parent', _parentName(data, selectedObject.parentId)),
                               _DetailRow(
-                                'Участок',
-                                _sectionName(data, selectedObject.sectionId),
-                              ),
-                              _DetailRow(
-                                'Родитель',
-                                _parentName(data, selectedObject.parentId),
-                              ),
-                              _DetailRow(
-                                'Статус',
-                                selectedObject.isActive ? 'Активен' : 'Неактивен',
+                                'Status',
+                                selectedObject.isActive ? 'Active' : 'Inactive',
                               ),
                               if ((selectedObject.description ?? '').isNotEmpty)
-                                _DetailRow(
-                                  'Описание',
-                                  selectedObject.description!,
-                                ),
+                                _DetailRow('Description', selectedObject.description!),
                             ],
                           ),
                   ),
@@ -139,12 +146,11 @@ class ObjectsAdminScreen extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Ошибка загрузки объектов: $error')),
+      error: (error, _) => Center(child: Text('Failed to load objects: $error')),
     );
   }
 
   List<Widget> _buildObjectTiles(
-    BuildContext context,
     WidgetRef ref,
     ObjectTreeNode node,
     String selectedObjectId,
@@ -155,14 +161,13 @@ class ObjectsAdminScreen extends ConsumerWidget {
         child: ListTile(
           contentPadding: EdgeInsets.only(left: 16.0 + depth * 20, right: 16),
           title: Text(node.object.name),
-          subtitle: Text('${node.object.type} • ${node.object.code ?? 'без кода'}'),
+          subtitle: Text('${node.object.type} • ${node.object.code ?? 'no code'}'),
           selected: node.object.id == selectedObjectId,
-          onTap: () =>
-              ref.read(_selectedObjectIdProvider.notifier).state = node.object.id,
+          onTap: () => ref.read(_selectedObjectIdProvider.notifier).state = node.object.id,
         ),
       ),
       for (final child in node.children)
-        ..._buildObjectTiles(context, ref, child, selectedObjectId, depth + 1),
+        ..._buildObjectTiles(ref, child, selectedObjectId, depth + 1),
     ];
   }
 
@@ -195,6 +200,7 @@ class ObjectsAdminScreen extends ConsumerWidget {
             description: result.description,
             sortOrder: result.sortOrder,
             isActive: result.isActive,
+            actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
           );
       ref.invalidate(objectsViewDataProvider);
     } on StateError catch (error) {
@@ -211,7 +217,10 @@ class ObjectsAdminScreen extends ConsumerWidget {
     String objectId,
   ) async {
     try {
-      await ref.read(objectsRepositoryProvider).deleteObject(objectId);
+      await ref.read(objectsRepositoryProvider).deleteObject(
+            objectId,
+            actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
+          );
       ref.invalidate(objectsViewDataProvider);
     } on StateError catch (error) {
       if (!context.mounted) {
@@ -223,34 +232,24 @@ class ObjectsAdminScreen extends ConsumerWidget {
 
   String _sectionName(ObjectsViewData data, String? sectionId) {
     if (sectionId == null) {
-      return 'Не задан';
+      return 'Not set';
     }
-
-    return data.sections
-            .firstWhere(
-              (section) => section.id == sectionId,
-              orElse: () => _emptySection,
-            )
-            .name
-            .isEmpty
-        ? 'Не найден'
-        : data.sections.firstWhere((section) => section.id == sectionId).name;
+    final section = data.sections.firstWhere(
+      (candidate) => candidate.id == sectionId,
+      orElse: () => _emptySection,
+    );
+    return section.name.isEmpty ? 'Not found' : section.name;
   }
 
   String _parentName(ObjectsViewData data, String? parentId) {
     if (parentId == null) {
-      return 'Корневой объект';
+      return 'Root object';
     }
-
-    return data.allObjects
-            .firstWhere(
-              (object) => object.id == parentId,
-              orElse: () => _emptyObject,
-            )
-            .name
-            .isEmpty
-        ? 'Не найден'
-        : data.allObjects.firstWhere((object) => object.id == parentId).name;
+    final object = data.allObjects.firstWhere(
+      (candidate) => candidate.id == parentId,
+      orElse: () => _emptyObject,
+    );
+    return object.name.isEmpty ? 'Not found' : object.name;
   }
 }
 
@@ -337,12 +336,8 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
     super.initState();
     _nameController = TextEditingController(text: widget.object?.name ?? '');
     _codeController = TextEditingController(text: widget.object?.code ?? '');
-    _descriptionController = TextEditingController(
-      text: widget.object?.description ?? '',
-    );
-    _sortController = TextEditingController(
-      text: '${widget.object?.sortOrder ?? 0}',
-    );
+    _descriptionController = TextEditingController(text: widget.object?.description ?? '');
+    _sortController = TextEditingController(text: '${widget.object?.sortOrder ?? 0}');
     _type = widget.object?.type ?? objectTypeOptions.first;
     _sectionId = widget.object?.sectionId;
     _parentId = widget.object?.parentId;
@@ -365,7 +360,7 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
         .toList(growable: false);
 
     return AlertDialog(
-      title: Text(widget.object == null ? 'Новый объект' : 'Редактировать объект'),
+      title: Text(widget.object == null ? 'New object' : 'Edit object'),
       content: Form(
         key: _formKey,
         child: SizedBox(
@@ -380,20 +375,20 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
                     for (final value in objectTypeOptions)
                       DropdownMenuItem(value: value, child: Text(value)),
                   ],
-                  decoration: const InputDecoration(labelText: 'Тип'),
+                  decoration: const InputDecoration(labelText: 'Type'),
                   onChanged: (value) => setState(() => _type = value ?? _type),
                 ),
                 DropdownButtonFormField<String?>(
                   initialValue: _sectionId,
                   items: [
-                    const DropdownMenuItem<String?>(value: null, child: Text('Не задан')),
+                    const DropdownMenuItem<String?>(value: null, child: Text('Not set')),
                     for (final section in widget.sections)
                       DropdownMenuItem<String?>(
                         value: section.id,
                         child: Text(section.name),
                       ),
                   ],
-                  decoration: const InputDecoration(labelText: 'Участок'),
+                  decoration: const InputDecoration(labelText: 'Section'),
                   onChanged: (value) => setState(() => _sectionId = value),
                 ),
                 DropdownButtonFormField<String?>(
@@ -401,7 +396,7 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
                   items: [
                     const DropdownMenuItem<String?>(
                       value: null,
-                      child: Text('Корневой объект'),
+                      child: Text('Root object'),
                     ),
                     for (final object in availableParents)
                       DropdownMenuItem<String?>(
@@ -409,32 +404,32 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
                         child: Text(object.name),
                       ),
                   ],
-                  decoration: const InputDecoration(labelText: 'Родитель'),
+                  decoration: const InputDecoration(labelText: 'Parent'),
                   onChanged: (value) => setState(() => _parentId = value),
                 ),
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Название'),
+                  decoration: const InputDecoration(labelText: 'Name'),
                   validator: (value) =>
-                      value == null || value.trim().isEmpty ? 'Введите название' : null,
+                      value == null || value.trim().isEmpty ? 'Enter a name' : null,
                 ),
                 TextFormField(
                   controller: _codeController,
-                  decoration: const InputDecoration(labelText: 'Код'),
+                  decoration: const InputDecoration(labelText: 'Code'),
                 ),
                 TextFormField(
                   controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Описание'),
+                  decoration: const InputDecoration(labelText: 'Description'),
                   maxLines: 3,
                 ),
                 TextFormField(
                   controller: _sortController,
-                  decoration: const InputDecoration(labelText: 'Порядок'),
+                  decoration: const InputDecoration(labelText: 'Sort order'),
                   keyboardType: TextInputType.number,
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Активен'),
+                  title: const Text('Active'),
                   value: _isActive,
                   onChanged: (value) => setState(() => _isActive = value),
                 ),
@@ -446,14 +441,13 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Отмена'),
+          child: const Text('Cancel'),
         ),
         FilledButton(
           onPressed: () {
             if (!_formKey.currentState!.validate()) {
               return;
             }
-
             Navigator.of(context).pop(
               _ObjectFormResult(
                 type: _type,
@@ -467,7 +461,7 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
               ),
             );
           },
-          child: const Text('Сохранить'),
+          child: const Text('Save'),
         ),
       ],
     );

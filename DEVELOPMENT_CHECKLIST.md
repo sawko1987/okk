@@ -231,3 +231,14 @@
 > `flutter build windows` is currently blocked by missing ATL headers required by
 > `flutter_secure_storage_windows`.
 > `flutter build apk --release` is currently blocked by an invalid `JAVA_HOME`.
+>
+> Status note, 2026-03-17:
+> Stage 3 Windows master-data is now in progress in code, not just in planning.
+> Implemented since the previous note:
+> local login/session flow with a seeded default administrator user;
+> Windows admin sections for users, roles, audit, trash, and sync/export;
+> component image import with relative local storage paths in `component_images`;
+> audit log and trash tables wired into existing master-data CRUD;
+> local reference package export into `sync/outgoing`;
+> schema upgraded to v4.
+> `flutter analyze` and `flutter test` pass after these changes.

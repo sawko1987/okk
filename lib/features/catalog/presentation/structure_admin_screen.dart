@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../auth/data/auth_service.dart';
 import '../data/master_data_repositories.dart';
 
 final _selectedDepartmentIdProvider = StateProvider<String?>((ref) => null);
@@ -13,6 +14,7 @@ class StructureAdminScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final treeAsync = ref.watch(structureTreeProvider);
+    final canEdit = ref.watch(isAdministratorProvider);
 
     return treeAsync.when(
       data: (tree) {
@@ -38,136 +40,143 @@ class StructureAdminScreen extends ConsumerWidget {
 
         return Padding(
           padding: const EdgeInsets.all(24),
-          child: Row(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _StructureColumn(
-                  title: 'Подразделения',
-                  addLabel: 'Добавить подразделение',
-                  onAdd: () => _editDepartment(context, ref),
-                  onEdit: tree.isEmpty
-                      ? null
-                      : () => _editDepartment(
-                            context,
-                            ref,
-                            department: departmentNode.department,
-                          ),
-                  onDelete: tree.isEmpty
-                      ? null
-                      : () => _deleteDepartment(
-                            context,
-                            ref,
-                            departmentNode.department.id,
-                          ),
-                  children: tree
-                      .map(
-                        (node) => _SelectableTile(
-                          title: node.department.name,
-                          subtitle: node.department.code ?? 'Без кода',
-                          selected: node.department.id == departmentNode.department.id,
-                          onTap: () {
-                            ref
-                                .read(_selectedDepartmentIdProvider.notifier)
-                                .state = node.department.id;
-                            ref
-                                .read(_selectedWorkshopIdProvider.notifier)
-                                .state = null;
-                            ref.read(_selectedSectionIdProvider.notifier).state = null;
-                          },
-                        ),
-                      )
-                      .toList(growable: false),
+              if (!canEdit)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    'Editing is available only for the administrator role.',
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
               Expanded(
-                child: _StructureColumn(
-                  title: 'Цеха',
-                  addLabel: 'Добавить цех',
-                  onAdd: tree.isEmpty
-                      ? null
-                      : () => _editWorkshop(
-                            context,
-                            ref,
-                            departments: tree,
-                            initialDepartmentId: departmentNode.department.id,
-                          ),
-                  onEdit: departmentNode.workshops.isEmpty
-                      ? null
-                      : () => _editWorkshop(
-                            context,
-                            ref,
-                            departments: tree,
-                            workshop: workshopNode.workshop,
-                            initialDepartmentId: departmentNode.department.id,
-                          ),
-                  onDelete: departmentNode.workshops.isEmpty
-                      ? null
-                      : () => _deleteWorkshop(
-                            context,
-                            ref,
-                            workshopNode.workshop.id,
-                          ),
-                  children: departmentNode.workshops
-                      .map(
-                        (node) => _SelectableTile(
-                          title: node.workshop.name,
-                          subtitle: node.workshop.code ?? 'Без кода',
-                          selected: node.workshop.id == workshopNode.workshop.id,
-                          onTap: () {
-                            ref
-                                .read(_selectedWorkshopIdProvider.notifier)
-                                .state = node.workshop.id;
-                            ref.read(_selectedSectionIdProvider.notifier).state = null;
-                          },
-                        ),
-                      )
-                      .toList(growable: false),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _StructureColumn(
-                  title: 'Участки',
-                  addLabel: 'Добавить участок',
-                  onAdd: departmentNode.workshops.isEmpty
-                      ? null
-                      : () => _editSection(
-                            context,
-                            ref,
-                            departments: tree,
-                            initialWorkshopId: workshopNode.workshop.id,
-                          ),
-                  onEdit: workshopNode.sections.isEmpty
-                      ? null
-                      : () => _editSection(
-                            context,
-                            ref,
-                            departments: tree,
-                            section: selectedSection,
-                            initialWorkshopId: workshopNode.workshop.id,
-                          ),
-                  onDelete: workshopNode.sections.isEmpty
-                      ? null
-                      : () => _deleteSection(
-                            context,
-                            ref,
-                            selectedSection.id,
-                          ),
-                  children: workshopNode.sections
-                      .map(
-                        (section) => _SelectableTile(
-                          title: section.name,
-                          subtitle: section.code ?? 'Без кода',
-                          selected: section.id == selectedSection.id,
-                          onTap: () {
-                            ref.read(_selectedSectionIdProvider.notifier).state =
-                                section.id;
-                          },
-                        ),
-                      )
-                      .toList(growable: false),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _StructureColumn(
+                        title: 'Departments',
+                        addLabel: 'Add department',
+                        onAdd: canEdit ? () => _editDepartment(context, ref) : null,
+                        onEdit: !canEdit || tree.isEmpty
+                            ? null
+                            : () => _editDepartment(
+                                  context,
+                                  ref,
+                                  department: departmentNode.department,
+                                ),
+                        onDelete: !canEdit || tree.isEmpty
+                            ? null
+                            : () => _deleteDepartment(
+                                  context,
+                                  ref,
+                                  departmentNode.department.id,
+                                ),
+                        children: [
+                          for (final node in tree)
+                            _SelectableTile(
+                              title: node.department.name,
+                              subtitle: node.department.code ?? 'No code',
+                              selected: node.department.id == departmentNode.department.id,
+                              onTap: () {
+                                ref.read(_selectedDepartmentIdProvider.notifier).state =
+                                    node.department.id;
+                                ref.read(_selectedWorkshopIdProvider.notifier).state = null;
+                                ref.read(_selectedSectionIdProvider.notifier).state = null;
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _StructureColumn(
+                        title: 'Workshops',
+                        addLabel: 'Add workshop',
+                        onAdd: !canEdit || tree.isEmpty
+                            ? null
+                            : () => _editWorkshop(
+                                  context,
+                                  ref,
+                                  departments: tree,
+                                  initialDepartmentId: departmentNode.department.id,
+                                ),
+                        onEdit: !canEdit || departmentNode.workshops.isEmpty
+                            ? null
+                            : () => _editWorkshop(
+                                  context,
+                                  ref,
+                                  departments: tree,
+                                  workshop: workshopNode.workshop,
+                                  initialDepartmentId: departmentNode.department.id,
+                                ),
+                        onDelete: !canEdit || departmentNode.workshops.isEmpty
+                            ? null
+                            : () => _deleteWorkshop(
+                                  context,
+                                  ref,
+                                  workshopNode.workshop.id,
+                                ),
+                        children: [
+                          for (final node in departmentNode.workshops)
+                            _SelectableTile(
+                              title: node.workshop.name,
+                              subtitle: node.workshop.code ?? 'No code',
+                              selected: node.workshop.id == workshopNode.workshop.id,
+                              onTap: () {
+                                ref.read(_selectedWorkshopIdProvider.notifier).state =
+                                    node.workshop.id;
+                                ref.read(_selectedSectionIdProvider.notifier).state = null;
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _StructureColumn(
+                        title: 'Sections',
+                        addLabel: 'Add section',
+                        onAdd: !canEdit || departmentNode.workshops.isEmpty
+                            ? null
+                            : () => _editSection(
+                                  context,
+                                  ref,
+                                  departments: tree,
+                                  initialWorkshopId: workshopNode.workshop.id,
+                                ),
+                        onEdit: !canEdit || workshopNode.sections.isEmpty
+                            ? null
+                            : () => _editSection(
+                                  context,
+                                  ref,
+                                  departments: tree,
+                                  section: selectedSection,
+                                  initialWorkshopId: workshopNode.workshop.id,
+                                ),
+                        onDelete: !canEdit || workshopNode.sections.isEmpty
+                            ? null
+                            : () => _deleteSection(
+                                  context,
+                                  ref,
+                                  selectedSection.id,
+                                ),
+                        children: [
+                          for (final section in workshopNode.sections)
+                            _SelectableTile(
+                              title: section.name,
+                              subtitle: section.code ?? 'No code',
+                              selected: section.id == selectedSection.id,
+                              onTap: () {
+                                ref.read(_selectedSectionIdProvider.notifier).state =
+                                    section.id;
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -175,7 +184,7 @@ class StructureAdminScreen extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Ошибка загрузки структуры: $error')),
+      error: (error, _) => Center(child: Text('Failed to load structure: $error')),
     );
   }
 
@@ -187,7 +196,7 @@ class StructureAdminScreen extends ConsumerWidget {
     final result = await showDialog<_StructureFormResult>(
       context: context,
       builder: (context) => _NameCodeSortDialog(
-        title: department == null ? 'Новое подразделение' : 'Редактировать подразделение',
+        title: department == null ? 'New department' : 'Edit department',
         initialName: department?.name,
         initialCode: department?.code,
         initialSortOrder: department?.sortOrder ?? 0,
@@ -208,6 +217,7 @@ class StructureAdminScreen extends ConsumerWidget {
             name: result.name,
             code: result.code,
             sortOrder: result.sortOrder,
+            actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
           ),
     );
   }
@@ -222,8 +232,8 @@ class StructureAdminScreen extends ConsumerWidget {
     final result = await showDialog<_ParentFormResult>(
       context: context,
       builder: (context) => _ParentSelectionDialog(
-        title: workshop == null ? 'Новый цех' : 'Редактировать цех',
-        parentLabel: 'Подразделение',
+        title: workshop == null ? 'New workshop' : 'Edit workshop',
+        parentLabel: 'Department',
         parentOptions: [
           for (final node in departments)
             DropdownMenuItem<String>(
@@ -253,6 +263,7 @@ class StructureAdminScreen extends ConsumerWidget {
             name: result.name,
             code: result.code,
             sortOrder: result.sortOrder,
+            actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
           ),
     );
   }
@@ -267,12 +278,11 @@ class StructureAdminScreen extends ConsumerWidget {
     final workshops = [
       for (final department in departments) ...department.workshops,
     ];
-
     final result = await showDialog<_ParentFormResult>(
       context: context,
       builder: (context) => _ParentSelectionDialog(
-        title: section == null ? 'Новый участок' : 'Редактировать участок',
-        parentLabel: 'Цех',
+        title: section == null ? 'New section' : 'Edit section',
+        parentLabel: 'Workshop',
         parentOptions: [
           for (final workshopNode in workshops)
             DropdownMenuItem<String>(
@@ -302,6 +312,7 @@ class StructureAdminScreen extends ConsumerWidget {
             name: result.name,
             code: result.code,
             sortOrder: result.sortOrder,
+            actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
           ),
     );
   }
@@ -316,6 +327,7 @@ class StructureAdminScreen extends ConsumerWidget {
       ref,
       () => ref.read(enterpriseStructureRepositoryProvider).deleteDepartment(
             departmentId,
+            actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
           ),
     );
   }
@@ -330,6 +342,7 @@ class StructureAdminScreen extends ConsumerWidget {
       ref,
       () => ref.read(enterpriseStructureRepositoryProvider).deleteWorkshop(
             workshopId,
+            actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
           ),
     );
   }
@@ -344,6 +357,7 @@ class StructureAdminScreen extends ConsumerWidget {
       ref,
       () => ref.read(enterpriseStructureRepositoryProvider).deleteSection(
             sectionId,
+            actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
           ),
     );
   }
@@ -377,7 +391,7 @@ final _emptyDepartmentNode = DepartmentNode(
     deletedAt: null,
     isDeleted: false,
   ),
-  workshops: [],
+  workshops: const [],
 );
 
 final _emptyWorkshopNode = WorkshopNode(
@@ -393,7 +407,7 @@ final _emptyWorkshopNode = WorkshopNode(
     deletedAt: null,
     isDeleted: false,
   ),
-  sections: [],
+  sections: const [],
 );
 
 final _emptySection = Section(
@@ -443,7 +457,10 @@ class _StructureColumn extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
-                IconButton(onPressed: onEdit, icon: const Icon(Icons.edit_outlined)),
+                IconButton(
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_outlined),
+                ),
                 IconButton(
                   onPressed: onDelete,
                   icon: const Icon(Icons.delete_outline),
@@ -458,7 +475,7 @@ class _StructureColumn extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             if (children.isEmpty)
-              const Text('Пока пусто.')
+              const Text('Nothing here yet.')
             else
               ...children,
           ],
@@ -522,9 +539,7 @@ class _NameCodeSortDialogState extends State<_NameCodeSortDialog> {
     super.initState();
     _nameController = TextEditingController(text: widget.initialName ?? '');
     _codeController = TextEditingController(text: widget.initialCode ?? '');
-    _sortController = TextEditingController(
-      text: '${widget.initialSortOrder}',
-    );
+    _sortController = TextEditingController(text: '${widget.initialSortOrder}');
   }
 
   @override
@@ -548,17 +563,17 @@ class _NameCodeSortDialogState extends State<_NameCodeSortDialog> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Название'),
+                decoration: const InputDecoration(labelText: 'Name'),
                 validator: (value) =>
-                    value == null || value.trim().isEmpty ? 'Введите название' : null,
+                    value == null || value.trim().isEmpty ? 'Enter a name' : null,
               ),
               TextFormField(
                 controller: _codeController,
-                decoration: const InputDecoration(labelText: 'Код'),
+                decoration: const InputDecoration(labelText: 'Code'),
               ),
               TextFormField(
                 controller: _sortController,
-                decoration: const InputDecoration(labelText: 'Порядок'),
+                decoration: const InputDecoration(labelText: 'Sort order'),
                 keyboardType: TextInputType.number,
               ),
             ],
@@ -568,14 +583,13 @@ class _NameCodeSortDialogState extends State<_NameCodeSortDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Отмена'),
+          child: const Text('Cancel'),
         ),
         FilledButton(
           onPressed: () {
             if (!_formKey.currentState!.validate()) {
               return;
             }
-
             Navigator.of(context).pop(
               _StructureFormResult(
                 name: _nameController.text,
@@ -584,7 +598,7 @@ class _NameCodeSortDialogState extends State<_NameCodeSortDialog> {
               ),
             );
           },
-          child: const Text('Сохранить'),
+          child: const Text('Save'),
         ),
       ],
     );
@@ -627,9 +641,7 @@ class _ParentSelectionDialogState extends State<_ParentSelectionDialog> {
     _parentId = widget.initialParentId;
     _nameController = TextEditingController(text: widget.initialName ?? '');
     _codeController = TextEditingController(text: widget.initialCode ?? '');
-    _sortController = TextEditingController(
-      text: '${widget.initialSortOrder}',
-    );
+    _sortController = TextEditingController(text: '${widget.initialSortOrder}');
   }
 
   @override
@@ -659,17 +671,17 @@ class _ParentSelectionDialogState extends State<_ParentSelectionDialog> {
               ),
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Название'),
+                decoration: const InputDecoration(labelText: 'Name'),
                 validator: (value) =>
-                    value == null || value.trim().isEmpty ? 'Введите название' : null,
+                    value == null || value.trim().isEmpty ? 'Enter a name' : null,
               ),
               TextFormField(
                 controller: _codeController,
-                decoration: const InputDecoration(labelText: 'Код'),
+                decoration: const InputDecoration(labelText: 'Code'),
               ),
               TextFormField(
                 controller: _sortController,
-                decoration: const InputDecoration(labelText: 'Порядок'),
+                decoration: const InputDecoration(labelText: 'Sort order'),
                 keyboardType: TextInputType.number,
               ),
             ],
@@ -679,14 +691,13 @@ class _ParentSelectionDialogState extends State<_ParentSelectionDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Отмена'),
+          child: const Text('Cancel'),
         ),
         FilledButton(
           onPressed: () {
             if (!_formKey.currentState!.validate()) {
               return;
             }
-
             Navigator.of(context).pop(
               _ParentFormResult(
                 parentId: _parentId,
@@ -696,7 +707,7 @@ class _ParentSelectionDialogState extends State<_ParentSelectionDialog> {
               ),
             );
           },
-          child: const Text('Сохранить'),
+          child: const Text('Save'),
         ),
       ],
     );
