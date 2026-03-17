@@ -29,7 +29,7 @@ void main() {
     expect(syncState.schemaVersion, AppConstants.syncSchemaVersion);
   });
 
-  test('migrates schema version 1 databases to version 2', () async {
+  test('migrates schema version 1 databases to version 3', () async {
     final executor = NativeDatabase.memory(
       setup: (rawDb) {
         rawDb.execute('''
@@ -76,11 +76,14 @@ void main() {
         .customSelect(
           "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN "
           "('users', 'sync_state', 'sync_queue', 'locks', 'component_images', "
-          "'inspection_signatures', 'inspection_files')",
+          "'inspection_signatures', 'inspection_files', 'departments', "
+          "'workshops', 'sections', 'objects', 'object_relations', "
+          "'components', 'checklists', 'checklist_items', "
+          "'checklist_bindings')",
         )
         .get();
 
-    expect(stateTables, hasLength(7));
+    expect(stateTables, hasLength(16));
     final versionRow =
         await database.customSelect('PRAGMA user_version;').getSingle();
     expect(versionRow.data['user_version'], AppConstants.appSchemaVersion);

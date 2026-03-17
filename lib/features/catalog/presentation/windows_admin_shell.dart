@@ -4,10 +4,20 @@ import 'package:go_router/go_router.dart';
 
 import '../../../data/sqlite/database_provider.dart';
 import '../../../data/storage/app_paths_provider.dart';
-import '../../../ui/section_card.dart';
+import 'checklists_admin_screen.dart';
+import 'components_admin_screen.dart';
+import 'objects_admin_screen.dart';
+import 'structure_admin_screen.dart';
+import 'windows_admin_sections.dart';
+import 'windows_dashboard_screen.dart';
 
 class WindowsAdminShell extends ConsumerWidget {
-  const WindowsAdminShell({super.key});
+  const WindowsAdminShell({
+    super.key,
+    required this.section,
+  });
+
+  final WindowsAdminSection section;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,7 +26,7 @@ class WindowsAdminShell extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Windows admin shell'),
+        title: Text('Windows админка: ${section.label}'),
         actions: [
           TextButton(
             onPressed: () => context.go('/diagnostics'),
@@ -28,74 +38,47 @@ class WindowsAdminShell extends ConsumerWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            NavigationRail(
-              selectedIndex: 0,
-              destinations: const [
+      body: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NavigationRail(
+            selectedIndex: windowsAdminSections.indexOf(section),
+            labelType: NavigationRailLabelType.all,
+            onDestinationSelected: (index) {
+              context.go(windowsAdminSections[index].routePath);
+            },
+            destinations: [
+              for (final value in windowsAdminSections)
                 NavigationRailDestination(
-                  icon: Icon(Icons.dashboard_outlined),
-                  label: Text('Главная'),
+                  icon: Icon(value.icon),
+                  label: Text(value.label),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.inventory_2_outlined),
-                  label: Text('Справочники'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.sync_outlined),
-                  label: Text('Синхронизация'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.receipt_long_outlined),
-                  label: Text('Журнал'),
-                ),
-              ],
-            ),
-            const SizedBox(width: 24),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Готовность этапа 2',
-                    style: Theme.of(context).textTheme.headlineSmall,
+            ],
+          ),
+          const VerticalDivider(width: 1),
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: switch (section) {
+                WindowsAdminSection.dashboard => WindowsDashboardScreen(
+                    key: const ValueKey('dashboard'),
+                    databasePath: paths.databaseFile.path,
+                    schemaVersion: database.schemaVersion,
+                    componentsDir: paths.componentsDir.path,
+                    syncOutgoingDir: paths.syncOutgoingDir.path,
                   ),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    children: [
-                      SectionCard(
-                        title: 'SQLite',
-                        lines: [
-                          'schemaVersion: ${database.schemaVersion}',
-                          'db: ${paths.databaseFile.path}',
-                        ],
-                      ),
-                      SectionCard(
-                        title: 'Хранилище',
-                        lines: [
-                          paths.componentsDir.path,
-                          paths.syncOutgoingDir.path,
-                        ],
-                      ),
-                      const SectionCard(
-                        title: 'Shell sections',
-                        lines: [
-                          'Каталог / объекты / чек-листы',
-                          'Синхронизация / журнал / настройки',
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                WindowsAdminSection.structure =>
+                  const StructureAdminScreen(key: ValueKey('structure')),
+                WindowsAdminSection.objects =>
+                  const ObjectsAdminScreen(key: ValueKey('objects')),
+                WindowsAdminSection.components =>
+                  const ComponentsAdminScreen(key: ValueKey('components')),
+                WindowsAdminSection.checklists =>
+                  const ChecklistsAdminScreen(key: ValueKey('checklists')),
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

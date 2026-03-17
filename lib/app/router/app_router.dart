@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/platform/app_platform.dart';
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/catalog/presentation/windows_admin_sections.dart';
 import '../../features/catalog/presentation/windows_admin_shell.dart';
 import '../../features/inspections/presentation/android_inspection_shell.dart';
 import '../../features/settings/presentation/settings_screen.dart';
@@ -17,11 +18,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final appPlatform = getAppPlatform();
 
           if (appPlatform == AppPlatform.windows) {
-            return const WindowsAdminShell();
+            return const WindowsAdminShell(
+              section: WindowsAdminSection.dashboard,
+            );
           }
 
           return const AndroidInspectionShell();
         },
+      ),
+      GoRoute(
+        path: '/windows',
+        builder: (context, state) => const WindowsAdminShell(
+          section: WindowsAdminSection.dashboard,
+        ),
+      ),
+      GoRoute(
+        path: '/windows/:section',
+        builder: (context, state) => WindowsAdminShell(
+          section: sectionFromPath(state.pathParameters['section']),
+        ),
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(

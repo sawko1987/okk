@@ -5,15 +5,24 @@ import 'package:drift/native.dart';
 
 import '../../core/config/app_constants.dart';
 import 'tables/app_settings.dart';
+import 'tables/catalog_objects.dart';
+import 'tables/checklist_bindings.dart';
+import 'tables/checklist_items.dart';
+import 'tables/checklists.dart';
 import 'tables/component_images.dart';
+import 'tables/components.dart';
+import 'tables/departments.dart';
 import 'tables/device_info.dart';
 import 'tables/inspection_files.dart';
 import 'tables/inspection_signatures.dart';
 import 'tables/locks.dart';
+import 'tables/object_relations.dart';
 import 'tables/roles.dart';
+import 'tables/sections.dart';
 import 'tables/sync_queue.dart';
 import 'tables/sync_state.dart';
 import 'tables/users.dart';
+import 'tables/workshops.dart';
 
 part 'app_database.g.dart';
 
@@ -23,6 +32,15 @@ part 'app_database.g.dart';
     AppSettings,
     DeviceInfo,
     Users,
+    Departments,
+    Workshops,
+    Sections,
+    CatalogObjects,
+    ObjectRelations,
+    Components,
+    Checklists,
+    ChecklistItems,
+    ChecklistBindings,
     SyncState,
     SyncQueue,
     Locks,
@@ -54,6 +72,7 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (migrator) async {
       await migrator.createAll();
+      await _createCustomIndexes();
     },
     onUpgrade: (migrator, from, to) async {
       if (from < 2) {
@@ -65,8 +84,72 @@ class AppDatabase extends _$AppDatabase {
         await migrator.createTable(inspectionSignatures);
         await migrator.createTable(inspectionFiles);
       }
+
+      if (from < 3) {
+        await migrator.createTable(departments);
+        await migrator.createTable(workshops);
+        await migrator.createTable(sections);
+        await migrator.createTable(catalogObjects);
+        await migrator.createTable(objectRelations);
+        await migrator.createTable(components);
+        await migrator.createTable(checklists);
+        await migrator.createTable(checklistItems);
+        await migrator.createTable(checklistBindings);
+        await _createCustomIndexes();
+      }
     },
   );
+
+  Future<void> _createCustomIndexes() async {
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_users_role_id ON users (role_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_users_active ON users (is_active);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_workshops_department_id ON workshops (department_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_sections_workshop_id ON sections (workshop_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_objects_section_id ON objects (section_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_objects_parent_id ON objects (parent_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_objects_type ON objects (type);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_object_relations_parent ON object_relations (parent_object_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_object_relations_child ON object_relations (child_object_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_components_object_id ON components (object_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_component_images_component_id ON component_images (component_id);',
+    );
+    await customStatement(
+      'CREATE UNIQUE INDEX IF NOT EXISTS ux_component_images_media_key ON component_images (media_key);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_checklist_items_checklist_id ON checklist_items (checklist_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_checklist_items_component_id ON checklist_items (component_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_checklist_bindings_checklist_id ON checklist_bindings (checklist_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_checklist_bindings_target ON checklist_bindings (target_type, target_id, target_object_type);',
+    );
+  }
 
   Future<void> ensureBootstrapData({
     required String deviceId,
