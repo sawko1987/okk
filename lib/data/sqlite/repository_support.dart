@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:drift/drift.dart' as drift;
 
+import '../../core/auth/app_permissions.dart';
 import 'app_database.dart';
 
 String nullableText(String? value) {
@@ -105,4 +106,38 @@ String pinHash(String pin) {
   }
 
   return hash.toRadixString(16).padLeft(8, '0');
+}
+
+Future<String?> loadUserRoleCode(AppDatabase db, String userId) async {
+  final user = await (db.select(db.users)
+        ..where(
+          (tbl) =>
+              tbl.id.equals(userId) &
+              tbl.isDeleted.equals(false) &
+              tbl.isActive.equals(true),
+        ))
+      .getSingleOrNull();
+  if (user == null) {
+    return null;
+  }
+
+  final role = await (db.select(db.roles)..where((tbl) => tbl.id.equals(user.roleId)))
+      .getSingleOrNull();
+  return role?.code;
+}
+
+Future<void> requireUserCapability(
+  AppDatabase db, {
+  required String? actorUserId,
+  required AppCapability capability,
+  required String deniedMessage,
+}) async {
+  if (actorUserId == null) {
+    return;
+  }
+
+  final roleCode = await loadUserRoleCode(db, actorUserId);
+  if (!roleHasCapability(roleCode, capability)) {
+    throw StateError(deniedMessage);
+  }
 }

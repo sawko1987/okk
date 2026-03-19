@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/auth/app_permissions.dart';
 import '../../../core/platform/app_platform.dart';
 import '../../../data/sync/sync_service.dart';
 import '../../auth/data/auth_service.dart';
@@ -53,8 +54,12 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
     final deviceAsync = ref.watch(deviceInfoProvider);
     final syncDiagnosticsAsync = ref.watch(syncDiagnosticsProvider);
     final auditEntriesAsync = ref.watch(auditEntriesProvider);
-    final actorUserId = ref.watch(activeSessionProvider).valueOrNull?.userId;
-    final canEdit = ref.watch(isAdministratorProvider);
+    final session = ref.watch(activeSessionProvider).valueOrNull;
+    final actorUserId = session?.userId;
+    final canEdit = roleHasCapability(
+      session?.roleCode,
+      AppCapability.manageSyncSettings,
+    );
 
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -76,6 +81,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                     labelText: 'Yandex Disk token',
                   ),
                   obscureText: true,
+                  enabled: canEdit,
                 ),
                 const SizedBox(height: 12),
                 Wrap(
@@ -117,6 +123,8 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                 'last success: ${diagnostics.lastSuccessAt ?? 'n/a'}\n'
                 'last conflict: ${diagnostics.lastConflictAt ?? 'n/a'}\n'
                 'last error: ${diagnostics.lastError ?? 'n/a'}\n'
+                'configured: ${diagnostics.transportConfigured ? 'yes' : 'no'}\n'
+                'connected: ${diagnostics.yandexDiskConnected ? 'yes' : 'no'}\n'
                 'outgoing pending: ${diagnostics.pendingOutgoingCount}\n'
                 'incoming pending: ${diagnostics.pendingIncomingCount}\n'
                 'failed: ${diagnostics.failedQueueCount}\n'
@@ -156,7 +164,8 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                   (entry) =>
                       entry.entry.actionType.startsWith('sync.') &&
                       (entry.entry.resultStatus == 'error' ||
-                          entry.entry.resultStatus == 'conflict'),
+                          entry.entry.resultStatus == 'conflict' ||
+                          entry.entry.resultStatus == 'partial'),
                 )
                 .take(5)
                 .toList(growable: false);
@@ -215,9 +224,12 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
   }
 
   Future<void> _saveToken() async {
-    await ref
-        .read(secureSettingsStoreProvider)
-        .writeYandexDiskToken(_tokenController.text.trim());
+    final value = _tokenController.text.trim();
+    if (value.isEmpty) {
+      await ref.read(secureSettingsStoreProvider).deleteYandexDiskToken();
+    } else {
+      await ref.read(secureSettingsStoreProvider).writeYandexDiskToken(value);
+    }
     ref.invalidate(syncDiagnosticsProvider);
     if (!mounted) {
       return;

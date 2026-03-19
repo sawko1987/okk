@@ -254,3 +254,11 @@
 > readonly completed results, and queued inspection result packages in `sync/outgoing`;
 > schema upgraded to v5.
 > `flutter analyze` and `flutter test` pass after these changes.
+
+## 17. Update 2026-03-19: Android Workflow Screens
+- [x] Added an explicit Android mode screen instead of relying only on the tab shell
+- [x] Added separate Android routes/screens for workshop, product, target, and component selection
+- [x] Added a dedicated Android sync screen with manual sync entrypoint and queue diagnostics
+- [x] Added dedicated Android drafts and results screens with route-based navigation to inspection detail
+- [x] Added repository support for workshop/product/component selection data without changing DB schema or sync contracts
+- [x] Added automated coverage for the Android selection chain `workshop -> product -> target -> component`

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide Component;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
@@ -40,6 +40,56 @@ class InspectionTargetOption {
   final String targetName;
   final String targetType;
   final int depth;
+}
+
+class InspectionWorkshopOption {
+  const InspectionWorkshopOption({
+    required this.workshopId,
+    required this.workshopName,
+    required this.departmentName,
+    required this.productCount,
+  });
+
+  final String workshopId;
+  final String workshopName;
+  final String? departmentName;
+  final int productCount;
+}
+
+class InspectionProductSelectionOption {
+  const InspectionProductSelectionOption({
+    required this.productObjectId,
+    required this.productName,
+    required this.workshopId,
+    required this.sectionId,
+    required this.sectionName,
+  });
+
+  final String productObjectId;
+  final String productName;
+  final String workshopId;
+  final String sectionId;
+  final String sectionName;
+}
+
+class InspectionComponentSummary {
+  const InspectionComponentSummary({
+    required this.componentId,
+    required this.objectId,
+    required this.name,
+    required this.isRequired,
+    required this.imagePaths,
+    this.code,
+    this.description,
+  });
+
+  final String componentId;
+  final String objectId;
+  final String name;
+  final String? code;
+  final String? description;
+  final bool isRequired;
+  final List<String> imagePaths;
 }
 
 class InspectionDraftSummary {
@@ -265,6 +315,20 @@ final inspectionsRepositoryProvider = Provider<InspectionsRepository>(
   ),
 );
 
+final inspectionWorkshopsProvider = FutureProvider<List<InspectionWorkshopOption>>(
+  (ref) => ref.watch(inspectionsRepositoryProvider).listWorkshopsWithProducts(),
+);
+
+final inspectionProductsByWorkshopProvider =
+    FutureProvider.family<List<InspectionProductSelectionOption>, String>((
+      ref,
+      workshopId,
+    ) {
+      return ref.watch(inspectionsRepositoryProvider).listProductsForWorkshop(
+            workshopId,
+          );
+    });
+
 final inspectionProductsProvider = FutureProvider<List<InspectionProductOption>>(
   (ref) => ref.watch(inspectionsRepositoryProvider).listProducts(),
 );
@@ -273,6 +337,23 @@ final inspectionTargetsProvider =
     FutureProvider.family<List<InspectionTargetOption>, String>((ref, productId) {
       return ref.watch(inspectionsRepositoryProvider).listSelectableInspectionTargets(
             productId,
+          );
+    });
+
+final inspectionComponentsProvider =
+    FutureProvider.family<List<InspectionComponentSummary>, String>((
+      ref,
+      targetObjectId,
+    ) {
+      return ref.watch(inspectionsRepositoryProvider).listComponentsForTarget(
+            targetObjectId,
+          );
+    });
+
+final inspectionComponentProvider =
+    FutureProvider.family<InspectionComponentSummary?, String>((ref, componentId) {
+      return ref.watch(inspectionsRepositoryProvider).loadComponentSummary(
+            componentId,
           );
     });
 
@@ -306,6 +387,139 @@ class InspectionsRepository {
 
   final AppDatabase _db;
   final AppPaths _paths;
+
+  Future<List<InspectionWorkshopOption>> listWorkshopsWithProducts() async {
+    final departments = await (_db.select(_db.departments)
+          ..where((tbl) => tbl.isDeleted.equals(false))
+          ..orderBy([
+            (tbl) => OrderingTerm.asc(tbl.sortOrder),
+            (tbl) => OrderingTerm.asc(tbl.name),
+          ]))
+        .get();
+    final workshops = await (_db.select(_db.workshops)
+          ..where((tbl) => tbl.isDeleted.equals(false))
+          ..orderBy([
+            (tbl) => OrderingTerm.asc(tbl.sortOrder),
+            (tbl) => OrderingTerm.asc(tbl.name),
+          ]))
+        .get();
+    final sections = await (_db.select(_db.sections)
+          ..where((tbl) => tbl.isDeleted.equals(false)))
+        .get();
+    final products = await (_db.select(_db.catalogObjects)
+          ..where(
+            (tbl) =>
+                tbl.isDeleted.equals(false) &
+                tbl.isActive.equals(true) &
+                tbl.type.equals('product') &
+                tbl.sectionId.isNotNull(),
+          ))
+        .get();
+
+    final departmentsById = {
+      for (final department in departments) department.id: department,
+    };
+    final sectionsById = {for (final section in sections) section.id: section};
+    final productCountsByWorkshop = <String, int>{};
+    for (final product in products) {
+      final sectionId = product.sectionId;
+      if (sectionId == null) {
+        continue;
+      }
+      final workshopId = sectionsById[sectionId]?.workshopId;
+      if (workshopId == null) {
+        continue;
+      }
+      productCountsByWorkshop.update(
+        workshopId,
+        (value) => value + 1,
+        ifAbsent: () => 1,
+      );
+    }
+
+    return workshops
+        .where((workshop) => (productCountsByWorkshop[workshop.id] ?? 0) > 0)
+        .map(
+          (workshop) => InspectionWorkshopOption(
+            workshopId: workshop.id,
+            workshopName: workshop.name,
+            departmentName: departmentsById[workshop.departmentId]?.name,
+            productCount: productCountsByWorkshop[workshop.id] ?? 0,
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  Future<List<InspectionProductSelectionOption>> listProductsForWorkshop(
+    String workshopId,
+  ) async {
+    if (workshopId.trim().isEmpty) {
+      return const [];
+    }
+
+    final sections = await (_db.select(_db.sections)
+          ..where(
+            (tbl) =>
+                tbl.isDeleted.equals(false) & tbl.workshopId.equals(workshopId),
+          )
+          ..orderBy([
+            (tbl) => OrderingTerm.asc(tbl.sortOrder),
+            (tbl) => OrderingTerm.asc(tbl.name),
+          ]))
+        .get();
+    if (sections.isEmpty) {
+      return const [];
+    }
+
+    final sectionsById = {for (final section in sections) section.id: section};
+    final products = await (_db.select(_db.catalogObjects)
+          ..where(
+            (tbl) =>
+                tbl.isDeleted.equals(false) &
+                tbl.isActive.equals(true) &
+                tbl.type.equals('product') &
+                tbl.sectionId.isIn(sectionsById.keys),
+          )
+          ..orderBy([
+            (tbl) => OrderingTerm.asc(tbl.sortOrder),
+            (tbl) => OrderingTerm.asc(tbl.name),
+          ]))
+        .get();
+
+    final sortedProducts = products.toList(growable: false)
+      ..sort((left, right) {
+        final leftSection = sectionsById[left.sectionId];
+        final rightSection = sectionsById[right.sectionId];
+        final sectionOrder =
+            (leftSection?.sortOrder ?? 0).compareTo(rightSection?.sortOrder ?? 0);
+        if (sectionOrder != 0) {
+          return sectionOrder;
+        }
+        final sectionNameOrder =
+            (leftSection?.name ?? '').compareTo(rightSection?.name ?? '');
+        if (sectionNameOrder != 0) {
+          return sectionNameOrder;
+        }
+        final productOrder = left.sortOrder.compareTo(right.sortOrder);
+        if (productOrder != 0) {
+          return productOrder;
+        }
+        return left.name.compareTo(right.name);
+      });
+
+    return sortedProducts
+        .where((product) => product.sectionId != null)
+        .map(
+          (product) => InspectionProductSelectionOption(
+            productObjectId: product.id,
+            productName: product.name,
+            workshopId: workshopId,
+            sectionId: product.sectionId!,
+            sectionName: sectionsById[product.sectionId]!.name,
+          ),
+        )
+        .toList(growable: false);
+  }
 
   Future<List<InspectionProductOption>> listProducts() async {
     final products = await (_db.select(_db.catalogObjects)
@@ -380,6 +594,50 @@ class InspectionsRepository {
 
     walk(product, 0);
     return targets;
+  }
+
+  Future<List<InspectionComponentSummary>> listComponentsForTarget(
+    String targetObjectId,
+  ) async {
+    if (targetObjectId.trim().isEmpty) {
+      return const [];
+    }
+
+    final components = await (_db.select(_db.components)
+          ..where(
+            (tbl) =>
+                tbl.objectId.equals(targetObjectId) & tbl.isDeleted.equals(false),
+          )
+          ..orderBy([
+            (tbl) => OrderingTerm.asc(tbl.sortOrder),
+            (tbl) => OrderingTerm.asc(tbl.name),
+          ]))
+        .get();
+    if (components.isEmpty) {
+      return const [];
+    }
+
+    final imagePaths = await _loadComponentImagePaths(
+      components.map((component) => component.id),
+    );
+    return components
+        .map((component) => _buildComponentSummary(component, imagePaths))
+        .toList(growable: false);
+  }
+
+  Future<InspectionComponentSummary?> loadComponentSummary(String componentId) async {
+    final component = await (_db.select(_db.components)
+          ..where(
+            (tbl) =>
+                tbl.id.equals(componentId) & tbl.isDeleted.equals(false),
+          ))
+        .getSingleOrNull();
+    if (component == null) {
+      return null;
+    }
+
+    final imagePaths = await _loadComponentImagePaths([component.id]);
+    return _buildComponentSummary(component, imagePaths);
   }
 
   Future<List<InspectionDraftSummary>> listDrafts({
@@ -1177,6 +1435,21 @@ class InspectionsRepository {
           ),
         )
         .toList(growable: false);
+  }
+
+  InspectionComponentSummary _buildComponentSummary(
+    Component component,
+    Map<String, List<String>> imagePaths,
+  ) {
+    return InspectionComponentSummary(
+      componentId: component.id,
+      objectId: component.objectId,
+      name: component.name,
+      code: nullableField(component.code),
+      description: nullableField(component.description),
+      isRequired: component.isRequired,
+      imagePaths: imagePaths[component.id] ?? const [],
+    );
   }
 
   InspectionPdfInfo? _loadPdfInfo(Inspection inspection) {

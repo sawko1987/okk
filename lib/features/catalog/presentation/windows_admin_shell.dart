@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/auth/app_permissions.dart';
 import '../../../core/platform/app_platform.dart';
 import '../../../data/sync/sync_service.dart';
 import '../../admin/presentation/audit_log_screen.dart';
@@ -39,7 +40,16 @@ class _WindowsAdminShellState extends ConsumerState<WindowsAdminShell> {
     final paths = ref.watch(appPathsProvider);
     final database = ref.watch(appDatabaseProvider);
     final session = ref.watch(activeSessionProvider).valueOrNull;
-    if (!_startupSyncTriggered && session != null) {
+    final availableSections =
+        roleHasCapability(session?.roleCode, AppCapability.manageCatalog)
+            ? windowsAdminSections
+            : const [WindowsAdminSection.dashboard];
+    final effectiveSection = availableSections.contains(widget.section)
+        ? widget.section
+        : WindowsAdminSection.dashboard;
+    if (!_startupSyncTriggered &&
+        session != null &&
+        roleHasCapability(session.roleCode, AppCapability.manageSync)) {
       _startupSyncTriggered = true;
       Future<void>.microtask(
         () => ref.read(syncServiceProvider).syncOnStartup(
@@ -51,7 +61,7 @@ class _WindowsAdminShellState extends ConsumerState<WindowsAdminShell> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Windows admin: ${widget.section.label}'),
+        title: Text('Windows admin: ${effectiveSection.label}'),
         actions: [
           if (session != null)
             Center(
@@ -85,13 +95,13 @@ class _WindowsAdminShellState extends ConsumerState<WindowsAdminShell> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           NavigationRail(
-            selectedIndex: windowsAdminSections.indexOf(widget.section),
+            selectedIndex: availableSections.indexOf(effectiveSection),
             labelType: NavigationRailLabelType.all,
             onDestinationSelected: (index) {
-              context.go(windowsAdminSections[index].routePath);
+              context.go(availableSections[index].routePath);
             },
             destinations: [
-              for (final value in windowsAdminSections)
+              for (final value in availableSections)
                 NavigationRailDestination(
                   icon: Icon(value.icon),
                   label: Text(value.label),
@@ -102,7 +112,7 @@ class _WindowsAdminShellState extends ConsumerState<WindowsAdminShell> {
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 180),
-              child: switch (widget.section) {
+              child: switch (effectiveSection) {
                 WindowsAdminSection.dashboard => WindowsDashboardScreen(
                     key: const ValueKey('dashboard'),
                     databasePath: paths.databaseFile.path,

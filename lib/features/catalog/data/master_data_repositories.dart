@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:drift/drift.dart' hide Component;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/auth/app_permissions.dart';
 import '../../../data/sqlite/app_database.dart';
 import '../../../data/sqlite/database_provider.dart';
 import '../../../data/sqlite/repository_support.dart';
@@ -251,6 +252,12 @@ class EnterpriseStructureRepository {
     required int sortOrder,
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify enterprise structure.',
+    );
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
 
@@ -300,6 +307,12 @@ class EnterpriseStructureRepository {
   }
 
   Future<void> deleteDepartment(String id, {String? actorUserId}) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify enterprise structure.',
+    );
     final activeWorkshops = await (_db.select(_db.workshops)
           ..where(
             (tbl) => tbl.departmentId.equals(id) & tbl.isDeleted.equals(false),
@@ -348,6 +361,12 @@ class EnterpriseStructureRepository {
     required int sortOrder,
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify enterprise structure.',
+    );
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
 
@@ -399,6 +418,12 @@ class EnterpriseStructureRepository {
   }
 
   Future<void> deleteWorkshop(String id, {String? actorUserId}) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify enterprise structure.',
+    );
     final activeSections = await (_db.select(_db.sections)
           ..where(
             (tbl) => tbl.workshopId.equals(id) & tbl.isDeleted.equals(false),
@@ -452,6 +477,12 @@ class EnterpriseStructureRepository {
     required int sortOrder,
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify enterprise structure.',
+    );
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
 
@@ -503,6 +534,12 @@ class EnterpriseStructureRepository {
   }
 
   Future<void> deleteSection(String id, {String? actorUserId}) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify enterprise structure.',
+    );
     final activeObjects = await (_db.select(_db.catalogObjects)
           ..where(
             (tbl) => tbl.sectionId.equals(id) & tbl.isDeleted.equals(false),
@@ -629,6 +666,12 @@ class ObjectsRepository {
     required bool isActive,
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify catalog objects.',
+    );
     final now = _nowIso();
     final cleanedSectionId = _nullableText(sectionId);
     final cleanedParentId = _nullableText(parentId);
@@ -717,6 +760,12 @@ class ObjectsRepository {
   }
 
   Future<void> deleteObject(String id, {String? actorUserId}) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify catalog objects.',
+    );
     final children = await (_db.select(_db.catalogObjects)
           ..where(
             (tbl) => tbl.parentId.equals(id) & tbl.isDeleted.equals(false),
@@ -895,6 +944,12 @@ class ComponentsRepository {
     required bool isRequired,
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify components.',
+    );
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
     final cleanedDescription = _nullableText(description);
@@ -951,6 +1006,12 @@ class ComponentsRepository {
   }
 
   Future<void> deleteComponent(String id, {String? actorUserId}) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify components.',
+    );
     final checklistItems = await (_db.select(_db.checklistItems)
           ..where(
             (tbl) => tbl.componentId.equals(id) & tbl.isDeleted.equals(false),
@@ -1081,6 +1142,12 @@ class ChecklistsRepository {
     required bool isActive,
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify checklists.',
+    );
     final now = _nowIso();
     final cleanedDescription = _nullableText(description);
 
@@ -1131,6 +1198,12 @@ class ChecklistsRepository {
   }
 
   Future<void> deleteChecklist(String id, {String? actorUserId}) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify checklists.',
+    );
     final checklist = await _getChecklist(id);
     final now = _nowIso();
 
@@ -1212,6 +1285,12 @@ class ChecklistsRepository {
     required int sortOrder,
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify checklist items.',
+    );
     final now = _nowIso();
     final cleanedComponentId = _nullableText(componentId);
     final cleanedDescription = _nullableText(description);
@@ -1274,6 +1353,12 @@ class ChecklistsRepository {
   }
 
   Future<void> deleteChecklistItem(String id, {String? actorUserId}) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify checklist items.',
+    );
     final existing = await _getChecklistItem(id);
     final now = _nowIso();
     await (_db.update(_db.checklistItems)..where((tbl) => tbl.id.equals(id))).write(
@@ -1318,6 +1403,12 @@ class ChecklistsRepository {
     required bool isRequired,
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify checklist bindings.',
+    );
     final now = _nowIso();
     final cleanedTargetId = _nullableText(targetId);
     final cleanedTargetObjectType = _nullableText(targetObjectType);
@@ -1387,6 +1478,12 @@ class ChecklistsRepository {
   }
 
   Future<void> deleteChecklistBinding(String id, {String? actorUserId}) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify checklist bindings.',
+    );
     final existing = await _getChecklistBinding(id);
     final now = _nowIso();
     await (_db.update(_db.checklistBindings)

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:okk_qc_app/core/storage/app_paths.dart';
@@ -11,6 +12,7 @@ void main() {
   late AppDatabase database;
   late AppPaths paths;
   late Directory tempRoot;
+  late EnterpriseStructureRepository enterpriseStructureRepository;
   late ObjectsRepository objectsRepository;
   late ComponentsRepository componentsRepository;
   late ChecklistsRepository checklistsRepository;
@@ -22,6 +24,7 @@ void main() {
     await paths.ensureCreated();
 
     database = AppDatabase.forTesting(NativeDatabase.memory());
+    enterpriseStructureRepository = EnterpriseStructureRepository(database);
     objectsRepository = ObjectsRepository(database);
     componentsRepository = ComponentsRepository(database);
     checklistsRepository = ChecklistsRepository(database);
@@ -41,6 +44,108 @@ void main() {
     if (await tempRoot.exists()) {
       await tempRoot.delete(recursive: true);
     }
+  });
+
+  test('lists workshops, products, targets, and component cards for Android selection flow',
+      () async {
+    await enterpriseStructureRepository.saveDepartment(
+      name: 'Production',
+      sortOrder: 1,
+      actorUserId: 'user-default-admin',
+    );
+    final department = (await database.select(database.departments).get()).single;
+
+    await enterpriseStructureRepository.saveWorkshop(
+      departmentId: department.id,
+      name: 'Assembly',
+      sortOrder: 1,
+      actorUserId: 'user-default-admin',
+    );
+    final workshop = (await database.select(database.workshops).get()).single;
+
+    await enterpriseStructureRepository.saveSection(
+      workshopId: workshop.id,
+      name: 'Line 1',
+      sortOrder: 1,
+      actorUserId: 'user-default-admin',
+    );
+    final section = (await database.select(database.sections).get()).single;
+
+    await objectsRepository.saveObject(
+      type: 'product',
+      sectionId: section.id,
+      name: 'Pump A',
+      sortOrder: 1,
+      isActive: true,
+      actorUserId: 'user-default-admin',
+    );
+    final product = (await objectsRepository.listActiveObjects())
+        .firstWhere((item) => item.type == 'product');
+
+    await objectsRepository.saveObject(
+      type: 'machine',
+      sectionId: section.id,
+      parentId: product.id,
+      name: 'Pump housing',
+      sortOrder: 2,
+      isActive: true,
+      actorUserId: 'user-default-admin',
+    );
+    final machine = (await objectsRepository.listActiveObjects())
+        .firstWhere((item) => item.parentId == product.id);
+
+    await componentsRepository.saveComponent(
+      objectId: machine.id,
+      name: 'Bearing',
+      sortOrder: 1,
+      isRequired: true,
+      actorUserId: 'user-default-admin',
+    );
+    final component = (await componentsRepository.listByObject(machine.id)).single;
+
+    final componentDir =
+        Directory(paths.resolveRelativePath('media/components/${component.id}'));
+    await componentDir.create(recursive: true);
+    final imageFile = File('${componentDir.path}${Platform.pathSeparator}bearing.png');
+    await imageFile.writeAsBytes(const [1, 2, 3, 4], flush: true);
+    final now = DateTime.now().toUtc().toIso8601String();
+    final relativeImagePath = paths.componentImageRelativePath(
+      component.id,
+      'bearing.png',
+    );
+    await database.into(database.componentImages).insert(
+          ComponentImagesCompanion.insert(
+            id: 'component-image-1',
+            componentId: component.id,
+            fileName: 'bearing.png',
+            mediaKey: 'bearing-media-key',
+            checksum: 'checksum-bearing',
+            mimeType: 'image/png',
+            createdAt: now,
+            updatedAt: now,
+            localPath: Value(relativeImagePath),
+            sortOrder: const Value(0),
+          ),
+        );
+
+    final workshops = await inspectionsRepository.listWorkshopsWithProducts();
+    expect(workshops, hasLength(1));
+    expect(workshops.single.workshopId, workshop.id);
+    expect(workshops.single.productCount, 1);
+
+    final products = await inspectionsRepository.listProductsForWorkshop(workshop.id);
+    expect(products, hasLength(1));
+    expect(products.single.productObjectId, product.id);
+    expect(products.single.sectionName, 'Line 1');
+
+    final targets = await inspectionsRepository.listSelectableInspectionTargets(product.id);
+    expect(targets.map((item) => item.targetObjectId), contains(machine.id));
+
+    final components = await inspectionsRepository.listComponentsForTarget(machine.id);
+    expect(components, hasLength(1));
+    expect(components.single.componentId, component.id);
+    expect(components.single.imagePaths, hasLength(1));
+    expect(components.single.imagePaths.single, endsWith('bearing.png'));
   });
 
   test('starts draft, resolves checklist bindings, and resumes existing draft', () async {

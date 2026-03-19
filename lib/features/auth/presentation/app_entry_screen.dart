@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/platform/app_platform.dart';
 import '../../catalog/presentation/windows_admin_sections.dart';
 import '../../catalog/presentation/windows_admin_shell.dart';
-import '../../inspections/presentation/android_inspection_shell.dart';
+import '../../inspections/presentation/android_workflow_screens.dart';
 import '../data/auth_service.dart';
 import 'login_screen.dart';
 
@@ -22,7 +22,7 @@ class AppEntryScreen extends ConsumerWidget {
         }
 
         return switch (platform) {
-          AppPlatform.android => const AndroidInspectionShell(),
+          AppPlatform.android => const AndroidModeScreen(),
           AppPlatform.windows => const WindowsAdminShell(
               section: WindowsAdminSection.dashboard,
             ),

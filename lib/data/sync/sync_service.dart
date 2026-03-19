@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
 import '../../app/bootstrap/bootstrap_data.dart';
+import '../../core/auth/app_permissions.dart';
 import '../../core/config/app_constants.dart';
 import '../../core/logging/app_logger.dart';
 import '../../core/platform/app_platform.dart';
@@ -35,6 +36,7 @@ class SyncDiagnosticsSnapshot {
     required this.pendingIncomingCount,
     required this.failedQueueCount,
     required this.conflictCount,
+    required this.transportConfigured,
     required this.yandexDiskConnected,
   });
 
@@ -51,6 +53,7 @@ class SyncDiagnosticsSnapshot {
   final int pendingIncomingCount;
   final int failedQueueCount;
   final int conflictCount;
+  final bool transportConfigured;
   final bool yandexDiskConnected;
 }
 
@@ -190,6 +193,10 @@ class SyncService {
     required AppPlatform platform,
     String? actorUserId,
   }) async {
+    await _ensureManualSyncAllowed(
+      platform: platform,
+      actorUserId: actorUserId,
+    );
     await recordAudit(
       _db,
       actionType: 'sync.run.start',
@@ -278,6 +285,12 @@ class SyncService {
   Future<ReferencePackageResult> publishReferencePackage({
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageSync,
+      deniedMessage: 'Only administrators can publish reference packages.',
+    );
     await _ensureConfiguredTransport();
     final result = await _referencePackageRepository.exportPackage(
       actorUserId: actorUserId,
@@ -290,6 +303,12 @@ class SyncService {
   Future<InspectionDraftDetail> startInspectionDraft({
     required InspectionStartRequest request,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: request.userId,
+      capability: AppCapability.startInspection,
+      deniedMessage: 'This role cannot start inspections.',
+    );
     var lockAcquired = false;
     try {
       await _runBestEffortAndroidSync(actorUserId: request.userId);
@@ -313,6 +332,12 @@ class SyncService {
     required String inspectionId,
     required String actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.completeInspection,
+      deniedMessage: 'This role cannot complete inspections.',
+    );
     final completion = await _inspectionsRepository.completeInspection(
       inspectionId: inspectionId,
       actorUserId: actorUserId,
@@ -331,6 +356,7 @@ class SyncService {
   Future<SyncDiagnosticsSnapshot> loadDiagnostics() async {
     final device = await _db.select(_db.deviceInfo).getSingleOrNull();
     final syncState = await _loadSyncState();
+    final transportConfigured = await _transport.isConfigured();
     final pendingOutgoingExpression = _db.syncQueue.id.count();
     final pendingOutgoing = await (_db.selectOnly(_db.syncQueue)
           ..addColumns([pendingOutgoingExpression])
@@ -384,6 +410,7 @@ class SyncService {
           pendingIncoming.read(pendingIncomingExpression) ?? 0,
       failedQueueCount: failed.read(failedExpression) ?? 0,
       conflictCount: conflicts.read(conflictExpression) ?? 0,
+      transportConfigured: transportConfigured,
       yandexDiskConnected: device?.yandexDiskConnected ?? false,
     );
   }
@@ -1731,6 +1758,28 @@ class SyncService {
     if (!await _transport.isConfigured()) {
       throw const SyncTransportException('Yandex Disk token is not configured.');
     }
+  }
+
+  Future<void> _ensureManualSyncAllowed({
+    required AppPlatform platform,
+    required String? actorUserId,
+  }) async {
+    final capability = switch (platform) {
+      AppPlatform.windows => AppCapability.manageSync,
+      AppPlatform.android => AppCapability.runSync,
+      AppPlatform.unsupported => AppCapability.runSync,
+    };
+    final deniedMessage = switch (platform) {
+      AppPlatform.windows => 'Only administrators can run Windows sync.',
+      AppPlatform.android => 'This role cannot run Android sync.',
+      AppPlatform.unsupported => 'Sync is not supported on this platform.',
+    };
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: capability,
+      deniedMessage: deniedMessage,
+    );
   }
 
   Future<Map<String, dynamic>> _readJsonFile(File file) async {

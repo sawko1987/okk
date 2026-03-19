@@ -139,6 +139,10 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
                 value: '${diagnostics.conflictCount}',
               ),
               _DiagnosticTile(
+                title: 'Yandex Disk token configured',
+                value: diagnostics.transportConfigured ? 'yes' : 'no',
+              ),
+              _DiagnosticTile(
                 title: 'Yandex Disk connected',
                 value: diagnostics.yandexDiskConnected ? 'yes' : 'no',
               ),

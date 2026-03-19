@@ -5,6 +5,7 @@ import 'package:drift/drift.dart' hide Component;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
+import '../../../core/auth/app_permissions.dart';
 import '../../../core/utils/checksum.dart';
 import '../../../core/storage/app_paths.dart';
 import '../../../data/sqlite/app_database.dart';
@@ -159,6 +160,12 @@ class UsersRepository {
     String? pin,
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageUsers,
+      deniedMessage: 'Only administrators can manage users.',
+    );
     final now = nowIso();
     final cleanedShortName = nullableField(shortName) ?? firstWords(fullName);
     final cleanedPin = nullableField(pin);
@@ -228,6 +235,12 @@ class UsersRepository {
     String id, {
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageUsers,
+      deniedMessage: 'Only administrators can manage users.',
+    );
     final existing = await (_db.select(_db.users)..where((tbl) => tbl.id.equals(id)))
         .getSingle();
     final now = nowIso();
@@ -290,6 +303,12 @@ class ComponentImagesRepository {
     required List<String> sourcePaths,
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify component media.',
+    );
     final sanitizedPaths = sourcePaths
         .map((path) => path.trim())
         .where((path) => path.isNotEmpty)
@@ -348,6 +367,12 @@ class ComponentImagesRepository {
     String imageId, {
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageCatalog,
+      deniedMessage: 'Only administrators can modify component media.',
+    );
     final existing = await (_db.select(_db.componentImages)
           ..where((tbl) => tbl.id.equals(imageId)))
         .getSingle();
@@ -473,6 +498,12 @@ class TrashRepository {
     String trashId, {
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageTrash,
+      deniedMessage: 'Only administrators can restore items from trash.',
+    );
     final trashEntry = await (_db.select(_db.trashBin)
           ..where((tbl) => tbl.id.equals(trashId)))
         .getSingle();
@@ -565,6 +596,12 @@ class ReferencePackageRepository {
   Future<ReferencePackageResult> exportPackage({
     String? actorUserId,
   }) async {
+    await requireUserCapability(
+      _db,
+      actorUserId: actorUserId,
+      capability: AppCapability.manageSync,
+      deniedMessage: 'Only administrators can publish reference packages.',
+    );
     final packageId = generateId('reference');
     final exportDir = Directory(
       p.join(_paths.syncOutgoingDir.path, 'reference_$packageId'),

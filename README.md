@@ -13,6 +13,7 @@ The repository is now beyond foundation and spans Stage 3 Windows master-data, S
 - Windows admin sections for structure, objects, components, checklists, users, roles, audit, trash, and sync/export
 - component image import into local `media/components`
 - local reference package export into `sync/outgoing`
+- Android route-based workflow with explicit mode, workshop, product, target, component, drafts, results, sync, settings, and diagnostics screens
 - Android draft/result workflow with product-target selection, draft answers, local signatures, PDF generation, and queued result packages
 - Sync v1 orchestration with startup/manual sync, Yandex Disk transport, remote package upload/download, reference import on Android, result import on Windows, basic remote product locks, and best-effort Android pre/post sync around inspections
 - expanded diagnostics for pending/failed/conflict sync states on Windows and Android

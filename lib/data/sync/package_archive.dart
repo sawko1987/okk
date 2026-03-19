@@ -37,7 +37,13 @@ class PackageArchive {
     }
     await destinationDirectory.create(recursive: true);
 
-    extractFileToDisk(sourceFile.path, destinationDirectory.path);
+    final input = InputFileStream(sourceFile.path);
+    try {
+      final archive = ZipDecoder().decodeBuffer(input);
+      await extractArchiveToDisk(archive, destinationDirectory.path);
+    } finally {
+      input.close();
+    }
     return destinationDirectory;
   }
 }
