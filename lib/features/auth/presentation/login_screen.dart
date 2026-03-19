@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/platform/app_platform.dart';
 import '../data/auth_service.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -105,7 +106,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (!context.mounted) {
         return;
       }
-      context.go('/windows');
+      context.go(getAppPlatform() == AppPlatform.windows ? '/windows' : '/');
     } on StateError catch (error) {
       if (!context.mounted) {
         return;

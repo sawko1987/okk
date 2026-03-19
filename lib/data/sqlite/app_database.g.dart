@@ -11610,6 +11610,1606 @@ class ComponentImagesCompanion extends UpdateCompanion<ComponentImage> {
   }
 }
 
+class $InspectionsTable extends Inspections
+    with TableInfo<$InspectionsTable, Inspection> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $InspectionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
+    'deviceId',
+  );
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+    'device_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _productObjectIdMeta = const VerificationMeta(
+    'productObjectId',
+  );
+  @override
+  late final GeneratedColumn<String> productObjectId = GeneratedColumn<String>(
+    'product_object_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetObjectIdMeta = const VerificationMeta(
+    'targetObjectId',
+  );
+  @override
+  late final GeneratedColumn<String> targetObjectId = GeneratedColumn<String>(
+    'target_object_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<String> startedAt = GeneratedColumn<String>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<String> completedAt = GeneratedColumn<String>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceReferencePackageIdMeta =
+      const VerificationMeta('sourceReferencePackageId');
+  @override
+  late final GeneratedColumn<String> sourceReferencePackageId =
+      GeneratedColumn<String>(
+        'source_reference_package_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _sourceReferenceVersionMeta =
+      const VerificationMeta('sourceReferenceVersion');
+  @override
+  late final GeneratedColumn<String> sourceReferenceVersion =
+      GeneratedColumn<String>(
+        'source_reference_version',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _pdfLocalPathMeta = const VerificationMeta(
+    'pdfLocalPath',
+  );
+  @override
+  late final GeneratedColumn<String> pdfLocalPath = GeneratedColumn<String>(
+    'pdf_local_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pdfChecksumMeta = const VerificationMeta(
+    'pdfChecksum',
+  );
+  @override
+  late final GeneratedColumn<String> pdfChecksum = GeneratedColumn<String>(
+    'pdf_checksum',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _conflictReasonMeta = const VerificationMeta(
+    'conflictReason',
+  );
+  @override
+  late final GeneratedColumn<String> conflictReason = GeneratedColumn<String>(
+    'conflict_reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    deviceId,
+    userId,
+    productObjectId,
+    targetObjectId,
+    startedAt,
+    completedAt,
+    status,
+    syncStatus,
+    sourceReferencePackageId,
+    sourceReferenceVersion,
+    pdfLocalPath,
+    pdfChecksum,
+    conflictReason,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'inspections';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Inspection> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('device_id')) {
+      context.handle(
+        _deviceIdMeta,
+        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_deviceIdMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('product_object_id')) {
+      context.handle(
+        _productObjectIdMeta,
+        productObjectId.isAcceptableOrUnknown(
+          data['product_object_id']!,
+          _productObjectIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_productObjectIdMeta);
+    }
+    if (data.containsKey('target_object_id')) {
+      context.handle(
+        _targetObjectIdMeta,
+        targetObjectId.isAcceptableOrUnknown(
+          data['target_object_id']!,
+          _targetObjectIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetObjectIdMeta);
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_syncStatusMeta);
+    }
+    if (data.containsKey('source_reference_package_id')) {
+      context.handle(
+        _sourceReferencePackageIdMeta,
+        sourceReferencePackageId.isAcceptableOrUnknown(
+          data['source_reference_package_id']!,
+          _sourceReferencePackageIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source_reference_version')) {
+      context.handle(
+        _sourceReferenceVersionMeta,
+        sourceReferenceVersion.isAcceptableOrUnknown(
+          data['source_reference_version']!,
+          _sourceReferenceVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pdf_local_path')) {
+      context.handle(
+        _pdfLocalPathMeta,
+        pdfLocalPath.isAcceptableOrUnknown(
+          data['pdf_local_path']!,
+          _pdfLocalPathMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pdf_checksum')) {
+      context.handle(
+        _pdfChecksumMeta,
+        pdfChecksum.isAcceptableOrUnknown(
+          data['pdf_checksum']!,
+          _pdfChecksumMeta,
+        ),
+      );
+    }
+    if (data.containsKey('conflict_reason')) {
+      context.handle(
+        _conflictReasonMeta,
+        conflictReason.isAcceptableOrUnknown(
+          data['conflict_reason']!,
+          _conflictReasonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Inspection map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Inspection(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      deviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      productObjectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}product_object_id'],
+      )!,
+      targetObjectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_object_id'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}started_at'],
+      )!,
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}completed_at'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      sourceReferencePackageId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_reference_package_id'],
+      ),
+      sourceReferenceVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_reference_version'],
+      ),
+      pdfLocalPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pdf_local_path'],
+      ),
+      pdfChecksum: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pdf_checksum'],
+      ),
+      conflictReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}conflict_reason'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $InspectionsTable createAlias(String alias) {
+    return $InspectionsTable(attachedDatabase, alias);
+  }
+}
+
+class Inspection extends DataClass implements Insertable<Inspection> {
+  final String id;
+  final String deviceId;
+  final String userId;
+  final String productObjectId;
+  final String targetObjectId;
+  final String startedAt;
+  final String? completedAt;
+  final String status;
+  final String syncStatus;
+  final String? sourceReferencePackageId;
+  final String? sourceReferenceVersion;
+  final String? pdfLocalPath;
+  final String? pdfChecksum;
+  final String? conflictReason;
+  final String createdAt;
+  final String updatedAt;
+  const Inspection({
+    required this.id,
+    required this.deviceId,
+    required this.userId,
+    required this.productObjectId,
+    required this.targetObjectId,
+    required this.startedAt,
+    this.completedAt,
+    required this.status,
+    required this.syncStatus,
+    this.sourceReferencePackageId,
+    this.sourceReferenceVersion,
+    this.pdfLocalPath,
+    this.pdfChecksum,
+    this.conflictReason,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['device_id'] = Variable<String>(deviceId);
+    map['user_id'] = Variable<String>(userId);
+    map['product_object_id'] = Variable<String>(productObjectId);
+    map['target_object_id'] = Variable<String>(targetObjectId);
+    map['started_at'] = Variable<String>(startedAt);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<String>(completedAt);
+    }
+    map['status'] = Variable<String>(status);
+    map['sync_status'] = Variable<String>(syncStatus);
+    if (!nullToAbsent || sourceReferencePackageId != null) {
+      map['source_reference_package_id'] = Variable<String>(
+        sourceReferencePackageId,
+      );
+    }
+    if (!nullToAbsent || sourceReferenceVersion != null) {
+      map['source_reference_version'] = Variable<String>(
+        sourceReferenceVersion,
+      );
+    }
+    if (!nullToAbsent || pdfLocalPath != null) {
+      map['pdf_local_path'] = Variable<String>(pdfLocalPath);
+    }
+    if (!nullToAbsent || pdfChecksum != null) {
+      map['pdf_checksum'] = Variable<String>(pdfChecksum);
+    }
+    if (!nullToAbsent || conflictReason != null) {
+      map['conflict_reason'] = Variable<String>(conflictReason);
+    }
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
+    return map;
+  }
+
+  InspectionsCompanion toCompanion(bool nullToAbsent) {
+    return InspectionsCompanion(
+      id: Value(id),
+      deviceId: Value(deviceId),
+      userId: Value(userId),
+      productObjectId: Value(productObjectId),
+      targetObjectId: Value(targetObjectId),
+      startedAt: Value(startedAt),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      status: Value(status),
+      syncStatus: Value(syncStatus),
+      sourceReferencePackageId: sourceReferencePackageId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceReferencePackageId),
+      sourceReferenceVersion: sourceReferenceVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceReferenceVersion),
+      pdfLocalPath: pdfLocalPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pdfLocalPath),
+      pdfChecksum: pdfChecksum == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pdfChecksum),
+      conflictReason: conflictReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(conflictReason),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory Inspection.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Inspection(
+      id: serializer.fromJson<String>(json['id']),
+      deviceId: serializer.fromJson<String>(json['deviceId']),
+      userId: serializer.fromJson<String>(json['userId']),
+      productObjectId: serializer.fromJson<String>(json['productObjectId']),
+      targetObjectId: serializer.fromJson<String>(json['targetObjectId']),
+      startedAt: serializer.fromJson<String>(json['startedAt']),
+      completedAt: serializer.fromJson<String?>(json['completedAt']),
+      status: serializer.fromJson<String>(json['status']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      sourceReferencePackageId: serializer.fromJson<String?>(
+        json['sourceReferencePackageId'],
+      ),
+      sourceReferenceVersion: serializer.fromJson<String?>(
+        json['sourceReferenceVersion'],
+      ),
+      pdfLocalPath: serializer.fromJson<String?>(json['pdfLocalPath']),
+      pdfChecksum: serializer.fromJson<String?>(json['pdfChecksum']),
+      conflictReason: serializer.fromJson<String?>(json['conflictReason']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'deviceId': serializer.toJson<String>(deviceId),
+      'userId': serializer.toJson<String>(userId),
+      'productObjectId': serializer.toJson<String>(productObjectId),
+      'targetObjectId': serializer.toJson<String>(targetObjectId),
+      'startedAt': serializer.toJson<String>(startedAt),
+      'completedAt': serializer.toJson<String?>(completedAt),
+      'status': serializer.toJson<String>(status),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'sourceReferencePackageId': serializer.toJson<String?>(
+        sourceReferencePackageId,
+      ),
+      'sourceReferenceVersion': serializer.toJson<String?>(
+        sourceReferenceVersion,
+      ),
+      'pdfLocalPath': serializer.toJson<String?>(pdfLocalPath),
+      'pdfChecksum': serializer.toJson<String?>(pdfChecksum),
+      'conflictReason': serializer.toJson<String?>(conflictReason),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+    };
+  }
+
+  Inspection copyWith({
+    String? id,
+    String? deviceId,
+    String? userId,
+    String? productObjectId,
+    String? targetObjectId,
+    String? startedAt,
+    Value<String?> completedAt = const Value.absent(),
+    String? status,
+    String? syncStatus,
+    Value<String?> sourceReferencePackageId = const Value.absent(),
+    Value<String?> sourceReferenceVersion = const Value.absent(),
+    Value<String?> pdfLocalPath = const Value.absent(),
+    Value<String?> pdfChecksum = const Value.absent(),
+    Value<String?> conflictReason = const Value.absent(),
+    String? createdAt,
+    String? updatedAt,
+  }) => Inspection(
+    id: id ?? this.id,
+    deviceId: deviceId ?? this.deviceId,
+    userId: userId ?? this.userId,
+    productObjectId: productObjectId ?? this.productObjectId,
+    targetObjectId: targetObjectId ?? this.targetObjectId,
+    startedAt: startedAt ?? this.startedAt,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    status: status ?? this.status,
+    syncStatus: syncStatus ?? this.syncStatus,
+    sourceReferencePackageId: sourceReferencePackageId.present
+        ? sourceReferencePackageId.value
+        : this.sourceReferencePackageId,
+    sourceReferenceVersion: sourceReferenceVersion.present
+        ? sourceReferenceVersion.value
+        : this.sourceReferenceVersion,
+    pdfLocalPath: pdfLocalPath.present ? pdfLocalPath.value : this.pdfLocalPath,
+    pdfChecksum: pdfChecksum.present ? pdfChecksum.value : this.pdfChecksum,
+    conflictReason: conflictReason.present
+        ? conflictReason.value
+        : this.conflictReason,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  Inspection copyWithCompanion(InspectionsCompanion data) {
+    return Inspection(
+      id: data.id.present ? data.id.value : this.id,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      productObjectId: data.productObjectId.present
+          ? data.productObjectId.value
+          : this.productObjectId,
+      targetObjectId: data.targetObjectId.present
+          ? data.targetObjectId.value
+          : this.targetObjectId,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      status: data.status.present ? data.status.value : this.status,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      sourceReferencePackageId: data.sourceReferencePackageId.present
+          ? data.sourceReferencePackageId.value
+          : this.sourceReferencePackageId,
+      sourceReferenceVersion: data.sourceReferenceVersion.present
+          ? data.sourceReferenceVersion.value
+          : this.sourceReferenceVersion,
+      pdfLocalPath: data.pdfLocalPath.present
+          ? data.pdfLocalPath.value
+          : this.pdfLocalPath,
+      pdfChecksum: data.pdfChecksum.present
+          ? data.pdfChecksum.value
+          : this.pdfChecksum,
+      conflictReason: data.conflictReason.present
+          ? data.conflictReason.value
+          : this.conflictReason,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Inspection(')
+          ..write('id: $id, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('userId: $userId, ')
+          ..write('productObjectId: $productObjectId, ')
+          ..write('targetObjectId: $targetObjectId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('status: $status, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('sourceReferencePackageId: $sourceReferencePackageId, ')
+          ..write('sourceReferenceVersion: $sourceReferenceVersion, ')
+          ..write('pdfLocalPath: $pdfLocalPath, ')
+          ..write('pdfChecksum: $pdfChecksum, ')
+          ..write('conflictReason: $conflictReason, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    deviceId,
+    userId,
+    productObjectId,
+    targetObjectId,
+    startedAt,
+    completedAt,
+    status,
+    syncStatus,
+    sourceReferencePackageId,
+    sourceReferenceVersion,
+    pdfLocalPath,
+    pdfChecksum,
+    conflictReason,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Inspection &&
+          other.id == this.id &&
+          other.deviceId == this.deviceId &&
+          other.userId == this.userId &&
+          other.productObjectId == this.productObjectId &&
+          other.targetObjectId == this.targetObjectId &&
+          other.startedAt == this.startedAt &&
+          other.completedAt == this.completedAt &&
+          other.status == this.status &&
+          other.syncStatus == this.syncStatus &&
+          other.sourceReferencePackageId == this.sourceReferencePackageId &&
+          other.sourceReferenceVersion == this.sourceReferenceVersion &&
+          other.pdfLocalPath == this.pdfLocalPath &&
+          other.pdfChecksum == this.pdfChecksum &&
+          other.conflictReason == this.conflictReason &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class InspectionsCompanion extends UpdateCompanion<Inspection> {
+  final Value<String> id;
+  final Value<String> deviceId;
+  final Value<String> userId;
+  final Value<String> productObjectId;
+  final Value<String> targetObjectId;
+  final Value<String> startedAt;
+  final Value<String?> completedAt;
+  final Value<String> status;
+  final Value<String> syncStatus;
+  final Value<String?> sourceReferencePackageId;
+  final Value<String?> sourceReferenceVersion;
+  final Value<String?> pdfLocalPath;
+  final Value<String?> pdfChecksum;
+  final Value<String?> conflictReason;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
+  final Value<int> rowid;
+  const InspectionsCompanion({
+    this.id = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.productObjectId = const Value.absent(),
+    this.targetObjectId = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.status = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.sourceReferencePackageId = const Value.absent(),
+    this.sourceReferenceVersion = const Value.absent(),
+    this.pdfLocalPath = const Value.absent(),
+    this.pdfChecksum = const Value.absent(),
+    this.conflictReason = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  InspectionsCompanion.insert({
+    required String id,
+    required String deviceId,
+    required String userId,
+    required String productObjectId,
+    required String targetObjectId,
+    required String startedAt,
+    this.completedAt = const Value.absent(),
+    required String status,
+    required String syncStatus,
+    this.sourceReferencePackageId = const Value.absent(),
+    this.sourceReferenceVersion = const Value.absent(),
+    this.pdfLocalPath = const Value.absent(),
+    this.pdfChecksum = const Value.absent(),
+    this.conflictReason = const Value.absent(),
+    required String createdAt,
+    required String updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       deviceId = Value(deviceId),
+       userId = Value(userId),
+       productObjectId = Value(productObjectId),
+       targetObjectId = Value(targetObjectId),
+       startedAt = Value(startedAt),
+       status = Value(status),
+       syncStatus = Value(syncStatus),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<Inspection> custom({
+    Expression<String>? id,
+    Expression<String>? deviceId,
+    Expression<String>? userId,
+    Expression<String>? productObjectId,
+    Expression<String>? targetObjectId,
+    Expression<String>? startedAt,
+    Expression<String>? completedAt,
+    Expression<String>? status,
+    Expression<String>? syncStatus,
+    Expression<String>? sourceReferencePackageId,
+    Expression<String>? sourceReferenceVersion,
+    Expression<String>? pdfLocalPath,
+    Expression<String>? pdfChecksum,
+    Expression<String>? conflictReason,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (deviceId != null) 'device_id': deviceId,
+      if (userId != null) 'user_id': userId,
+      if (productObjectId != null) 'product_object_id': productObjectId,
+      if (targetObjectId != null) 'target_object_id': targetObjectId,
+      if (startedAt != null) 'started_at': startedAt,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (status != null) 'status': status,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (sourceReferencePackageId != null)
+        'source_reference_package_id': sourceReferencePackageId,
+      if (sourceReferenceVersion != null)
+        'source_reference_version': sourceReferenceVersion,
+      if (pdfLocalPath != null) 'pdf_local_path': pdfLocalPath,
+      if (pdfChecksum != null) 'pdf_checksum': pdfChecksum,
+      if (conflictReason != null) 'conflict_reason': conflictReason,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  InspectionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? deviceId,
+    Value<String>? userId,
+    Value<String>? productObjectId,
+    Value<String>? targetObjectId,
+    Value<String>? startedAt,
+    Value<String?>? completedAt,
+    Value<String>? status,
+    Value<String>? syncStatus,
+    Value<String?>? sourceReferencePackageId,
+    Value<String?>? sourceReferenceVersion,
+    Value<String?>? pdfLocalPath,
+    Value<String?>? pdfChecksum,
+    Value<String?>? conflictReason,
+    Value<String>? createdAt,
+    Value<String>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return InspectionsCompanion(
+      id: id ?? this.id,
+      deviceId: deviceId ?? this.deviceId,
+      userId: userId ?? this.userId,
+      productObjectId: productObjectId ?? this.productObjectId,
+      targetObjectId: targetObjectId ?? this.targetObjectId,
+      startedAt: startedAt ?? this.startedAt,
+      completedAt: completedAt ?? this.completedAt,
+      status: status ?? this.status,
+      syncStatus: syncStatus ?? this.syncStatus,
+      sourceReferencePackageId:
+          sourceReferencePackageId ?? this.sourceReferencePackageId,
+      sourceReferenceVersion:
+          sourceReferenceVersion ?? this.sourceReferenceVersion,
+      pdfLocalPath: pdfLocalPath ?? this.pdfLocalPath,
+      pdfChecksum: pdfChecksum ?? this.pdfChecksum,
+      conflictReason: conflictReason ?? this.conflictReason,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (productObjectId.present) {
+      map['product_object_id'] = Variable<String>(productObjectId.value);
+    }
+    if (targetObjectId.present) {
+      map['target_object_id'] = Variable<String>(targetObjectId.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<String>(startedAt.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<String>(completedAt.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (sourceReferencePackageId.present) {
+      map['source_reference_package_id'] = Variable<String>(
+        sourceReferencePackageId.value,
+      );
+    }
+    if (sourceReferenceVersion.present) {
+      map['source_reference_version'] = Variable<String>(
+        sourceReferenceVersion.value,
+      );
+    }
+    if (pdfLocalPath.present) {
+      map['pdf_local_path'] = Variable<String>(pdfLocalPath.value);
+    }
+    if (pdfChecksum.present) {
+      map['pdf_checksum'] = Variable<String>(pdfChecksum.value);
+    }
+    if (conflictReason.present) {
+      map['conflict_reason'] = Variable<String>(conflictReason.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InspectionsCompanion(')
+          ..write('id: $id, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('userId: $userId, ')
+          ..write('productObjectId: $productObjectId, ')
+          ..write('targetObjectId: $targetObjectId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('status: $status, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('sourceReferencePackageId: $sourceReferencePackageId, ')
+          ..write('sourceReferenceVersion: $sourceReferenceVersion, ')
+          ..write('pdfLocalPath: $pdfLocalPath, ')
+          ..write('pdfChecksum: $pdfChecksum, ')
+          ..write('conflictReason: $conflictReason, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $InspectionItemsTable extends InspectionItems
+    with TableInfo<$InspectionItemsTable, InspectionItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $InspectionItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _inspectionIdMeta = const VerificationMeta(
+    'inspectionId',
+  );
+  @override
+  late final GeneratedColumn<String> inspectionId = GeneratedColumn<String>(
+    'inspection_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _checklistItemIdMeta = const VerificationMeta(
+    'checklistItemId',
+  );
+  @override
+  late final GeneratedColumn<String> checklistItemId = GeneratedColumn<String>(
+    'checklist_item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _componentIdMeta = const VerificationMeta(
+    'componentId',
+  );
+  @override
+  late final GeneratedColumn<String> componentId = GeneratedColumn<String>(
+    'component_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _resultStatusMeta = const VerificationMeta(
+    'resultStatus',
+  );
+  @override
+  late final GeneratedColumn<String> resultStatus = GeneratedColumn<String>(
+    'result_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('not_checked'),
+  );
+  static const VerificationMeta _commentMeta = const VerificationMeta(
+    'comment',
+  );
+  @override
+  late final GeneratedColumn<String> comment = GeneratedColumn<String>(
+    'comment',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _measuredValueMeta = const VerificationMeta(
+    'measuredValue',
+  );
+  @override
+  late final GeneratedColumn<String> measuredValue = GeneratedColumn<String>(
+    'measured_value',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<String> createdAt = GeneratedColumn<String>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    inspectionId,
+    checklistItemId,
+    componentId,
+    resultStatus,
+    comment,
+    measuredValue,
+    sortOrder,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'inspection_items';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<InspectionItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('inspection_id')) {
+      context.handle(
+        _inspectionIdMeta,
+        inspectionId.isAcceptableOrUnknown(
+          data['inspection_id']!,
+          _inspectionIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_inspectionIdMeta);
+    }
+    if (data.containsKey('checklist_item_id')) {
+      context.handle(
+        _checklistItemIdMeta,
+        checklistItemId.isAcceptableOrUnknown(
+          data['checklist_item_id']!,
+          _checklistItemIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_checklistItemIdMeta);
+    }
+    if (data.containsKey('component_id')) {
+      context.handle(
+        _componentIdMeta,
+        componentId.isAcceptableOrUnknown(
+          data['component_id']!,
+          _componentIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('result_status')) {
+      context.handle(
+        _resultStatusMeta,
+        resultStatus.isAcceptableOrUnknown(
+          data['result_status']!,
+          _resultStatusMeta,
+        ),
+      );
+    }
+    if (data.containsKey('comment')) {
+      context.handle(
+        _commentMeta,
+        comment.isAcceptableOrUnknown(data['comment']!, _commentMeta),
+      );
+    }
+    if (data.containsKey('measured_value')) {
+      context.handle(
+        _measuredValueMeta,
+        measuredValue.isAcceptableOrUnknown(
+          data['measured_value']!,
+          _measuredValueMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  InspectionItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return InspectionItem(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      inspectionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}inspection_id'],
+      )!,
+      checklistItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}checklist_item_id'],
+      )!,
+      componentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}component_id'],
+      ),
+      resultStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}result_status'],
+      )!,
+      comment: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}comment'],
+      ),
+      measuredValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}measured_value'],
+      ),
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_order'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $InspectionItemsTable createAlias(String alias) {
+    return $InspectionItemsTable(attachedDatabase, alias);
+  }
+}
+
+class InspectionItem extends DataClass implements Insertable<InspectionItem> {
+  final String id;
+  final String inspectionId;
+  final String checklistItemId;
+  final String? componentId;
+  final String resultStatus;
+  final String? comment;
+  final String? measuredValue;
+  final int sortOrder;
+  final String createdAt;
+  final String updatedAt;
+  const InspectionItem({
+    required this.id,
+    required this.inspectionId,
+    required this.checklistItemId,
+    this.componentId,
+    required this.resultStatus,
+    this.comment,
+    this.measuredValue,
+    required this.sortOrder,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['inspection_id'] = Variable<String>(inspectionId);
+    map['checklist_item_id'] = Variable<String>(checklistItemId);
+    if (!nullToAbsent || componentId != null) {
+      map['component_id'] = Variable<String>(componentId);
+    }
+    map['result_status'] = Variable<String>(resultStatus);
+    if (!nullToAbsent || comment != null) {
+      map['comment'] = Variable<String>(comment);
+    }
+    if (!nullToAbsent || measuredValue != null) {
+      map['measured_value'] = Variable<String>(measuredValue);
+    }
+    map['sort_order'] = Variable<int>(sortOrder);
+    map['created_at'] = Variable<String>(createdAt);
+    map['updated_at'] = Variable<String>(updatedAt);
+    return map;
+  }
+
+  InspectionItemsCompanion toCompanion(bool nullToAbsent) {
+    return InspectionItemsCompanion(
+      id: Value(id),
+      inspectionId: Value(inspectionId),
+      checklistItemId: Value(checklistItemId),
+      componentId: componentId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(componentId),
+      resultStatus: Value(resultStatus),
+      comment: comment == null && nullToAbsent
+          ? const Value.absent()
+          : Value(comment),
+      measuredValue: measuredValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(measuredValue),
+      sortOrder: Value(sortOrder),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory InspectionItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return InspectionItem(
+      id: serializer.fromJson<String>(json['id']),
+      inspectionId: serializer.fromJson<String>(json['inspectionId']),
+      checklistItemId: serializer.fromJson<String>(json['checklistItemId']),
+      componentId: serializer.fromJson<String?>(json['componentId']),
+      resultStatus: serializer.fromJson<String>(json['resultStatus']),
+      comment: serializer.fromJson<String?>(json['comment']),
+      measuredValue: serializer.fromJson<String?>(json['measuredValue']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
+      createdAt: serializer.fromJson<String>(json['createdAt']),
+      updatedAt: serializer.fromJson<String>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'inspectionId': serializer.toJson<String>(inspectionId),
+      'checklistItemId': serializer.toJson<String>(checklistItemId),
+      'componentId': serializer.toJson<String?>(componentId),
+      'resultStatus': serializer.toJson<String>(resultStatus),
+      'comment': serializer.toJson<String?>(comment),
+      'measuredValue': serializer.toJson<String?>(measuredValue),
+      'sortOrder': serializer.toJson<int>(sortOrder),
+      'createdAt': serializer.toJson<String>(createdAt),
+      'updatedAt': serializer.toJson<String>(updatedAt),
+    };
+  }
+
+  InspectionItem copyWith({
+    String? id,
+    String? inspectionId,
+    String? checklistItemId,
+    Value<String?> componentId = const Value.absent(),
+    String? resultStatus,
+    Value<String?> comment = const Value.absent(),
+    Value<String?> measuredValue = const Value.absent(),
+    int? sortOrder,
+    String? createdAt,
+    String? updatedAt,
+  }) => InspectionItem(
+    id: id ?? this.id,
+    inspectionId: inspectionId ?? this.inspectionId,
+    checklistItemId: checklistItemId ?? this.checklistItemId,
+    componentId: componentId.present ? componentId.value : this.componentId,
+    resultStatus: resultStatus ?? this.resultStatus,
+    comment: comment.present ? comment.value : this.comment,
+    measuredValue: measuredValue.present
+        ? measuredValue.value
+        : this.measuredValue,
+    sortOrder: sortOrder ?? this.sortOrder,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  InspectionItem copyWithCompanion(InspectionItemsCompanion data) {
+    return InspectionItem(
+      id: data.id.present ? data.id.value : this.id,
+      inspectionId: data.inspectionId.present
+          ? data.inspectionId.value
+          : this.inspectionId,
+      checklistItemId: data.checklistItemId.present
+          ? data.checklistItemId.value
+          : this.checklistItemId,
+      componentId: data.componentId.present
+          ? data.componentId.value
+          : this.componentId,
+      resultStatus: data.resultStatus.present
+          ? data.resultStatus.value
+          : this.resultStatus,
+      comment: data.comment.present ? data.comment.value : this.comment,
+      measuredValue: data.measuredValue.present
+          ? data.measuredValue.value
+          : this.measuredValue,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InspectionItem(')
+          ..write('id: $id, ')
+          ..write('inspectionId: $inspectionId, ')
+          ..write('checklistItemId: $checklistItemId, ')
+          ..write('componentId: $componentId, ')
+          ..write('resultStatus: $resultStatus, ')
+          ..write('comment: $comment, ')
+          ..write('measuredValue: $measuredValue, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    inspectionId,
+    checklistItemId,
+    componentId,
+    resultStatus,
+    comment,
+    measuredValue,
+    sortOrder,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is InspectionItem &&
+          other.id == this.id &&
+          other.inspectionId == this.inspectionId &&
+          other.checklistItemId == this.checklistItemId &&
+          other.componentId == this.componentId &&
+          other.resultStatus == this.resultStatus &&
+          other.comment == this.comment &&
+          other.measuredValue == this.measuredValue &&
+          other.sortOrder == this.sortOrder &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class InspectionItemsCompanion extends UpdateCompanion<InspectionItem> {
+  final Value<String> id;
+  final Value<String> inspectionId;
+  final Value<String> checklistItemId;
+  final Value<String?> componentId;
+  final Value<String> resultStatus;
+  final Value<String?> comment;
+  final Value<String?> measuredValue;
+  final Value<int> sortOrder;
+  final Value<String> createdAt;
+  final Value<String> updatedAt;
+  final Value<int> rowid;
+  const InspectionItemsCompanion({
+    this.id = const Value.absent(),
+    this.inspectionId = const Value.absent(),
+    this.checklistItemId = const Value.absent(),
+    this.componentId = const Value.absent(),
+    this.resultStatus = const Value.absent(),
+    this.comment = const Value.absent(),
+    this.measuredValue = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  InspectionItemsCompanion.insert({
+    required String id,
+    required String inspectionId,
+    required String checklistItemId,
+    this.componentId = const Value.absent(),
+    this.resultStatus = const Value.absent(),
+    this.comment = const Value.absent(),
+    this.measuredValue = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    required String createdAt,
+    required String updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       inspectionId = Value(inspectionId),
+       checklistItemId = Value(checklistItemId),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<InspectionItem> custom({
+    Expression<String>? id,
+    Expression<String>? inspectionId,
+    Expression<String>? checklistItemId,
+    Expression<String>? componentId,
+    Expression<String>? resultStatus,
+    Expression<String>? comment,
+    Expression<String>? measuredValue,
+    Expression<int>? sortOrder,
+    Expression<String>? createdAt,
+    Expression<String>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (inspectionId != null) 'inspection_id': inspectionId,
+      if (checklistItemId != null) 'checklist_item_id': checklistItemId,
+      if (componentId != null) 'component_id': componentId,
+      if (resultStatus != null) 'result_status': resultStatus,
+      if (comment != null) 'comment': comment,
+      if (measuredValue != null) 'measured_value': measuredValue,
+      if (sortOrder != null) 'sort_order': sortOrder,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  InspectionItemsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? inspectionId,
+    Value<String>? checklistItemId,
+    Value<String?>? componentId,
+    Value<String>? resultStatus,
+    Value<String?>? comment,
+    Value<String?>? measuredValue,
+    Value<int>? sortOrder,
+    Value<String>? createdAt,
+    Value<String>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return InspectionItemsCompanion(
+      id: id ?? this.id,
+      inspectionId: inspectionId ?? this.inspectionId,
+      checklistItemId: checklistItemId ?? this.checklistItemId,
+      componentId: componentId ?? this.componentId,
+      resultStatus: resultStatus ?? this.resultStatus,
+      comment: comment ?? this.comment,
+      measuredValue: measuredValue ?? this.measuredValue,
+      sortOrder: sortOrder ?? this.sortOrder,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (inspectionId.present) {
+      map['inspection_id'] = Variable<String>(inspectionId.value);
+    }
+    if (checklistItemId.present) {
+      map['checklist_item_id'] = Variable<String>(checklistItemId.value);
+    }
+    if (componentId.present) {
+      map['component_id'] = Variable<String>(componentId.value);
+    }
+    if (resultStatus.present) {
+      map['result_status'] = Variable<String>(resultStatus.value);
+    }
+    if (comment.present) {
+      map['comment'] = Variable<String>(comment.value);
+    }
+    if (measuredValue.present) {
+      map['measured_value'] = Variable<String>(measuredValue.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<String>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InspectionItemsCompanion(')
+          ..write('id: $id, ')
+          ..write('inspectionId: $inspectionId, ')
+          ..write('checklistItemId: $checklistItemId, ')
+          ..write('componentId: $componentId, ')
+          ..write('resultStatus: $resultStatus, ')
+          ..write('comment: $comment, ')
+          ..write('measuredValue: $measuredValue, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $InspectionSignaturesTable extends InspectionSignatures
     with TableInfo<$InspectionSignaturesTable, InspectionSignature> {
   @override
@@ -13427,6 +15027,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ComponentImagesTable componentImages = $ComponentImagesTable(
     this,
   );
+  late final $InspectionsTable inspections = $InspectionsTable(this);
+  late final $InspectionItemsTable inspectionItems = $InspectionItemsTable(
+    this,
+  );
   late final $InspectionSignaturesTable inspectionSignatures =
       $InspectionSignaturesTable(this);
   late final $InspectionFilesTable inspectionFiles = $InspectionFilesTable(
@@ -13456,6 +15060,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     syncQueue,
     locks,
     componentImages,
+    inspections,
+    inspectionItems,
     inspectionSignatures,
     inspectionFiles,
     trashBin,
@@ -19046,6 +20652,744 @@ typedef $$ComponentImagesTableProcessedTableManager =
       ComponentImage,
       PrefetchHooks Function()
     >;
+typedef $$InspectionsTableCreateCompanionBuilder =
+    InspectionsCompanion Function({
+      required String id,
+      required String deviceId,
+      required String userId,
+      required String productObjectId,
+      required String targetObjectId,
+      required String startedAt,
+      Value<String?> completedAt,
+      required String status,
+      required String syncStatus,
+      Value<String?> sourceReferencePackageId,
+      Value<String?> sourceReferenceVersion,
+      Value<String?> pdfLocalPath,
+      Value<String?> pdfChecksum,
+      Value<String?> conflictReason,
+      required String createdAt,
+      required String updatedAt,
+      Value<int> rowid,
+    });
+typedef $$InspectionsTableUpdateCompanionBuilder =
+    InspectionsCompanion Function({
+      Value<String> id,
+      Value<String> deviceId,
+      Value<String> userId,
+      Value<String> productObjectId,
+      Value<String> targetObjectId,
+      Value<String> startedAt,
+      Value<String?> completedAt,
+      Value<String> status,
+      Value<String> syncStatus,
+      Value<String?> sourceReferencePackageId,
+      Value<String?> sourceReferenceVersion,
+      Value<String?> pdfLocalPath,
+      Value<String?> pdfChecksum,
+      Value<String?> conflictReason,
+      Value<String> createdAt,
+      Value<String> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$InspectionsTableFilterComposer
+    extends Composer<_$AppDatabase, $InspectionsTable> {
+  $$InspectionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get productObjectId => $composableBuilder(
+    column: $table.productObjectId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetObjectId => $composableBuilder(
+    column: $table.targetObjectId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceReferencePackageId => $composableBuilder(
+    column: $table.sourceReferencePackageId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceReferenceVersion => $composableBuilder(
+    column: $table.sourceReferenceVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pdfLocalPath => $composableBuilder(
+    column: $table.pdfLocalPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pdfChecksum => $composableBuilder(
+    column: $table.pdfChecksum,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get conflictReason => $composableBuilder(
+    column: $table.conflictReason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$InspectionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $InspectionsTable> {
+  $$InspectionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get productObjectId => $composableBuilder(
+    column: $table.productObjectId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetObjectId => $composableBuilder(
+    column: $table.targetObjectId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceReferencePackageId => $composableBuilder(
+    column: $table.sourceReferencePackageId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceReferenceVersion => $composableBuilder(
+    column: $table.sourceReferenceVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pdfLocalPath => $composableBuilder(
+    column: $table.pdfLocalPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pdfChecksum => $composableBuilder(
+    column: $table.pdfChecksum,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get conflictReason => $composableBuilder(
+    column: $table.conflictReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$InspectionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $InspectionsTable> {
+  $$InspectionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get deviceId =>
+      $composableBuilder(column: $table.deviceId, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get productObjectId => $composableBuilder(
+    column: $table.productObjectId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get targetObjectId => $composableBuilder(
+    column: $table.targetObjectId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceReferencePackageId => $composableBuilder(
+    column: $table.sourceReferencePackageId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceReferenceVersion => $composableBuilder(
+    column: $table.sourceReferenceVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get pdfLocalPath => $composableBuilder(
+    column: $table.pdfLocalPath,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get pdfChecksum => $composableBuilder(
+    column: $table.pdfChecksum,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get conflictReason => $composableBuilder(
+    column: $table.conflictReason,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$InspectionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $InspectionsTable,
+          Inspection,
+          $$InspectionsTableFilterComposer,
+          $$InspectionsTableOrderingComposer,
+          $$InspectionsTableAnnotationComposer,
+          $$InspectionsTableCreateCompanionBuilder,
+          $$InspectionsTableUpdateCompanionBuilder,
+          (
+            Inspection,
+            BaseReferences<_$AppDatabase, $InspectionsTable, Inspection>,
+          ),
+          Inspection,
+          PrefetchHooks Function()
+        > {
+  $$InspectionsTableTableManager(_$AppDatabase db, $InspectionsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$InspectionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$InspectionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$InspectionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> deviceId = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> productObjectId = const Value.absent(),
+                Value<String> targetObjectId = const Value.absent(),
+                Value<String> startedAt = const Value.absent(),
+                Value<String?> completedAt = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String?> sourceReferencePackageId = const Value.absent(),
+                Value<String?> sourceReferenceVersion = const Value.absent(),
+                Value<String?> pdfLocalPath = const Value.absent(),
+                Value<String?> pdfChecksum = const Value.absent(),
+                Value<String?> conflictReason = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => InspectionsCompanion(
+                id: id,
+                deviceId: deviceId,
+                userId: userId,
+                productObjectId: productObjectId,
+                targetObjectId: targetObjectId,
+                startedAt: startedAt,
+                completedAt: completedAt,
+                status: status,
+                syncStatus: syncStatus,
+                sourceReferencePackageId: sourceReferencePackageId,
+                sourceReferenceVersion: sourceReferenceVersion,
+                pdfLocalPath: pdfLocalPath,
+                pdfChecksum: pdfChecksum,
+                conflictReason: conflictReason,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String deviceId,
+                required String userId,
+                required String productObjectId,
+                required String targetObjectId,
+                required String startedAt,
+                Value<String?> completedAt = const Value.absent(),
+                required String status,
+                required String syncStatus,
+                Value<String?> sourceReferencePackageId = const Value.absent(),
+                Value<String?> sourceReferenceVersion = const Value.absent(),
+                Value<String?> pdfLocalPath = const Value.absent(),
+                Value<String?> pdfChecksum = const Value.absent(),
+                Value<String?> conflictReason = const Value.absent(),
+                required String createdAt,
+                required String updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => InspectionsCompanion.insert(
+                id: id,
+                deviceId: deviceId,
+                userId: userId,
+                productObjectId: productObjectId,
+                targetObjectId: targetObjectId,
+                startedAt: startedAt,
+                completedAt: completedAt,
+                status: status,
+                syncStatus: syncStatus,
+                sourceReferencePackageId: sourceReferencePackageId,
+                sourceReferenceVersion: sourceReferenceVersion,
+                pdfLocalPath: pdfLocalPath,
+                pdfChecksum: pdfChecksum,
+                conflictReason: conflictReason,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$InspectionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $InspectionsTable,
+      Inspection,
+      $$InspectionsTableFilterComposer,
+      $$InspectionsTableOrderingComposer,
+      $$InspectionsTableAnnotationComposer,
+      $$InspectionsTableCreateCompanionBuilder,
+      $$InspectionsTableUpdateCompanionBuilder,
+      (
+        Inspection,
+        BaseReferences<_$AppDatabase, $InspectionsTable, Inspection>,
+      ),
+      Inspection,
+      PrefetchHooks Function()
+    >;
+typedef $$InspectionItemsTableCreateCompanionBuilder =
+    InspectionItemsCompanion Function({
+      required String id,
+      required String inspectionId,
+      required String checklistItemId,
+      Value<String?> componentId,
+      Value<String> resultStatus,
+      Value<String?> comment,
+      Value<String?> measuredValue,
+      Value<int> sortOrder,
+      required String createdAt,
+      required String updatedAt,
+      Value<int> rowid,
+    });
+typedef $$InspectionItemsTableUpdateCompanionBuilder =
+    InspectionItemsCompanion Function({
+      Value<String> id,
+      Value<String> inspectionId,
+      Value<String> checklistItemId,
+      Value<String?> componentId,
+      Value<String> resultStatus,
+      Value<String?> comment,
+      Value<String?> measuredValue,
+      Value<int> sortOrder,
+      Value<String> createdAt,
+      Value<String> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$InspectionItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $InspectionItemsTable> {
+  $$InspectionItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get inspectionId => $composableBuilder(
+    column: $table.inspectionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get checklistItemId => $composableBuilder(
+    column: $table.checklistItemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get componentId => $composableBuilder(
+    column: $table.componentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resultStatus => $composableBuilder(
+    column: $table.resultStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get comment => $composableBuilder(
+    column: $table.comment,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get measuredValue => $composableBuilder(
+    column: $table.measuredValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$InspectionItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $InspectionItemsTable> {
+  $$InspectionItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get inspectionId => $composableBuilder(
+    column: $table.inspectionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get checklistItemId => $composableBuilder(
+    column: $table.checklistItemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get componentId => $composableBuilder(
+    column: $table.componentId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resultStatus => $composableBuilder(
+    column: $table.resultStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get comment => $composableBuilder(
+    column: $table.comment,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get measuredValue => $composableBuilder(
+    column: $table.measuredValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$InspectionItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $InspectionItemsTable> {
+  $$InspectionItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get inspectionId => $composableBuilder(
+    column: $table.inspectionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get checklistItemId => $composableBuilder(
+    column: $table.checklistItemId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get componentId => $composableBuilder(
+    column: $table.componentId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get resultStatus => $composableBuilder(
+    column: $table.resultStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get comment =>
+      $composableBuilder(column: $table.comment, builder: (column) => column);
+
+  GeneratedColumn<String> get measuredValue => $composableBuilder(
+    column: $table.measuredValue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<String> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$InspectionItemsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $InspectionItemsTable,
+          InspectionItem,
+          $$InspectionItemsTableFilterComposer,
+          $$InspectionItemsTableOrderingComposer,
+          $$InspectionItemsTableAnnotationComposer,
+          $$InspectionItemsTableCreateCompanionBuilder,
+          $$InspectionItemsTableUpdateCompanionBuilder,
+          (
+            InspectionItem,
+            BaseReferences<
+              _$AppDatabase,
+              $InspectionItemsTable,
+              InspectionItem
+            >,
+          ),
+          InspectionItem,
+          PrefetchHooks Function()
+        > {
+  $$InspectionItemsTableTableManager(
+    _$AppDatabase db,
+    $InspectionItemsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$InspectionItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$InspectionItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$InspectionItemsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> inspectionId = const Value.absent(),
+                Value<String> checklistItemId = const Value.absent(),
+                Value<String?> componentId = const Value.absent(),
+                Value<String> resultStatus = const Value.absent(),
+                Value<String?> comment = const Value.absent(),
+                Value<String?> measuredValue = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+                Value<String> createdAt = const Value.absent(),
+                Value<String> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => InspectionItemsCompanion(
+                id: id,
+                inspectionId: inspectionId,
+                checklistItemId: checklistItemId,
+                componentId: componentId,
+                resultStatus: resultStatus,
+                comment: comment,
+                measuredValue: measuredValue,
+                sortOrder: sortOrder,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String inspectionId,
+                required String checklistItemId,
+                Value<String?> componentId = const Value.absent(),
+                Value<String> resultStatus = const Value.absent(),
+                Value<String?> comment = const Value.absent(),
+                Value<String?> measuredValue = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+                required String createdAt,
+                required String updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => InspectionItemsCompanion.insert(
+                id: id,
+                inspectionId: inspectionId,
+                checklistItemId: checklistItemId,
+                componentId: componentId,
+                resultStatus: resultStatus,
+                comment: comment,
+                measuredValue: measuredValue,
+                sortOrder: sortOrder,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$InspectionItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $InspectionItemsTable,
+      InspectionItem,
+      $$InspectionItemsTableFilterComposer,
+      $$InspectionItemsTableOrderingComposer,
+      $$InspectionItemsTableAnnotationComposer,
+      $$InspectionItemsTableCreateCompanionBuilder,
+      $$InspectionItemsTableUpdateCompanionBuilder,
+      (
+        InspectionItem,
+        BaseReferences<_$AppDatabase, $InspectionItemsTable, InspectionItem>,
+      ),
+      InspectionItem,
+      PrefetchHooks Function()
+    >;
 typedef $$InspectionSignaturesTableCreateCompanionBuilder =
     InspectionSignaturesCompanion Function({
       required String id,
@@ -19979,6 +22323,10 @@ class $AppDatabaseManager {
       $$LocksTableTableManager(_db, _db.locks);
   $$ComponentImagesTableTableManager get componentImages =>
       $$ComponentImagesTableTableManager(_db, _db.componentImages);
+  $$InspectionsTableTableManager get inspections =>
+      $$InspectionsTableTableManager(_db, _db.inspections);
+  $$InspectionItemsTableTableManager get inspectionItems =>
+      $$InspectionItemsTableTableManager(_db, _db.inspectionItems);
   $$InspectionSignaturesTableTableManager get inspectionSignatures =>
       $$InspectionSignaturesTableTableManager(_db, _db.inspectionSignatures);
   $$InspectionFilesTableTableManager get inspectionFiles =>

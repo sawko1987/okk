@@ -14,17 +14,23 @@ class AppEntryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final platform = getAppPlatform();
-    if (platform == AppPlatform.android) {
-      return const AndroidInspectionShell();
-    }
-
     final sessionAsync = ref.watch(activeSessionProvider);
     return sessionAsync.when(
-      data: (session) => session == null
-          ? const LoginScreen()
-          : const WindowsAdminShell(
+      data: (session) {
+        if (session == null) {
+          return const LoginScreen();
+        }
+
+        return switch (platform) {
+          AppPlatform.android => const AndroidInspectionShell(),
+          AppPlatform.windows => const WindowsAdminShell(
               section: WindowsAdminSection.dashboard,
             ),
+          AppPlatform.unsupported => const Scaffold(
+              body: Center(child: Text('Unsupported platform.')),
+            ),
+        };
+      },
       loading: () => const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       ),

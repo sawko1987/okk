@@ -4,16 +4,19 @@ Local-first Flutter application for Windows administration and Android quality i
 
 ## Current Stage
 
-The repository is now beyond foundation and in Stage 3 Windows master-data:
+The repository is now beyond foundation and spans Stage 3 Windows master-data, Stage 4A Android inspection completion, and Stage 5 Sync v1:
 
 - Flutter app scaffolded for Windows and Android
-- Drift-based SQLite bootstrap with schema v4
+- Drift-based SQLite bootstrap with schema v5
 - local storage layout under `app_data/`
 - local login/session flow with seeded default administrator
 - Windows admin sections for structure, objects, components, checklists, users, roles, audit, trash, and sync/export
 - component image import into local `media/components`
 - local reference package export into `sync/outgoing`
-- diagnostics, settings, audit log, and trash recovery screens
+- Android draft/result workflow with product-target selection, draft answers, local signatures, PDF generation, and queued result packages
+- Sync v1 orchestration with startup/manual sync, Yandex Disk transport, remote package upload/download, reference import on Android, result import on Windows, basic remote product locks, and best-effort Android pre/post sync around inspections
+- expanded diagnostics for pending/failed/conflict sync states on Windows and Android
+- audit log, settings, and trash recovery screens
 
 Detailed scope and implementation phases are documented in:
 
@@ -66,9 +69,26 @@ The application creates a local `app_data/` root with these directories:
 
 SQLite stores relative media/report paths; absolute filesystem paths are resolved from `app_data/` at runtime.
 
+Completed Android inspections additionally write:
+
+- signature images under `media/signatures/<inspection-id>/`
+- generated PDFs under `media/reports/<inspection-id>/`
+- local result packages under `sync/outgoing/inspection_<inspection-id>/`
+
+Published sync artifacts on Yandex Disk use the documented transport-only layout:
+
+- `manifest/global_manifest.json`
+- `reference_data/packages/reference_<package-id>.zip`
+- `results/incoming/result_<package-id>.zip`
+- `results/processed/`
+- `results/conflicts/`
+- `media/components/`
+- `locks/`
+
 ## Verification
 
 Current local verification status:
 
 - `flutter analyze` passes
-- `flutter test` passes
+- `flutter test test/app_database_test.dart` passes
+- inspection/sync tests need follow-up verification because `flutter test` currently hangs when loading the inspection modules in this environment

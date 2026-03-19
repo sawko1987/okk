@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/platform/app_platform.dart';
+import '../../../data/sync/sync_service.dart';
 import '../../auth/data/auth_service.dart';
 import '../../../data/storage/secure_settings_provider.dart';
 import '../data/admin_repositories.dart';
@@ -15,6 +17,8 @@ class SyncAdminScreen extends ConsumerStatefulWidget {
 class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
   late final TextEditingController _tokenController;
   bool _tokenLoaded = false;
+  bool _isSyncing = false;
+  bool _isPublishing = false;
 
   @override
   void initState() {
@@ -47,6 +51,8 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
   Widget build(BuildContext context) {
     final queueAsync = ref.watch(syncQueueEntriesProvider);
     final deviceAsync = ref.watch(deviceInfoProvider);
+    final syncDiagnosticsAsync = ref.watch(syncDiagnosticsProvider);
+    final auditEntriesAsync = ref.watch(auditEntriesProvider);
     final actorUserId = ref.watch(activeSessionProvider).valueOrNull?.userId;
     final canEdit = ref.watch(isAdministratorProvider);
 
@@ -81,16 +87,46 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                       child: const Text('Save token'),
                     ),
                     OutlinedButton(
-                      onPressed: canEdit
-                          ? () => _exportReferencePackage(actorUserId)
+                      onPressed: canEdit && !_isPublishing
+                          ? () => _publishReferencePackage(actorUserId)
                           : null,
-                      child: const Text('Export reference package'),
+                      child: Text(
+                        _isPublishing ? 'Publishing...' : 'Publish reference package',
+                      ),
+                    ),
+                    OutlinedButton(
+                      onPressed: canEdit && !_isSyncing
+                          ? () => _runSync(actorUserId)
+                          : null,
+                      child: Text(_isSyncing ? 'Running sync...' : 'Run sync now'),
                     ),
                   ],
                 ),
               ],
             ),
           ),
+        ),
+        const SizedBox(height: 16),
+        syncDiagnosticsAsync.when(
+          data: (diagnostics) => Card(
+            child: ListTile(
+              title: const Text('Sync diagnostics'),
+              subtitle: Text(
+                'last reference: ${diagnostics.lastReferencePackageId ?? 'n/a'}\n'
+                'last attempt: ${diagnostics.lastSyncAttemptAt ?? 'n/a'}\n'
+                'last success: ${diagnostics.lastSuccessAt ?? 'n/a'}\n'
+                'last conflict: ${diagnostics.lastConflictAt ?? 'n/a'}\n'
+                'last error: ${diagnostics.lastError ?? 'n/a'}\n'
+                'outgoing pending: ${diagnostics.pendingOutgoingCount}\n'
+                'incoming pending: ${diagnostics.pendingIncomingCount}\n'
+                'failed: ${diagnostics.failedQueueCount}\n'
+                'conflicts: ${diagnostics.conflictCount}',
+              ),
+              isThreeLine: true,
+            ),
+          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => Text('Failed to load sync diagnostics: $error'),
         ),
         const SizedBox(height: 16),
         deviceAsync.when(
@@ -109,6 +145,44 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
         ),
         const SizedBox(height: 16),
         Text(
+          'Recent sync issues',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 12),
+        auditEntriesAsync.when(
+          data: (entries) {
+            final issueEntries = entries
+                .where(
+                  (entry) =>
+                      entry.entry.actionType.startsWith('sync.') &&
+                      (entry.entry.resultStatus == 'error' ||
+                          entry.entry.resultStatus == 'conflict'),
+                )
+                .take(5)
+                .toList(growable: false);
+            if (issueEntries.isEmpty) {
+              return const Text('No recent sync conflicts or errors.');
+            }
+            return Column(
+              children: [
+                for (final entry in issueEntries)
+                  Card(
+                    child: ListTile(
+                      title: Text(entry.entry.actionType),
+                      subtitle: Text(
+                        '${entry.entry.happenedAt}\n${entry.entry.message ?? 'No details'}',
+                      ),
+                      isThreeLine: true,
+                    ),
+                  ),
+              ],
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => Text('Failed to load sync issues: $error'),
+        ),
+        const SizedBox(height: 16),
+        Text(
           'Local sync queue',
           style: Theme.of(context).textTheme.titleLarge,
         ),
@@ -121,8 +195,13 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                     for (final entry in queue)
                       Card(
                         child: ListTile(
-                          title: Text('${entry.packageType} • ${entry.packageId}'),
-                          subtitle: Text('${entry.status}\n${entry.localPath}'),
+                          title: Text('${entry.packageType} - ${entry.packageId}'),
+                          subtitle: Text(
+                            '${entry.status}\n'
+                            'attempts: ${entry.attemptCount}\n'
+                            '${entry.localPath}'
+                            '${entry.lastError == null ? '' : '\n${entry.lastError}'}',
+                          ),
                           isThreeLine: true,
                         ),
                       ),
@@ -139,6 +218,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
     await ref
         .read(secureSettingsStoreProvider)
         .writeYandexDiskToken(_tokenController.text.trim());
+    ref.invalidate(syncDiagnosticsProvider);
     if (!mounted) {
       return;
     }
@@ -147,21 +227,68 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
     );
   }
 
-  Future<void> _exportReferencePackage(String? actorUserId) async {
-    final result = await ref.read(referencePackageRepositoryProvider).exportPackage(
-          actorUserId: actorUserId,
-        );
-    ref.invalidate(syncQueueEntriesProvider);
-    ref.invalidate(auditEntriesProvider);
-    if (!mounted) {
-      return;
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Exported ${result.packageId} to ${result.exportDirectory.path}',
+  Future<void> _publishReferencePackage(String? actorUserId) async {
+    setState(() => _isPublishing = true);
+    try {
+      final result = await ref.read(syncServiceProvider).publishReferencePackage(
+            actorUserId: actorUserId,
+          );
+      ref.invalidate(syncQueueEntriesProvider);
+      ref.invalidate(auditEntriesProvider);
+      ref.invalidate(syncDiagnosticsProvider);
+      ref.invalidate(deviceInfoProvider);
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Published ${result.packageId} from ${result.exportDirectory.path}',
+          ),
         ),
-      ),
-    );
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.toString())),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isPublishing = false);
+      }
+    }
+  }
+
+  Future<void> _runSync(String? actorUserId) async {
+    setState(() => _isSyncing = true);
+    try {
+      final report = await ref.read(syncServiceProvider).runManualSync(
+            platform: AppPlatform.windows,
+            actorUserId: actorUserId,
+          );
+      ref.invalidate(syncQueueEntriesProvider);
+      ref.invalidate(auditEntriesProvider);
+      ref.invalidate(syncDiagnosticsProvider);
+      ref.invalidate(deviceInfoProvider);
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(report.summaryLabel())),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.toString())),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSyncing = false);
+      }
+    }
   }
 }

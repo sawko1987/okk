@@ -14,7 +14,9 @@ import 'tables/component_images.dart';
 import 'tables/components.dart';
 import 'tables/departments.dart';
 import 'tables/device_info.dart';
+import 'tables/inspection_items.dart';
 import 'tables/inspection_files.dart';
+import 'tables/inspections.dart';
 import 'tables/inspection_signatures.dart';
 import 'tables/locks.dart';
 import 'tables/object_relations.dart';
@@ -48,6 +50,8 @@ part 'app_database.g.dart';
     SyncQueue,
     Locks,
     ComponentImages,
+    Inspections,
+    InspectionItems,
     InspectionSignatures,
     InspectionFiles,
     TrashBin,
@@ -78,6 +82,7 @@ class AppDatabase extends _$AppDatabase {
       await migrator.createAll();
       await _createCustomIndexes();
       await _createAdminIndexes();
+      await _createInspectionIndexes();
     },
     onUpgrade: (migrator, from, to) async {
       if (from < 2) {
@@ -107,6 +112,12 @@ class AppDatabase extends _$AppDatabase {
         await migrator.createTable(auditLog);
         await migrator.createTable(trashBin);
         await _createAdminIndexes();
+      }
+
+      if (from < 5) {
+        await migrator.createTable(inspections);
+        await migrator.createTable(inspectionItems);
+        await _createInspectionIndexes();
       }
     },
   );
@@ -177,6 +188,27 @@ class AppDatabase extends _$AppDatabase {
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_trash_bin_deleted_at ON trash_bin (deleted_at);',
+    );
+  }
+
+  Future<void> _createInspectionIndexes() async {
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_inspections_device_id ON inspections (device_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_inspections_user_id ON inspections (user_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_inspections_target_object_id ON inspections (target_object_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_inspections_status ON inspections (status);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_inspection_items_inspection_id ON inspection_items (inspection_id);',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_inspection_items_checklist_item_id ON inspection_items (checklist_item_id);',
     );
   }
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/platform/app_platform.dart';
+import '../../../data/sync/sync_service.dart';
 import '../../admin/presentation/audit_log_screen.dart';
 import '../../admin/presentation/roles_admin_screen.dart';
 import '../../admin/presentation/sync_admin_screen.dart';
@@ -17,7 +19,7 @@ import 'structure_admin_screen.dart';
 import 'windows_admin_sections.dart';
 import 'windows_dashboard_screen.dart';
 
-class WindowsAdminShell extends ConsumerWidget {
+class WindowsAdminShell extends ConsumerStatefulWidget {
   const WindowsAdminShell({
     super.key,
     required this.section,
@@ -26,14 +28,30 @@ class WindowsAdminShell extends ConsumerWidget {
   final WindowsAdminSection section;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WindowsAdminShell> createState() => _WindowsAdminShellState();
+}
+
+class _WindowsAdminShellState extends ConsumerState<WindowsAdminShell> {
+  bool _startupSyncTriggered = false;
+
+  @override
+  Widget build(BuildContext context) {
     final paths = ref.watch(appPathsProvider);
     final database = ref.watch(appDatabaseProvider);
     final session = ref.watch(activeSessionProvider).valueOrNull;
+    if (!_startupSyncTriggered && session != null) {
+      _startupSyncTriggered = true;
+      Future<void>.microtask(
+        () => ref.read(syncServiceProvider).syncOnStartup(
+              platform: AppPlatform.windows,
+              actorUserId: session.userId,
+            ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Windows admin: ${section.label}'),
+        title: Text('Windows admin: ${widget.section.label}'),
         actions: [
           if (session != null)
             Center(
@@ -67,7 +85,7 @@ class WindowsAdminShell extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           NavigationRail(
-            selectedIndex: windowsAdminSections.indexOf(section),
+            selectedIndex: windowsAdminSections.indexOf(widget.section),
             labelType: NavigationRailLabelType.all,
             onDestinationSelected: (index) {
               context.go(windowsAdminSections[index].routePath);
@@ -84,7 +102,7 @@ class WindowsAdminShell extends ConsumerWidget {
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 180),
-              child: switch (section) {
+              child: switch (widget.section) {
                 WindowsAdminSection.dashboard => WindowsDashboardScreen(
                     key: const ValueKey('dashboard'),
                     databasePath: paths.databaseFile.path,
