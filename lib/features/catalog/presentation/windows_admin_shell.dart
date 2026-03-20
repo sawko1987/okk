@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/auth/app_permissions.dart';
 import '../../../core/platform/app_platform.dart';
 import '../../../data/sync/sync_service.dart';
+import '../../admin/presentation/backup_admin_screen.dart';
 import '../../admin/presentation/audit_log_screen.dart';
 import '../../admin/presentation/inspection_history_screen.dart';
 import '../../admin/presentation/roles_admin_screen.dart';
@@ -61,7 +62,7 @@ class _WindowsAdminShellState extends ConsumerState<WindowsAdminShell> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Windows admin: ${effectiveSection.label}'),
+        title: Text('Администрирование Windows: ${effectiveSection.label}'),
         actions: [
           if (session != null)
             Center(
@@ -72,11 +73,11 @@ class _WindowsAdminShellState extends ConsumerState<WindowsAdminShell> {
             ),
           TextButton(
             onPressed: () => context.go('/diagnostics'),
-            child: const Text('Diagnostics'),
+            child: const Text('Диагностика'),
           ),
           TextButton(
             onPressed: () => context.go('/settings'),
-            child: const Text('Settings'),
+            child: const Text('Настройки'),
           ),
           TextButton(
             onPressed: () async {
@@ -87,7 +88,7 @@ class _WindowsAdminShellState extends ConsumerState<WindowsAdminShell> {
               }
               context.go('/login');
             },
-            child: const Text('Logout'),
+            child: const Text('Выход'),
           ),
         ],
       ),
@@ -145,6 +146,9 @@ class _WindowsAdminShellState extends ConsumerState<WindowsAdminShell> {
                 ),
                 WindowsAdminSection.trash => const TrashBinScreen(
                   key: ValueKey('trash'),
+                ),
+                WindowsAdminSection.backup => const BackupAdminScreen(
+                  key: ValueKey('backup'),
                 ),
                 WindowsAdminSection.sync => const SyncAdminScreen(
                   key: ValueKey('sync'),

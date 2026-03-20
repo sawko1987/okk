@@ -21,6 +21,7 @@ class AppPaths {
   Directory get cacheDir => Directory(p.join(rootDir.path, 'cache'));
   Directory get imageCacheDir => Directory(p.join(cacheDir.path, 'images'));
   Directory get logsDir => Directory(p.join(rootDir.path, 'logs'));
+  Directory get backupDir => Directory(p.join(rootDir.path, 'backup'));
 
   File get databaseFile => File(p.join(dbDir.path, 'main.db'));
   File get logFile => File(p.join(logsDir.path, 'app.log'));
@@ -81,6 +82,7 @@ class AppPaths {
       cacheDir,
       imageCacheDir,
       logsDir,
+      backupDir,
     ];
 
     for (final directory in directories) {

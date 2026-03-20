@@ -16,6 +16,7 @@ void main() {
     expect(paths.componentsDir.existsSync(), isTrue);
     expect(paths.syncOutgoingDir.existsSync(), isTrue);
     expect(paths.logsDir.existsSync(), isTrue);
+    expect(paths.backupDir.existsSync(), isTrue);
     expect(paths.databaseFile.path, endsWith(p.join('db', 'main.db')));
   });
 

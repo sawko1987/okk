@@ -11,6 +11,7 @@ enum WindowsAdminSection {
   roles,
   audit,
   trash,
+  backup,
   sync,
 }
 
@@ -25,6 +26,7 @@ const windowsAdminSections = <WindowsAdminSection>[
   WindowsAdminSection.roles,
   WindowsAdminSection.audit,
   WindowsAdminSection.trash,
+  WindowsAdminSection.backup,
   WindowsAdminSection.sync,
 ];
 
@@ -40,21 +42,23 @@ extension WindowsAdminSectionX on WindowsAdminSection {
     WindowsAdminSection.roles => 'roles',
     WindowsAdminSection.audit => 'audit',
     WindowsAdminSection.trash => 'trash',
+    WindowsAdminSection.backup => 'backup',
     WindowsAdminSection.sync => 'sync',
   };
 
   String get label => switch (this) {
-    WindowsAdminSection.dashboard => 'Dashboard',
-    WindowsAdminSection.structure => 'Structure',
-    WindowsAdminSection.objects => 'Objects',
-    WindowsAdminSection.components => 'Components',
-    WindowsAdminSection.checklists => 'Checklists',
-    WindowsAdminSection.inspections => 'Inspections',
-    WindowsAdminSection.users => 'Users',
-    WindowsAdminSection.roles => 'Roles',
-    WindowsAdminSection.audit => 'Audit',
-    WindowsAdminSection.trash => 'Trash',
-    WindowsAdminSection.sync => 'Sync',
+    WindowsAdminSection.dashboard => 'Сводка',
+    WindowsAdminSection.structure => 'Структура',
+    WindowsAdminSection.objects => 'Объекты',
+    WindowsAdminSection.components => 'Компоненты',
+    WindowsAdminSection.checklists => 'Чек-листы',
+    WindowsAdminSection.inspections => 'Проверки',
+    WindowsAdminSection.users => 'Пользователи',
+    WindowsAdminSection.roles => 'Роли',
+    WindowsAdminSection.audit => 'Журнал',
+    WindowsAdminSection.trash => 'Корзина',
+    WindowsAdminSection.backup => 'Резервные копии',
+    WindowsAdminSection.sync => 'Синхронизация',
   };
 
   IconData get icon => switch (this) {
@@ -68,6 +72,7 @@ extension WindowsAdminSectionX on WindowsAdminSection {
     WindowsAdminSection.roles => Icons.badge_outlined,
     WindowsAdminSection.audit => Icons.history_outlined,
     WindowsAdminSection.trash => Icons.delete_sweep_outlined,
+    WindowsAdminSection.backup => Icons.archive_outlined,
     WindowsAdminSection.sync => Icons.sync_outlined,
   };
 
