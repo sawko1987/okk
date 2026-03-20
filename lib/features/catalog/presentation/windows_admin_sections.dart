@@ -6,6 +6,7 @@ enum WindowsAdminSection {
   objects,
   components,
   checklists,
+  inspections,
   users,
   roles,
   audit,
@@ -19,6 +20,7 @@ const windowsAdminSections = <WindowsAdminSection>[
   WindowsAdminSection.objects,
   WindowsAdminSection.components,
   WindowsAdminSection.checklists,
+  WindowsAdminSection.inspections,
   WindowsAdminSection.users,
   WindowsAdminSection.roles,
   WindowsAdminSection.audit,
@@ -28,43 +30,46 @@ const windowsAdminSections = <WindowsAdminSection>[
 
 extension WindowsAdminSectionX on WindowsAdminSection {
   String get pathSegment => switch (this) {
-        WindowsAdminSection.dashboard => '',
-        WindowsAdminSection.structure => 'structure',
-        WindowsAdminSection.objects => 'objects',
-        WindowsAdminSection.components => 'components',
-        WindowsAdminSection.checklists => 'checklists',
-        WindowsAdminSection.users => 'users',
-        WindowsAdminSection.roles => 'roles',
-        WindowsAdminSection.audit => 'audit',
-        WindowsAdminSection.trash => 'trash',
-        WindowsAdminSection.sync => 'sync',
-      };
+    WindowsAdminSection.dashboard => '',
+    WindowsAdminSection.structure => 'structure',
+    WindowsAdminSection.objects => 'objects',
+    WindowsAdminSection.components => 'components',
+    WindowsAdminSection.checklists => 'checklists',
+    WindowsAdminSection.inspections => 'inspections',
+    WindowsAdminSection.users => 'users',
+    WindowsAdminSection.roles => 'roles',
+    WindowsAdminSection.audit => 'audit',
+    WindowsAdminSection.trash => 'trash',
+    WindowsAdminSection.sync => 'sync',
+  };
 
   String get label => switch (this) {
-        WindowsAdminSection.dashboard => 'Dashboard',
-        WindowsAdminSection.structure => 'Structure',
-        WindowsAdminSection.objects => 'Objects',
-        WindowsAdminSection.components => 'Components',
-        WindowsAdminSection.checklists => 'Checklists',
-        WindowsAdminSection.users => 'Users',
-        WindowsAdminSection.roles => 'Roles',
-        WindowsAdminSection.audit => 'Audit',
-        WindowsAdminSection.trash => 'Trash',
-        WindowsAdminSection.sync => 'Sync',
-      };
+    WindowsAdminSection.dashboard => 'Dashboard',
+    WindowsAdminSection.structure => 'Structure',
+    WindowsAdminSection.objects => 'Objects',
+    WindowsAdminSection.components => 'Components',
+    WindowsAdminSection.checklists => 'Checklists',
+    WindowsAdminSection.inspections => 'Inspections',
+    WindowsAdminSection.users => 'Users',
+    WindowsAdminSection.roles => 'Roles',
+    WindowsAdminSection.audit => 'Audit',
+    WindowsAdminSection.trash => 'Trash',
+    WindowsAdminSection.sync => 'Sync',
+  };
 
   IconData get icon => switch (this) {
-        WindowsAdminSection.dashboard => Icons.dashboard_outlined,
-        WindowsAdminSection.structure => Icons.account_tree_outlined,
-        WindowsAdminSection.objects => Icons.device_hub_outlined,
-        WindowsAdminSection.components => Icons.memory_outlined,
-        WindowsAdminSection.checklists => Icons.checklist_outlined,
-        WindowsAdminSection.users => Icons.people_outline,
-        WindowsAdminSection.roles => Icons.badge_outlined,
-        WindowsAdminSection.audit => Icons.history_outlined,
-        WindowsAdminSection.trash => Icons.delete_sweep_outlined,
-        WindowsAdminSection.sync => Icons.sync_outlined,
-      };
+    WindowsAdminSection.dashboard => Icons.dashboard_outlined,
+    WindowsAdminSection.structure => Icons.account_tree_outlined,
+    WindowsAdminSection.objects => Icons.device_hub_outlined,
+    WindowsAdminSection.components => Icons.memory_outlined,
+    WindowsAdminSection.checklists => Icons.checklist_outlined,
+    WindowsAdminSection.inspections => Icons.assignment_turned_in_outlined,
+    WindowsAdminSection.users => Icons.people_outline,
+    WindowsAdminSection.roles => Icons.badge_outlined,
+    WindowsAdminSection.audit => Icons.history_outlined,
+    WindowsAdminSection.trash => Icons.delete_sweep_outlined,
+    WindowsAdminSection.sync => Icons.sync_outlined,
+  };
 
   String get routePath => this == WindowsAdminSection.dashboard
       ? '/windows'

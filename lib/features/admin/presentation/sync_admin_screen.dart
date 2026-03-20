@@ -120,6 +120,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
               subtitle: Text(
                 'last reference: ${diagnostics.lastReferencePackageId ?? 'n/a'}\n'
                 'last attempt: ${diagnostics.lastSyncAttemptAt ?? 'n/a'}\n'
+                'last retry: ${diagnostics.lastRetryAt ?? 'n/a'}\n'
                 'last success: ${diagnostics.lastSuccessAt ?? 'n/a'}\n'
                 'last conflict: ${diagnostics.lastConflictAt ?? 'n/a'}\n'
                 'last error: ${diagnostics.lastError ?? 'n/a'}\n'
@@ -128,6 +129,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                 'outgoing pending: ${diagnostics.pendingOutgoingCount}\n'
                 'incoming pending: ${diagnostics.pendingIncomingCount}\n'
                 'failed: ${diagnostics.failedQueueCount}\n'
+                'retry eligible: ${diagnostics.retryEligibleCount}\n'
                 'conflicts: ${diagnostics.conflictCount}',
               ),
               isThreeLine: true,
@@ -208,6 +210,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                           subtitle: Text(
                             '${entry.status}\n'
                             'attempts: ${entry.attemptCount}\n'
+                            'next retry: ${entry.nextAttemptAt ?? 'n/a'}\n'
                             '${entry.localPath}'
                             '${entry.lastError == null ? '' : '\n${entry.lastError}'}',
                           ),

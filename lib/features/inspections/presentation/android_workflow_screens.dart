@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/auth/app_permissions.dart';
 import '../../../core/platform/app_platform.dart';
 import '../../../data/sync/sync_service.dart';
+import '../../../ui/android_app_bar_actions.dart';
 import '../../auth/data/auth_service.dart';
 import '../data/inspection_repositories.dart';
 import 'android_routes.dart';
@@ -43,6 +44,45 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
     final canViewResults =
         roleHasCapability(session.roleCode, AppCapability.viewResults);
     final canRunSync = roleHasCapability(session.roleCode, AppCapability.runSync);
+    final workshopsAsync = ref.watch(inspectionWorkshopsProvider);
+    final inspectionDiagnostics = ref.watch(androidInspectionDiagnosticsProvider);
+    final syncDiagnostics = ref.watch(syncDiagnosticsProvider);
+    final hasWorkshops = workshopsAsync.valueOrNull?.isNotEmpty == true;
+    final inspectionFlowEnabled =
+        canStartInspection && (workshopsAsync.isLoading || hasWorkshops);
+    final inspectionSubtitle = _inspectionFlowSubtitle(
+      canStartInspection: canStartInspection,
+      workshopsAsync: workshopsAsync,
+    );
+    final draftSubtitle = canStartInspection
+        ? inspectionDiagnostics.when(
+            data: (diagnostics) => diagnostics.localDraftCount == 0
+                ? 'Resume local drafts that are still editable.'
+                : 'Resume ${diagnostics.localDraftCount} local drafts that are still editable.',
+            loading: () => 'Checking local drafts...',
+            error: (_, _) => 'Resume local drafts that are still editable.',
+          )
+        : 'Drafts are unavailable for this role.';
+    final resultSubtitle = canViewResults
+        ? inspectionDiagnostics.when(
+            data: (diagnostics) => diagnostics.conflictCount > 0
+                ? 'Review completed results and ${diagnostics.conflictCount} conflict case(s).'
+                : 'Open completed, queued, synced, or conflict results.',
+            loading: () => 'Loading inspection result summary...',
+            error: (_, _) => 'Open completed, queued, synced, or conflict results.',
+          )
+        : 'This role cannot review inspection results.';
+    final syncSubtitle = canRunSync
+        ? syncDiagnostics.when(
+            data: (diagnostics) => diagnostics.transportConfigured
+                ? diagnostics.failedQueueCount > 0 || diagnostics.retryEligibleCount > 0
+                    ? 'Review queue issues and run manual synchronization.'
+                    : 'Review queue state and run manual sync.'
+                : 'Configure Yandex Disk access in settings before running sync.',
+            loading: () => 'Loading sync status...',
+            error: (_, _) => 'Review queue state and run manual sync.',
+          )
+        : 'Sync is unavailable for this role.';
 
     return Scaffold(
       appBar: AppBar(
@@ -64,24 +104,116 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
             ),
           ),
           const SizedBox(height: 16),
+          ...inspectionDiagnostics.when(
+            data: (diagnostics) => [
+              _StatusCard(
+                title: 'Workspace status',
+                lines: [
+                  diagnostics.lastReferencePackageId == null
+                      ? 'Reference data: not synced yet'
+                      : 'Reference package: ${diagnostics.lastReferencePackageId}',
+                  'Local drafts: ${diagnostics.localDraftCount}',
+                  'Queued results: ${diagnostics.queuedResultCount}',
+                  'Failed queue entries: ${diagnostics.failedQueueCount}',
+                  'Conflicts: ${diagnostics.conflictCount}',
+                  if (diagnostics.lastReferenceSyncAt != null)
+                    'Last reference sync: ${diagnostics.lastReferenceSyncAt}',
+                  if (diagnostics.lastCompletedInspectionAt != null)
+                    'Last completed inspection: ${diagnostics.lastCompletedInspectionAt}',
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (diagnostics.lastReferencePackageId == null || !hasWorkshops)
+                const _CalloutCard(
+                  icon: Icons.cloud_off_outlined,
+                  title: 'Reference data is not ready',
+                  message:
+                      'Run synchronization before starting a new inspection. Until reference data is available, the inspection flow stays unavailable.',
+                ),
+              if (diagnostics.hasPendingSyncWork || diagnostics.conflictCount > 0)
+                _CalloutCard(
+                  icon: diagnostics.conflictCount > 0
+                      ? Icons.warning_amber_outlined
+                      : Icons.sync_problem_outlined,
+                  title: diagnostics.conflictCount > 0
+                      ? 'Conflicts need administrator review'
+                      : 'Pending sync work is waiting',
+                  message: diagnostics.conflictCount > 0
+                      ? 'Completed inspections include conflict cases. Open results or diagnostics before continuing.'
+                      : 'Queued or failed sync work is stored locally. Open synchronization to retry when ready.',
+                ),
+            ],
+            loading: () => const [
+              _StatusCard(
+                title: 'Workspace status',
+                lines: ['Loading local Android workspace status...'],
+              ),
+              SizedBox(height: 12),
+            ],
+            error: (error, _) => [
+              _CalloutCard(
+                icon: Icons.error_outline,
+                title: 'Workspace status unavailable',
+                message: 'Failed to load Android workspace status: $error',
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+          ...syncDiagnostics.when(
+            data: (diagnostics) => [
+              _StatusCard(
+                title: 'Sync status',
+                lines: [
+                  'Token configured: ${diagnostics.transportConfigured ? 'yes' : 'no'}',
+                  'Connected: ${diagnostics.yandexDiskConnected ? 'yes' : 'no'}',
+                  'Retry-eligible queue: ${diagnostics.retryEligibleCount}',
+                  if (diagnostics.lastSyncAttemptAt != null)
+                    'Last sync attempt: ${diagnostics.lastSyncAttemptAt}',
+                  if (diagnostics.lastError != null)
+                    'Last sync error: ${diagnostics.lastError}',
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (!diagnostics.transportConfigured)
+                _ActionCalloutCard(
+                  icon: Icons.vpn_key_outlined,
+                  title: 'Yandex Disk token is not configured',
+                  message:
+                      'Open Android settings and add the OAuth token before running synchronization.',
+                  actionLabel: 'Open settings',
+                  onPressed: () => context.push(AndroidRoutes.settings),
+                ),
+            ],
+            loading: () => const [
+              _StatusCard(
+                title: 'Sync status',
+                lines: ['Loading synchronization diagnostics...'],
+              ),
+              SizedBox(height: 12),
+            ],
+            error: (error, _) => [
+              _CalloutCard(
+                icon: Icons.error_outline,
+                title: 'Sync status unavailable',
+                message: 'Failed to load sync diagnostics: $error',
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
           Text('Modes', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
           _ModeCard(
             icon: Icons.fact_check_outlined,
             title: 'Inspection flow',
-            subtitle: canStartInspection
-                ? 'Select workshop, product, target, review components, and open a draft.'
-                : 'This role cannot create or edit inspections.',
-            enabled: canStartInspection,
+            subtitle: inspectionSubtitle,
+            enabled: inspectionFlowEnabled,
             onTap: () => context.push(AndroidRoutes.workshops),
           ),
           const SizedBox(height: 12),
           _ModeCard(
             icon: Icons.edit_note_outlined,
             title: 'Draft inspections',
-            subtitle: canStartInspection
-                ? 'Resume local drafts that are still editable.'
-                : 'Drafts are unavailable for this role.',
+            subtitle: draftSubtitle,
             enabled: canStartInspection,
             onTap: () => context.push(AndroidRoutes.drafts),
           ),
@@ -89,9 +221,7 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
           _ModeCard(
             icon: Icons.assignment_turned_in_outlined,
             title: 'Inspection results',
-            subtitle: canViewResults
-                ? 'Open completed, queued, synced, or conflict results.'
-                : 'This role cannot review inspection results.',
+            subtitle: resultSubtitle,
             enabled: canViewResults,
             onTap: () => context.push(AndroidRoutes.results),
           ),
@@ -99,9 +229,7 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
           _ModeCard(
             icon: Icons.sync_outlined,
             title: 'Synchronization',
-            subtitle: canRunSync
-                ? 'Review queue state and run manual sync.'
-                : 'Sync is unavailable for this role.',
+            subtitle: syncSubtitle,
             enabled: canRunSync,
             onTap: () => context.push(AndroidRoutes.sync),
           ),
@@ -659,7 +787,19 @@ class AndroidDraftsScreen extends ConsumerWidget {
           ? draftsAsync.when(
               data: (drafts) {
                 if (drafts.isEmpty) {
-                  return const Center(child: Text('No draft inspections yet.'));
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: _ActionCalloutCard(
+                        icon: Icons.edit_note_outlined,
+                        title: 'No draft inspections yet',
+                        message:
+                            'Start a new inspection from the workspace flow to create the first draft on this device.',
+                        actionLabel: 'Open inspection flow',
+                        onPressed: () => context.go(AndroidRoutes.workshops),
+                      ),
+                    ),
+                  );
                 }
 
                 return ListView.separated(
@@ -721,7 +861,19 @@ class AndroidResultsScreen extends ConsumerWidget {
           ? resultsAsync.when(
               data: (results) {
                 if (results.isEmpty) {
-                  return const Center(child: Text('No completed inspections yet.'));
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: _ActionCalloutCard(
+                        icon: Icons.assignment_turned_in_outlined,
+                        title: 'No completed inspections yet',
+                        message:
+                            'Completed inspections will appear here after local completion and can then be reviewed or synchronized.',
+                        actionLabel: 'Open workspace',
+                        onPressed: () => context.go(AndroidRoutes.home),
+                      ),
+                    ),
+                  );
                 }
 
                 return ListView.separated(
@@ -803,16 +955,32 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
                   if (!canRunSync)
                     const Text('This role cannot run synchronization.')
                   else
-                    FilledButton.icon(
-                      onPressed: _isSyncing ? null : () => _runSync(session),
-                      icon: _isSyncing
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.sync),
-                      label: const Text('Sync now'),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: [
+                        FilledButton.icon(
+                          onPressed: _isSyncing ? null : () => _runSync(session),
+                          icon: _isSyncing
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.sync),
+                          label: const Text('Sync now'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () => context.push(AndroidRoutes.settings),
+                          icon: const Icon(Icons.settings_outlined),
+                          label: const Text('Settings'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () => context.push(AndroidRoutes.diagnostics),
+                          icon: const Icon(Icons.monitor_heart_outlined),
+                          label: const Text('Diagnostics'),
+                        ),
+                      ],
                     ),
                 ],
               ),
@@ -834,6 +1002,22 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
                   'Last completed inspection: ${diagnostics.lastCompletedInspectionAt ?? 'n/a'}',
                 ],
               ),
+              if (diagnostics.lastReferencePackageId == null)
+                _ActionCalloutCard(
+                  icon: Icons.cloud_download_outlined,
+                  title: 'Reference data has not been synchronized yet',
+                  message:
+                      'Run synchronization after the Windows administrator publishes a reference package.',
+                  actionLabel: 'Refresh workspace',
+                  onPressed: () => context.go(AndroidRoutes.home),
+                ),
+              if (diagnostics.hasPendingSyncWork)
+                const _CalloutCard(
+                  icon: Icons.schedule_outlined,
+                  title: 'Pending local sync work',
+                  message:
+                      'Queued or failed result packages are still stored on this device until synchronization completes successfully.',
+                ),
             ],
             loading: () => const [
               _InfoCard(title: 'Inspection workspace', lines: ['loading...']),
@@ -852,6 +1036,15 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
                 title: 'Transport diagnostics',
                 lines: _syncLines(diagnostics),
               ),
+              if (!diagnostics.transportConfigured)
+                _ActionCalloutCard(
+                  icon: Icons.vpn_key_outlined,
+                  title: 'Yandex Disk token is missing',
+                  message:
+                      'Open Android settings and store the OAuth token before running synchronization.',
+                  actionLabel: 'Open settings',
+                  onPressed: () => context.push(AndroidRoutes.settings),
+                ),
             ],
             loading: () => const [
               _InfoCard(title: 'Transport diagnostics', lines: ['loading...']),
@@ -901,43 +1094,6 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
   }
 }
 
-List<Widget> buildAndroidAppBarActions({
-  required BuildContext context,
-  required WidgetRef ref,
-  required AuthSession session,
-}) {
-  return [
-    Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Text(session.fullName),
-      ),
-    ),
-    IconButton(
-      onPressed: () => context.push(AndroidRoutes.diagnostics),
-      icon: const Icon(Icons.monitor_heart_outlined),
-      tooltip: 'Diagnostics',
-    ),
-    IconButton(
-      onPressed: () => context.push(AndroidRoutes.settings),
-      icon: const Icon(Icons.settings_outlined),
-      tooltip: 'Settings',
-    ),
-    IconButton(
-      onPressed: () async {
-        await ref.read(authServiceProvider).logout();
-        refreshAuthProviders(ref);
-        if (!context.mounted) {
-          return;
-        }
-        context.go('/');
-      },
-      icon: const Icon(Icons.logout_outlined),
-      tooltip: 'Logout',
-    ),
-  ];
-}
-
 List<String> _syncLines(SyncDiagnosticsSnapshot diagnostics) {
   return [
     'Device id: ${diagnostics.deviceId ?? 'n/a'}',
@@ -945,15 +1101,34 @@ List<String> _syncLines(SyncDiagnosticsSnapshot diagnostics) {
     'Last result pull: ${diagnostics.lastResultPullAt ?? 'n/a'}',
     'Last success: ${diagnostics.lastSuccessAt ?? 'n/a'}',
     'Last attempt: ${diagnostics.lastSyncAttemptAt ?? 'n/a'}',
+    'Last retry run: ${diagnostics.lastRetryAt ?? 'n/a'}',
     'Last conflict: ${diagnostics.lastConflictAt ?? 'n/a'}',
     'Last error: ${diagnostics.lastError ?? 'n/a'}',
     'Pending outgoing: ${diagnostics.pendingOutgoingCount}',
     'Pending incoming: ${diagnostics.pendingIncomingCount}',
     'Failed queue entries: ${diagnostics.failedQueueCount}',
+    'Retry-eligible queue entries: ${diagnostics.retryEligibleCount}',
     'Conflict count: ${diagnostics.conflictCount}',
     'Token configured: ${diagnostics.transportConfigured ? 'yes' : 'no'}',
     'Connected: ${diagnostics.yandexDiskConnected ? 'yes' : 'no'}',
   ];
+}
+
+String _inspectionFlowSubtitle({
+  required bool canStartInspection,
+  required AsyncValue<List<InspectionWorkshopOption>> workshopsAsync,
+}) {
+  if (!canStartInspection) {
+    return 'This role cannot create or edit inspections.';
+  }
+  return workshopsAsync.when(
+    data: (workshops) => workshops.isEmpty
+        ? 'No synced workshops with products are available yet. Run synchronization first.'
+        : 'Select workshop, product, target, review components, and open a draft.',
+    loading: () => 'Checking synced workshops and products...',
+    error: (error, _) =>
+        'Failed to load synced workshops. Review diagnostics before starting a new inspection.',
+  );
 }
 
 class _ModeCard extends StatelessWidget {
@@ -1015,6 +1190,111 @@ class _InfoCard extends StatelessWidget {
               Text(line),
               const SizedBox(height: 4),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusCard extends StatelessWidget {
+  const _StatusCard({
+    required this.title,
+    required this.lines,
+  });
+
+  final String title;
+  final List<String> lines;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            for (final line in lines) ...[
+              Text(line),
+              const SizedBox(height: 4),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CalloutCard extends StatelessWidget {
+  const _CalloutCard({
+    required this.icon,
+    required this.title,
+    required this.message,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(title),
+        subtitle: Text(message),
+      ),
+    );
+  }
+}
+
+class _ActionCalloutCard extends StatelessWidget {
+  const _ActionCalloutCard({
+    required this.icon,
+    required this.title,
+    required this.message,
+    required this.actionLabel,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+  final String actionLabel;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(message),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton(
+                onPressed: onPressed,
+                child: Text(actionLabel),
+              ),
+            ),
           ],
         ),
       ),

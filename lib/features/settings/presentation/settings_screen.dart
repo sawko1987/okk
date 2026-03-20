@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/app_permissions.dart';
 import '../../../core/config/app_constants.dart';
+import '../../../core/platform/app_platform.dart';
 import '../../../data/storage/app_paths_provider.dart';
 import '../../../data/storage/secure_settings_provider.dart';
 import '../../../data/sync/sync_service.dart';
+import '../../../ui/android_app_bar_actions.dart';
 import '../../auth/data/auth_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -57,12 +59,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       session?.roleCode,
       AppCapability.manageSyncSettings,
     );
+    final isAndroid =
+        getAppPlatform() == AppPlatform.android && session != null;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(
+        title: const Text('Settings'),
+        actions: isAndroid
+            ? buildAndroidAppBarActions(
+                context: context,
+                ref: ref,
+                session: session,
+              )
+            : null,
+      ),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
+          if (isAndroid) ...[
+            const Card(
+              child: ListTile(
+                leading: Icon(Icons.phone_android_outlined),
+                title: Text('Android device settings'),
+                subtitle: Text(
+                  'Use this screen to confirm local storage paths and manage Yandex Disk access for the current device.',
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           _SettingsCard(
             title: 'Application',
             children: [
@@ -138,6 +163,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     _SettingsRow(
                       label: 'Last sync success',
                       value: diagnostics.lastSuccessAt ?? 'not available',
+                    ),
+                    _SettingsRow(
+                      label: 'Last retry run',
+                      value: diagnostics.lastRetryAt ?? 'not available',
+                    ),
+                    _SettingsRow(
+                      label: 'Retry-eligible queue entries',
+                      value: '${diagnostics.retryEligibleCount}',
                     ),
                     _SettingsRow(
                       label: 'Last sync error',

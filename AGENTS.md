@@ -20,6 +20,8 @@ Use Flutter tooling from the repository root once the app is created:
 ## Coding Style & Naming Conventions
 Follow Dart defaults: 2-space indentation, trailing commas in multiline widgets, and one public type per file where practical. Use `snake_case.dart` for files, `PascalCase` for classes, `camelCase` for methods and fields, and suffix state-management files consistently, for example `inspection_controller.dart` and `inspection_state.dart`.
 
+Application localization requirement: all user-facing text must be in Russian. This includes screen titles, buttons, menus, hints, empty states, validation messages, dialogs, notifications, diagnostics intended for operators, generated PDF labels, and administrator/user instructions shipped with the product. English is allowed only for source code identifiers, file names, package names, protocol fields, and other technical internals that are not shown to end users.
+
 Run `dart format .` before submitting changes. Treat analyzer warnings as blockers.
 
 ## Testing Guidelines

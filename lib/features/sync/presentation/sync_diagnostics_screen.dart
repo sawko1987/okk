@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/bootstrap/bootstrap_data.dart';
 import '../../../core/config/app_constants.dart';
+import '../../../core/platform/app_platform.dart';
 import '../../../data/storage/app_paths_provider.dart';
 import '../../../data/sync/sync_service.dart';
+import '../../../ui/android_app_bar_actions.dart';
+import '../../auth/data/auth_service.dart';
 import '../../inspections/data/inspection_repositories.dart';
 
 class SyncDiagnosticsScreen extends ConsumerWidget {
@@ -14,14 +17,38 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final bootstrap = ref.watch(bootstrapDataProvider);
     final paths = ref.watch(appPathsProvider);
+    final session = ref.watch(activeSessionProvider).valueOrNull;
     final inspectionDiagnostics = ref.watch(androidInspectionDiagnosticsProvider);
     final syncDiagnostics = ref.watch(syncDiagnosticsProvider);
+    final isAndroid =
+        getAppPlatform() == AppPlatform.android && session != null;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Diagnostics')),
+      appBar: AppBar(
+        title: const Text('Diagnostics'),
+        actions: isAndroid
+            ? buildAndroidAppBarActions(
+                context: context,
+                ref: ref,
+                session: session,
+              )
+            : null,
+      ),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
+          if (isAndroid) ...[
+            const Card(
+              child: ListTile(
+                leading: Icon(Icons.monitor_heart_outlined),
+                title: Text('Android diagnostics'),
+                subtitle: Text(
+                  'Use diagnostics to verify local reference data, queued results, and Yandex Disk connectivity before field work.',
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           _DiagnosticTile(title: 'App version', value: AppConstants.appVersion),
           _DiagnosticTile(
             title: 'Database schema version',
@@ -115,6 +142,10 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
                 value: diagnostics.lastSyncAttemptAt ?? 'not available',
               ),
               _DiagnosticTile(
+                title: 'Last retry run',
+                value: diagnostics.lastRetryAt ?? 'not available',
+              ),
+              _DiagnosticTile(
                 title: 'Last conflict',
                 value: diagnostics.lastConflictAt ?? 'not available',
               ),
@@ -133,6 +164,10 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
               _DiagnosticTile(
                 title: 'Failed queue entries',
                 value: '${diagnostics.failedQueueCount}',
+              ),
+              _DiagnosticTile(
+                title: 'Retry-eligible queue entries',
+                value: '${diagnostics.retryEligibleCount}',
               ),
               _DiagnosticTile(
                 title: 'Conflict count',

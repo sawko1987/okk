@@ -175,6 +175,7 @@ class _AndroidInspectionHomeTabState
                   Text('Queued results: ${diagnostics.queuedResultCount}'),
                   Text('Failed sync queue: ${diagnostics.failedQueueCount}'),
                   Text('Conflicts: ${diagnostics.conflictCount}'),
+                  Text('Retry-eligible queue: ${diagnostics.retryEligibleCount}'),
                   Text(
                     diagnostics.lastReferencePackageId == null
                         ? 'Reference package: not synced yet'
@@ -184,6 +185,8 @@ class _AndroidInspectionHomeTabState
                     Text('Reference synced at: ${diagnostics.lastReferenceSyncAt}'),
                   if (diagnostics.lastSyncAttemptAt != null)
                     Text('Last sync attempt: ${diagnostics.lastSyncAttemptAt}'),
+                  if (diagnostics.lastRetryAt != null)
+                    Text('Last retry run: ${diagnostics.lastRetryAt}'),
                   if (diagnostics.lastCompletedInspectionAt != null)
                     Text(
                       'Last completed inspection: ${diagnostics.lastCompletedInspectionAt}',

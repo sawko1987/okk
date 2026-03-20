@@ -17,6 +17,7 @@ import '../../features/inspections/data/inspection_repositories.dart';
 import '../sqlite/app_database.dart';
 import '../sqlite/database_provider.dart';
 import '../sqlite/repository_support.dart';
+import '../sqlite/tables/sync_queue.dart';
 import '../storage/app_paths_provider.dart';
 import 'package_archive.dart';
 import 'yandex_disk_transport.dart';
@@ -30,11 +31,13 @@ class SyncDiagnosticsSnapshot {
     required this.lastResultPullAt,
     required this.lastSuccessAt,
     required this.lastSyncAttemptAt,
+    required this.lastRetryAt,
     required this.lastConflictAt,
     required this.lastError,
     required this.pendingOutgoingCount,
     required this.pendingIncomingCount,
     required this.failedQueueCount,
+    required this.retryEligibleCount,
     required this.conflictCount,
     required this.transportConfigured,
     required this.yandexDiskConnected,
@@ -47,11 +50,13 @@ class SyncDiagnosticsSnapshot {
   final String? lastResultPullAt;
   final String? lastSuccessAt;
   final String? lastSyncAttemptAt;
+  final String? lastRetryAt;
   final String? lastConflictAt;
   final String? lastError;
   final int pendingOutgoingCount;
   final int pendingIncomingCount;
   final int failedQueueCount;
+  final int retryEligibleCount;
   final int conflictCount;
   final bool transportConfigured;
   final bool yandexDiskConnected;
@@ -70,6 +75,15 @@ class SyncRunReport {
     required this.failureCount,
   });
 
+  const SyncRunReport.empty()
+      : status = SyncRunStatus.success,
+        referencePublishedCount = 0,
+        referencePulledCount = 0,
+        resultPushedCount = 0,
+        resultImportedCount = 0,
+        conflictCount = 0,
+        failureCount = 0;
+
   final SyncRunStatus status;
   final int referencePublishedCount;
   final int referencePulledCount;
@@ -79,6 +93,11 @@ class SyncRunReport {
   final int failureCount;
 
   bool get hasIssues => failureCount > 0 || conflictCount > 0;
+  bool get hasActivity =>
+      referencePublishedCount > 0 ||
+      referencePulledCount > 0 ||
+      resultPushedCount > 0 ||
+      resultImportedCount > 0;
 
   String summaryLabel() {
     final parts = <String>[];
@@ -148,6 +167,8 @@ final syncDiagnosticsProvider = FutureProvider<SyncDiagnosticsSnapshot>(
 );
 
 class SyncService {
+  static const _retryActionType = 'sync.retry.run';
+
   SyncService({
     required AppDatabase db,
     required AppPaths paths,
@@ -176,12 +197,77 @@ class SyncService {
     required AppPlatform platform,
     String? actorUserId,
   }) async {
+    await runAutomaticRetrySync(
+      platform: platform,
+      actorUserId: actorUserId,
+      trigger: 'startup',
+    );
+  }
+
+  Future<void> syncOnResume({
+    required AppPlatform platform,
+    String? actorUserId,
+  }) async {
+    await runAutomaticRetrySync(
+      platform: platform,
+      actorUserId: actorUserId,
+      trigger: 'resume',
+    );
+  }
+
+  Future<void> runAutomaticRetrySync({
+    required AppPlatform platform,
+    String? actorUserId,
+    required String trigger,
+  }) async {
+    if (actorUserId == null || platform == AppPlatform.unsupported) {
+      return;
+    }
+    if (!await _canRunSyncAutomatically(
+      platform: platform,
+      actorUserId: actorUserId,
+    )) {
+      return;
+    }
+    if (!await _transport.isConfigured()) {
+      return;
+    }
+
+    final retryEligibleCount = await _countRetryEligibleEntries();
     try {
-      await runManualSync(platform: platform, actorUserId: actorUserId);
+      final report = await _runSyncCore(
+        platform: platform,
+        actorUserId: actorUserId,
+        respectRetrySchedule: true,
+      );
+      await recordAudit(
+        _db,
+        actionType: _retryActionType,
+        resultStatus: report.hasIssues
+            ? 'partial'
+            : report.hasActivity || retryEligibleCount > 0
+                ? 'success'
+                : 'noop',
+        userId: actorUserId,
+        entityType: 'device',
+        entityId: (await _db.select(_db.deviceInfo).getSingleOrNull())?.id,
+        message: report.summaryLabel(),
+        payload: {
+          'platform': platform.name,
+          'trigger': trigger,
+          'retry_eligible': retryEligibleCount,
+          'reference_published': report.referencePublishedCount,
+          'reference_pulled': report.referencePulledCount,
+          'results_pushed': report.resultPushedCount,
+          'results_imported': report.resultImportedCount,
+          'conflicts': report.conflictCount,
+          'failures': report.failureCount,
+        },
+      );
     } catch (error, stackTrace) {
-      _logger.warning('Startup sync failed: $error');
+      _logger.warning('Automatic sync ($trigger) failed: $error');
       await _recordSyncFailure(
-        operation: 'sync.startup',
+        operation: _retryActionType,
         error: error,
         actorUserId: actorUserId,
         stackTrace: stackTrace,
@@ -208,6 +294,37 @@ class SyncService {
       payload: {'platform': platform.name},
     );
 
+    final report = await _runSyncCore(
+      platform: platform,
+      actorUserId: actorUserId,
+      respectRetrySchedule: false,
+    );
+    await recordAudit(
+      _db,
+      actionType: 'sync.run.finish',
+      resultStatus: report.hasIssues ? 'partial' : 'success',
+      userId: actorUserId,
+      entityType: 'device',
+      entityId: (await _db.select(_db.deviceInfo).getSingleOrNull())?.id,
+      message: report.summaryLabel(),
+      payload: {
+        'platform': platform.name,
+        'reference_published': report.referencePublishedCount,
+        'reference_pulled': report.referencePulledCount,
+        'results_pushed': report.resultPushedCount,
+        'results_imported': report.resultImportedCount,
+        'conflicts': report.conflictCount,
+        'failures': report.failureCount,
+      },
+    );
+    return report;
+  }
+
+  Future<SyncRunReport> _runSyncCore({
+    required AppPlatform platform,
+    required String? actorUserId,
+    required bool respectRetrySchedule,
+  }) async {
     await _ensureConfiguredTransport();
     await _transport.ensureRemoteLayout();
 
@@ -222,9 +339,11 @@ class SyncService {
       case AppPlatform.windows:
         final publishResult = await _publishPendingReferencePackages(
           actorUserId: actorUserId,
+          respectRetrySchedule: respectRetrySchedule,
         );
         final importResult = await _importIncomingResultPackages(
           actorUserId: actorUserId,
+          respectRetrySchedule: respectRetrySchedule,
         );
         publishedReferenceCount += publishResult.successCount;
         importedResultCount += importResult.successCount;
@@ -236,6 +355,7 @@ class SyncService {
         );
         final pushResult = await _pushQueuedResultPackages(
           actorUserId: actorUserId,
+          respectRetrySchedule: respectRetrySchedule,
         );
         pulledReferenceCount += pullResult.successCount;
         pushedResultCount += pushResult.successCount;
@@ -261,24 +381,6 @@ class SyncService {
     } else {
       await _markSyncSuccess();
     }
-    await recordAudit(
-      _db,
-      actionType: 'sync.run.finish',
-      resultStatus: report.hasIssues ? 'partial' : 'success',
-      userId: actorUserId,
-      entityType: 'device',
-      entityId: (await _db.select(_db.deviceInfo).getSingleOrNull())?.id,
-      message: report.summaryLabel(),
-      payload: {
-        'platform': platform.name,
-        'reference_published': publishedReferenceCount,
-        'reference_pulled': pulledReferenceCount,
-        'results_pushed': pushedResultCount,
-        'results_imported': importedResultCount,
-        'conflicts': conflictCount,
-        'failures': failureCount,
-      },
-    );
     return report;
   }
 
@@ -295,7 +397,10 @@ class SyncService {
     final result = await _referencePackageRepository.exportPackage(
       actorUserId: actorUserId,
     );
-    await _publishPendingReferencePackages(actorUserId: actorUserId);
+    await _publishPendingReferencePackages(
+      actorUserId: actorUserId,
+      respectRetrySchedule: false,
+    );
     await _markSyncSuccess();
     return result;
   }
@@ -380,6 +485,11 @@ class SyncService {
           ..addColumns([failedExpression])
           ..where(_db.syncQueue.status.equals('failed')))
         .getSingle();
+    final retryEligibleExpression = _db.syncQueue.id.count();
+    final retryEligible = await (_db.selectOnly(_db.syncQueue)
+          ..addColumns([retryEligibleExpression])
+          ..where(_retryEligibleQueueExpression(_db.syncQueue, nowIso())))
+        .getSingle();
     final conflictExpression = _db.inspections.id.count();
     final conflicts = await (_db.selectOnly(_db.inspections)
           ..addColumns([conflictExpression])
@@ -393,6 +503,11 @@ class SyncService {
           ..orderBy([(tbl) => OrderingTerm.desc(tbl.happenedAt)])
           ..limit(1))
         .getSingleOrNull();
+    final lastRetry = await (_db.select(_db.auditLog)
+          ..where((tbl) => tbl.actionType.equals(_retryActionType))
+          ..orderBy([(tbl) => OrderingTerm.desc(tbl.happenedAt)])
+          ..limit(1))
+        .getSingleOrNull();
 
     return SyncDiagnosticsSnapshot(
       deviceId: device?.id,
@@ -402,6 +517,7 @@ class SyncService {
       lastResultPullAt: syncState?.lastResultPullAt,
       lastSuccessAt: syncState?.lastSuccessAt,
       lastSyncAttemptAt: syncState?.updatedAt,
+      lastRetryAt: lastRetry?.happenedAt,
       lastConflictAt: lastConflict?.happenedAt,
       lastError: syncState?.lastError,
       pendingOutgoingCount:
@@ -409,6 +525,7 @@ class SyncService {
       pendingIncomingCount:
           pendingIncoming.read(pendingIncomingExpression) ?? 0,
       failedQueueCount: failed.read(failedExpression) ?? 0,
+      retryEligibleCount: retryEligible.read(retryEligibleExpression) ?? 0,
       conflictCount: conflicts.read(conflictExpression) ?? 0,
       transportConfigured: transportConfigured,
       yandexDiskConnected: device?.yandexDiskConnected ?? false,
@@ -417,16 +534,12 @@ class SyncService {
 
   Future<_SyncBatchResult> _publishPendingReferencePackages({
     String? actorUserId,
+    required bool respectRetrySchedule,
   }) async {
-    final pendingPackages = await (_db.select(_db.syncQueue)
-          ..where(
-            (tbl) =>
-                tbl.direction.equals('outgoing') &
-                tbl.packageType.equals('reference') &
-                (tbl.status.equals('pending') | tbl.status.equals('failed')),
-          )
-          ..orderBy([(tbl) => OrderingTerm.asc(tbl.createdAt)]))
-        .get();
+    final pendingPackages = await _loadOutgoingPackagesForRun(
+      packageType: 'reference',
+      respectRetrySchedule: respectRetrySchedule,
+    );
     if (pendingPackages.isEmpty) {
       return const _SyncBatchResult();
     }
@@ -498,16 +611,12 @@ class SyncService {
 
   Future<_SyncBatchResult> _pushQueuedResultPackages({
     String? actorUserId,
+    required bool respectRetrySchedule,
   }) async {
-    final pendingPackages = await (_db.select(_db.syncQueue)
-          ..where(
-            (tbl) =>
-                tbl.direction.equals('outgoing') &
-                tbl.packageType.equals('inspection_result') &
-                (tbl.status.equals('pending') | tbl.status.equals('failed')),
-          )
-          ..orderBy([(tbl) => OrderingTerm.asc(tbl.createdAt)]))
-        .get();
+    final pendingPackages = await _loadOutgoingPackagesForRun(
+      packageType: 'inspection_result',
+      respectRetrySchedule: respectRetrySchedule,
+    );
     if (pendingPackages.isEmpty) {
       return const _SyncBatchResult();
     }
@@ -649,6 +758,7 @@ class SyncService {
 
   Future<_SyncBatchResult> _importIncomingResultPackages({
     String? actorUserId,
+    required bool respectRetrySchedule,
   }) async {
     final remoteEntries = await _transport.listFiles('results/incoming');
     final packages = remoteEntries
@@ -670,6 +780,21 @@ class SyncService {
           .replaceFirst(RegExp(r'\.zip$'), '');
       final localZip = File(p.join(_paths.syncIncomingDir.path, fileName));
       final extractDir = Directory(p.join(_paths.syncTempDir.path, packageId));
+      final existingQueue = await (_db.select(_db.syncQueue)
+            ..where(
+              (tbl) =>
+                  tbl.direction.equals('incoming') &
+                  tbl.packageType.equals('inspection_result') &
+                  tbl.packageId.equals(packageId),
+            )
+            ..limit(1))
+          .getSingleOrNull();
+      if (!_shouldProcessQueueEntry(
+        existingQueue,
+        respectRetrySchedule: respectRetrySchedule,
+      )) {
+        continue;
+      }
       final queueId = await _upsertIncomingQueueRecord(
         packageId: packageId,
         localPath: _paths.relativeToRoot(localZip.path),
@@ -727,10 +852,9 @@ class SyncService {
           successCount += 1;
         }
       } catch (error, stackTrace) {
-        await _updateIncomingQueueStatus(
-          queueId: queueId,
-          status: 'failed',
-          lastError: error.toString(),
+        await _markQueueFailed(
+          queueId,
+          error.toString(),
           localPath: _paths.relativeToRoot(localZip.path),
         );
         await _recordSyncFailure(
@@ -1477,6 +1601,7 @@ class SyncService {
         status: Value(status),
         localPath: localPath == null ? const Value.absent() : Value(localPath),
         lastError: Value(lastError),
+        nextAttemptAt: const Value(null),
         updatedAt: Value(nowIso()),
       ),
     );
@@ -1486,6 +1611,7 @@ class SyncService {
     await (_db.update(_db.syncQueue)..where((tbl) => tbl.id.equals(queueId))).write(
       SyncQueueCompanion(
         status: const Value('processing'),
+        nextAttemptAt: const Value(null),
         updatedAt: Value(nowIso()),
       ),
     );
@@ -1496,22 +1622,34 @@ class SyncService {
       SyncQueueCompanion(
         status: const Value('done'),
         lastError: const Value(null),
+        nextAttemptAt: const Value(null),
         updatedAt: Value(nowIso()),
       ),
     );
   }
 
-  Future<void> _markQueueFailed(String queueId, String error) async {
+  Future<void> _markQueueFailed(
+    String queueId,
+    String error, {
+    String? localPath,
+  }) async {
+    final existing = await (_db.select(_db.syncQueue)
+          ..where((tbl) => tbl.id.equals(queueId)))
+        .getSingle();
+    final nextAttemptCount = existing.attemptCount + 1;
+    final nextAttemptAt = DateTime.now()
+        .toUtc()
+        .add(_retryDelayForAttempt(nextAttemptCount))
+        .toIso8601String();
     await (_db.update(_db.syncQueue)..where((tbl) => tbl.id.equals(queueId))).write(
       SyncQueueCompanion(
         status: const Value('failed'),
+        localPath: localPath == null ? const Value.absent() : Value(localPath),
         lastError: Value(error),
+        attemptCount: Value(nextAttemptCount),
+        nextAttemptAt: Value(nextAttemptAt),
         updatedAt: Value(nowIso()),
       ),
-    );
-    await _db.customStatement(
-      'UPDATE sync_queue SET attempt_count = attempt_count + 1 WHERE id = ?;',
-      [queueId],
     );
   }
 
@@ -1780,6 +1918,97 @@ class SyncService {
       capability: capability,
       deniedMessage: deniedMessage,
     );
+  }
+
+  Future<bool> _canRunSyncAutomatically({
+    required AppPlatform platform,
+    required String actorUserId,
+  }) async {
+    final capability = switch (platform) {
+      AppPlatform.windows => AppCapability.manageSync,
+      AppPlatform.android => AppCapability.runSync,
+      AppPlatform.unsupported => AppCapability.runSync,
+    };
+    final roleCode = await loadUserRoleCode(_db, actorUserId);
+    return roleHasCapability(roleCode, capability);
+  }
+
+  Future<List<SyncQueueData>> _loadOutgoingPackagesForRun({
+    required String packageType,
+    required bool respectRetrySchedule,
+  }) async {
+    final candidates = await (_db.select(_db.syncQueue)
+          ..where(
+            (tbl) =>
+                tbl.direction.equals('outgoing') &
+                tbl.packageType.equals(packageType) &
+                (tbl.status.equals('pending') | tbl.status.equals('failed')),
+          )
+          ..orderBy([(tbl) => OrderingTerm.asc(tbl.createdAt)]))
+        .get();
+    return candidates
+        .where(
+          (entry) => _shouldProcessQueueEntry(
+            entry,
+            respectRetrySchedule: respectRetrySchedule,
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  bool _shouldProcessQueueEntry(
+    SyncQueueData? entry, {
+    required bool respectRetrySchedule,
+  }) {
+    if (entry == null) {
+      return true;
+    }
+    if (entry.status == 'pending') {
+      return true;
+    }
+    if (entry.status != 'failed') {
+      return false;
+    }
+    if (!respectRetrySchedule) {
+      return true;
+    }
+    final nextAttemptAt = nullableField(entry.nextAttemptAt);
+    if (nextAttemptAt == null) {
+      return true;
+    }
+    final retryAt = DateTime.tryParse(nextAttemptAt);
+    return retryAt == null || !retryAt.isAfter(DateTime.now().toUtc());
+  }
+
+  Expression<bool> _retryEligibleQueueExpression(
+    SyncQueue table,
+    String now,
+  ) {
+    return table.status.equals('failed') &
+        (table.nextAttemptAt.isNull() |
+            table.nextAttemptAt.isSmallerOrEqualValue(now));
+  }
+
+  Future<int> _countRetryEligibleEntries() async {
+    final expression = _db.syncQueue.id.count();
+    final result = await (_db.selectOnly(_db.syncQueue)
+          ..addColumns([expression])
+          ..where(_retryEligibleQueueExpression(_db.syncQueue, nowIso())))
+        .getSingle();
+    return result.read(expression) ?? 0;
+  }
+
+  Duration _retryDelayForAttempt(int attemptCount) {
+    if (attemptCount <= 1) {
+      return const Duration(seconds: 30);
+    }
+    if (attemptCount == 2) {
+      return const Duration(minutes: 2);
+    }
+    if (attemptCount == 3) {
+      return const Duration(minutes: 5);
+    }
+    return const Duration(minutes: 15);
   }
 
   Future<Map<String, dynamic>> _readJsonFile(File file) async {

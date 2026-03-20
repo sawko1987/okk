@@ -6,6 +6,7 @@ import '../../../core/auth/app_permissions.dart';
 import '../../../core/platform/app_platform.dart';
 import '../../../data/sync/sync_service.dart';
 import '../../admin/presentation/audit_log_screen.dart';
+import '../../admin/presentation/inspection_history_screen.dart';
 import '../../admin/presentation/roles_admin_screen.dart';
 import '../../admin/presentation/sync_admin_screen.dart';
 import '../../admin/presentation/trash_bin_screen.dart';
@@ -21,10 +22,7 @@ import 'windows_admin_sections.dart';
 import 'windows_dashboard_screen.dart';
 
 class WindowsAdminShell extends ConsumerStatefulWidget {
-  const WindowsAdminShell({
-    super.key,
-    required this.section,
-  });
+  const WindowsAdminShell({super.key, required this.section});
 
   final WindowsAdminSection section;
 
@@ -42,8 +40,8 @@ class _WindowsAdminShellState extends ConsumerState<WindowsAdminShell> {
     final session = ref.watch(activeSessionProvider).valueOrNull;
     final availableSections =
         roleHasCapability(session?.roleCode, AppCapability.manageCatalog)
-            ? windowsAdminSections
-            : const [WindowsAdminSection.dashboard];
+        ? windowsAdminSections
+        : const [WindowsAdminSection.dashboard];
     final effectiveSection = availableSections.contains(widget.section)
         ? widget.section
         : WindowsAdminSection.dashboard;
@@ -52,7 +50,9 @@ class _WindowsAdminShellState extends ConsumerState<WindowsAdminShell> {
         roleHasCapability(session.roleCode, AppCapability.manageSync)) {
       _startupSyncTriggered = true;
       Future<void>.microtask(
-        () => ref.read(syncServiceProvider).syncOnStartup(
+        () => ref
+            .read(syncServiceProvider)
+            .syncOnStartup(
               platform: AppPlatform.windows,
               actorUserId: session.userId,
             ),
@@ -114,30 +114,41 @@ class _WindowsAdminShellState extends ConsumerState<WindowsAdminShell> {
               duration: const Duration(milliseconds: 180),
               child: switch (effectiveSection) {
                 WindowsAdminSection.dashboard => WindowsDashboardScreen(
-                    key: const ValueKey('dashboard'),
-                    databasePath: paths.databaseFile.path,
-                    schemaVersion: database.schemaVersion,
-                    componentsDir: paths.componentsDir.path,
-                    syncOutgoingDir: paths.syncOutgoingDir.path,
-                  ),
-                WindowsAdminSection.structure =>
-                  const StructureAdminScreen(key: ValueKey('structure')),
-                WindowsAdminSection.objects =>
-                  const ObjectsAdminScreen(key: ValueKey('objects')),
-                WindowsAdminSection.components =>
-                  const ComponentsAdminScreen(key: ValueKey('components')),
-                WindowsAdminSection.checklists =>
-                  const ChecklistsAdminScreen(key: ValueKey('checklists')),
-                WindowsAdminSection.users =>
-                  const UsersAdminScreen(key: ValueKey('users')),
-                WindowsAdminSection.roles =>
-                  const RolesAdminScreen(key: ValueKey('roles')),
-                WindowsAdminSection.audit =>
-                  const AuditLogScreen(key: ValueKey('audit')),
-                WindowsAdminSection.trash =>
-                  const TrashBinScreen(key: ValueKey('trash')),
-                WindowsAdminSection.sync =>
-                  const SyncAdminScreen(key: ValueKey('sync')),
+                  key: const ValueKey('dashboard'),
+                  databasePath: paths.databaseFile.path,
+                  schemaVersion: database.schemaVersion,
+                  componentsDir: paths.componentsDir.path,
+                  syncOutgoingDir: paths.syncOutgoingDir.path,
+                ),
+                WindowsAdminSection.structure => const StructureAdminScreen(
+                  key: ValueKey('structure'),
+                ),
+                WindowsAdminSection.objects => const ObjectsAdminScreen(
+                  key: ValueKey('objects'),
+                ),
+                WindowsAdminSection.components => const ComponentsAdminScreen(
+                  key: ValueKey('components'),
+                ),
+                WindowsAdminSection.checklists => const ChecklistsAdminScreen(
+                  key: ValueKey('checklists'),
+                ),
+                WindowsAdminSection.inspections =>
+                  const InspectionHistoryScreen(key: ValueKey('inspections')),
+                WindowsAdminSection.users => const UsersAdminScreen(
+                  key: ValueKey('users'),
+                ),
+                WindowsAdminSection.roles => const RolesAdminScreen(
+                  key: ValueKey('roles'),
+                ),
+                WindowsAdminSection.audit => const AuditLogScreen(
+                  key: ValueKey('audit'),
+                ),
+                WindowsAdminSection.trash => const TrashBinScreen(
+                  key: ValueKey('trash'),
+                ),
+                WindowsAdminSection.sync => const SyncAdminScreen(
+                  key: ValueKey('sync'),
+                ),
               },
             ),
           ),

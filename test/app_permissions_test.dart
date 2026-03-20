@@ -26,4 +26,25 @@ void main() {
     expect(roleHasCapability('viewer', AppCapability.startInspection), isFalse);
     expect(roleHasCapability('viewer', AppCapability.manageUsers), isFalse);
   });
+
+  test('commission role adds signing capability on top of inspection flow', () {
+    expect(roleHasCapability('commission', AppCapability.startInspection), isTrue);
+    expect(roleHasCapability('commission', AppCapability.completeInspection), isTrue);
+    expect(roleHasCapability('commission', AppCapability.signInspection), isTrue);
+    expect(roleHasCapability('commission', AppCapability.manageUsers), isFalse);
+  });
+
+  test('role capability listing matches static access matrix', () {
+    expect(
+      capabilitiesForRole('viewer'),
+      equals([
+        AppCapability.runSync,
+        AppCapability.viewResults,
+      ]),
+    );
+    expect(
+      capabilitiesForRole('administrator'),
+      containsAll(AppCapability.values),
+    );
+  });
 }

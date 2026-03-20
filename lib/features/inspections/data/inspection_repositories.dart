@@ -119,6 +119,7 @@ class InspectionDraftSummary {
 class InspectionResultSummary {
   const InspectionResultSummary({
     required this.inspectionId,
+    required this.userId,
     required this.productObjectId,
     required this.productName,
     required this.targetObjectId,
@@ -128,9 +129,11 @@ class InspectionResultSummary {
     required this.completedAt,
     required this.signatureCount,
     required this.hasPdf,
+    this.userName,
   });
 
   final String inspectionId;
+  final String userId;
   final String productObjectId;
   final String productName;
   final String targetObjectId;
@@ -140,6 +143,7 @@ class InspectionResultSummary {
   final String completedAt;
   final int signatureCount;
   final bool hasPdf;
+  final String? userName;
 }
 
 class InspectionDraftItemView {
@@ -279,30 +283,31 @@ class AndroidInspectionDiagnostics {
     required this.localDraftCount,
     required this.queuedResultCount,
     required this.failedQueueCount,
+    required this.retryEligibleCount,
     required this.conflictCount,
     required this.lastReferencePackageId,
     required this.lastReferenceSyncAt,
     required this.lastSyncAttemptAt,
+    required this.lastRetryAt,
     required this.lastCompletedInspectionAt,
   });
 
   final int localDraftCount;
   final int queuedResultCount;
   final int failedQueueCount;
+  final int retryEligibleCount;
   final int conflictCount;
   final String? lastReferencePackageId;
   final String? lastReferenceSyncAt;
   final String? lastSyncAttemptAt;
+  final String? lastRetryAt;
   final String? lastCompletedInspectionAt;
 
   bool get hasPendingSyncWork => queuedResultCount > 0 || failedQueueCount > 0;
 }
 
 class _ResolvedChecklistItem {
-  const _ResolvedChecklistItem({
-    required this.item,
-    required this.priority,
-  });
+  const _ResolvedChecklistItem({required this.item, required this.priority});
 
   final ChecklistItem item;
   final int priority;
@@ -315,29 +320,35 @@ final inspectionsRepositoryProvider = Provider<InspectionsRepository>(
   ),
 );
 
-final inspectionWorkshopsProvider = FutureProvider<List<InspectionWorkshopOption>>(
-  (ref) => ref.watch(inspectionsRepositoryProvider).listWorkshopsWithProducts(),
-);
+final inspectionWorkshopsProvider =
+    FutureProvider<List<InspectionWorkshopOption>>(
+      (ref) =>
+          ref.watch(inspectionsRepositoryProvider).listWorkshopsWithProducts(),
+    );
 
 final inspectionProductsByWorkshopProvider =
     FutureProvider.family<List<InspectionProductSelectionOption>, String>((
       ref,
       workshopId,
     ) {
-      return ref.watch(inspectionsRepositoryProvider).listProductsForWorkshop(
-            workshopId,
-          );
+      return ref
+          .watch(inspectionsRepositoryProvider)
+          .listProductsForWorkshop(workshopId);
     });
 
-final inspectionProductsProvider = FutureProvider<List<InspectionProductOption>>(
-  (ref) => ref.watch(inspectionsRepositoryProvider).listProducts(),
-);
+final inspectionProductsProvider =
+    FutureProvider<List<InspectionProductOption>>(
+      (ref) => ref.watch(inspectionsRepositoryProvider).listProducts(),
+    );
 
 final inspectionTargetsProvider =
-    FutureProvider.family<List<InspectionTargetOption>, String>((ref, productId) {
-      return ref.watch(inspectionsRepositoryProvider).listSelectableInspectionTargets(
-            productId,
-          );
+    FutureProvider.family<List<InspectionTargetOption>, String>((
+      ref,
+      productId,
+    ) {
+      return ref
+          .watch(inspectionsRepositoryProvider)
+          .listSelectableInspectionTargets(productId);
     });
 
 final inspectionComponentsProvider =
@@ -345,36 +356,52 @@ final inspectionComponentsProvider =
       ref,
       targetObjectId,
     ) {
-      return ref.watch(inspectionsRepositoryProvider).listComponentsForTarget(
-            targetObjectId,
-          );
+      return ref
+          .watch(inspectionsRepositoryProvider)
+          .listComponentsForTarget(targetObjectId);
     });
 
 final inspectionComponentProvider =
-    FutureProvider.family<InspectionComponentSummary?, String>((ref, componentId) {
-      return ref.watch(inspectionsRepositoryProvider).loadComponentSummary(
-            componentId,
-          );
+    FutureProvider.family<InspectionComponentSummary?, String>((
+      ref,
+      componentId,
+    ) {
+      return ref
+          .watch(inspectionsRepositoryProvider)
+          .loadComponentSummary(componentId);
     });
 
 final inspectionDraftsProvider =
     FutureProvider.family<List<InspectionDraftSummary>, String>((ref, userId) {
-      return ref.watch(inspectionsRepositoryProvider).listDrafts(userId: userId);
+      return ref
+          .watch(inspectionsRepositoryProvider)
+          .listDrafts(userId: userId);
     });
 
 final inspectionResultsProvider =
     FutureProvider.family<List<InspectionResultSummary>, String>((ref, userId) {
-      return ref.watch(inspectionsRepositoryProvider).listResults(userId: userId);
+      return ref
+          .watch(inspectionsRepositoryProvider)
+          .listResults(userId: userId);
     });
+
+final allInspectionResultsProvider =
+    FutureProvider<List<InspectionResultSummary>>(
+      (ref) => ref.watch(inspectionsRepositoryProvider).listResults(),
+    );
 
 final inspectionDetailProvider =
     FutureProvider.family<InspectionDraftDetail?, String>((ref, inspectionId) {
-      return ref.watch(inspectionsRepositoryProvider).loadInspection(inspectionId);
+      return ref
+          .watch(inspectionsRepositoryProvider)
+          .loadInspection(inspectionId);
     });
 
 final inspectionDraftDetailProvider =
     FutureProvider.family<InspectionDraftDetail?, String>((ref, inspectionId) {
-      return ref.watch(inspectionsRepositoryProvider).loadInspection(inspectionId);
+      return ref
+          .watch(inspectionsRepositoryProvider)
+          .loadInspection(inspectionId);
     });
 
 final androidInspectionDiagnosticsProvider =
@@ -389,32 +416,34 @@ class InspectionsRepository {
   final AppPaths _paths;
 
   Future<List<InspectionWorkshopOption>> listWorkshopsWithProducts() async {
-    final departments = await (_db.select(_db.departments)
-          ..where((tbl) => tbl.isDeleted.equals(false))
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.sortOrder),
-            (tbl) => OrderingTerm.asc(tbl.name),
-          ]))
-        .get();
-    final workshops = await (_db.select(_db.workshops)
-          ..where((tbl) => tbl.isDeleted.equals(false))
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.sortOrder),
-            (tbl) => OrderingTerm.asc(tbl.name),
-          ]))
-        .get();
-    final sections = await (_db.select(_db.sections)
-          ..where((tbl) => tbl.isDeleted.equals(false)))
-        .get();
-    final products = await (_db.select(_db.catalogObjects)
-          ..where(
-            (tbl) =>
-                tbl.isDeleted.equals(false) &
-                tbl.isActive.equals(true) &
-                tbl.type.equals('product') &
-                tbl.sectionId.isNotNull(),
-          ))
-        .get();
+    final departments =
+        await (_db.select(_db.departments)
+              ..where((tbl) => tbl.isDeleted.equals(false))
+              ..orderBy([
+                (tbl) => OrderingTerm.asc(tbl.sortOrder),
+                (tbl) => OrderingTerm.asc(tbl.name),
+              ]))
+            .get();
+    final workshops =
+        await (_db.select(_db.workshops)
+              ..where((tbl) => tbl.isDeleted.equals(false))
+              ..orderBy([
+                (tbl) => OrderingTerm.asc(tbl.sortOrder),
+                (tbl) => OrderingTerm.asc(tbl.name),
+              ]))
+            .get();
+    final sections = await (_db.select(
+      _db.sections,
+    )..where((tbl) => tbl.isDeleted.equals(false))).get();
+    final products =
+        await (_db.select(_db.catalogObjects)..where(
+              (tbl) =>
+                  tbl.isDeleted.equals(false) &
+                  tbl.isActive.equals(true) &
+                  tbl.type.equals('product') &
+                  tbl.sectionId.isNotNull(),
+            ))
+            .get();
 
     final departmentsById = {
       for (final department in departments) department.id: department,
@@ -457,46 +486,51 @@ class InspectionsRepository {
       return const [];
     }
 
-    final sections = await (_db.select(_db.sections)
-          ..where(
-            (tbl) =>
-                tbl.isDeleted.equals(false) & tbl.workshopId.equals(workshopId),
-          )
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.sortOrder),
-            (tbl) => OrderingTerm.asc(tbl.name),
-          ]))
-        .get();
+    final sections =
+        await (_db.select(_db.sections)
+              ..where(
+                (tbl) =>
+                    tbl.isDeleted.equals(false) &
+                    tbl.workshopId.equals(workshopId),
+              )
+              ..orderBy([
+                (tbl) => OrderingTerm.asc(tbl.sortOrder),
+                (tbl) => OrderingTerm.asc(tbl.name),
+              ]))
+            .get();
     if (sections.isEmpty) {
       return const [];
     }
 
     final sectionsById = {for (final section in sections) section.id: section};
-    final products = await (_db.select(_db.catalogObjects)
-          ..where(
-            (tbl) =>
-                tbl.isDeleted.equals(false) &
-                tbl.isActive.equals(true) &
-                tbl.type.equals('product') &
-                tbl.sectionId.isIn(sectionsById.keys),
-          )
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.sortOrder),
-            (tbl) => OrderingTerm.asc(tbl.name),
-          ]))
-        .get();
+    final products =
+        await (_db.select(_db.catalogObjects)
+              ..where(
+                (tbl) =>
+                    tbl.isDeleted.equals(false) &
+                    tbl.isActive.equals(true) &
+                    tbl.type.equals('product') &
+                    tbl.sectionId.isIn(sectionsById.keys),
+              )
+              ..orderBy([
+                (tbl) => OrderingTerm.asc(tbl.sortOrder),
+                (tbl) => OrderingTerm.asc(tbl.name),
+              ]))
+            .get();
 
     final sortedProducts = products.toList(growable: false)
       ..sort((left, right) {
         final leftSection = sectionsById[left.sectionId];
         final rightSection = sectionsById[right.sectionId];
-        final sectionOrder =
-            (leftSection?.sortOrder ?? 0).compareTo(rightSection?.sortOrder ?? 0);
+        final sectionOrder = (leftSection?.sortOrder ?? 0).compareTo(
+          rightSection?.sortOrder ?? 0,
+        );
         if (sectionOrder != 0) {
           return sectionOrder;
         }
-        final sectionNameOrder =
-            (leftSection?.name ?? '').compareTo(rightSection?.name ?? '');
+        final sectionNameOrder = (leftSection?.name ?? '').compareTo(
+          rightSection?.name ?? '',
+        );
         if (sectionNameOrder != 0) {
           return sectionNameOrder;
         }
@@ -522,18 +556,19 @@ class InspectionsRepository {
   }
 
   Future<List<InspectionProductOption>> listProducts() async {
-    final products = await (_db.select(_db.catalogObjects)
-          ..where(
-            (tbl) =>
-                tbl.isDeleted.equals(false) &
-                tbl.isActive.equals(true) &
-                tbl.type.equals('product'),
-          )
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.sortOrder),
-            (tbl) => OrderingTerm.asc(tbl.name),
-          ]))
-        .get();
+    final products =
+        await (_db.select(_db.catalogObjects)
+              ..where(
+                (tbl) =>
+                    tbl.isDeleted.equals(false) &
+                    tbl.isActive.equals(true) &
+                    tbl.type.equals('product'),
+              )
+              ..orderBy([
+                (tbl) => OrderingTerm.asc(tbl.sortOrder),
+                (tbl) => OrderingTerm.asc(tbl.name),
+              ]))
+            .get();
 
     return products
         .map(
@@ -587,7 +622,8 @@ class InspectionsRepository {
         ),
       );
 
-      for (final child in childrenByParent[current.id] ?? const <CatalogObject>[]) {
+      for (final child
+          in childrenByParent[current.id] ?? const <CatalogObject>[]) {
         walk(child, depth + 1);
       }
     }
@@ -603,16 +639,18 @@ class InspectionsRepository {
       return const [];
     }
 
-    final components = await (_db.select(_db.components)
-          ..where(
-            (tbl) =>
-                tbl.objectId.equals(targetObjectId) & tbl.isDeleted.equals(false),
-          )
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.sortOrder),
-            (tbl) => OrderingTerm.asc(tbl.name),
-          ]))
-        .get();
+    final components =
+        await (_db.select(_db.components)
+              ..where(
+                (tbl) =>
+                    tbl.objectId.equals(targetObjectId) &
+                    tbl.isDeleted.equals(false),
+              )
+              ..orderBy([
+                (tbl) => OrderingTerm.asc(tbl.sortOrder),
+                (tbl) => OrderingTerm.asc(tbl.name),
+              ]))
+            .get();
     if (components.isEmpty) {
       return const [];
     }
@@ -625,13 +663,14 @@ class InspectionsRepository {
         .toList(growable: false);
   }
 
-  Future<InspectionComponentSummary?> loadComponentSummary(String componentId) async {
-    final component = await (_db.select(_db.components)
-          ..where(
-            (tbl) =>
-                tbl.id.equals(componentId) & tbl.isDeleted.equals(false),
-          ))
-        .getSingleOrNull();
+  Future<InspectionComponentSummary?> loadComponentSummary(
+    String componentId,
+  ) async {
+    final component =
+        await (_db.select(_db.components)..where(
+              (tbl) => tbl.id.equals(componentId) & tbl.isDeleted.equals(false),
+            ))
+            .getSingleOrNull();
     if (component == null) {
       return null;
     }
@@ -643,16 +682,16 @@ class InspectionsRepository {
   Future<List<InspectionDraftSummary>> listDrafts({
     required String userId,
   }) async {
-    final inspections = await (_db.select(_db.inspections)
-          ..where(
-            (tbl) =>
-                tbl.userId.equals(userId) &
-                (tbl.status.equals('draft') | tbl.status.equals('in_progress')),
-          )
-          ..orderBy([
-            (tbl) => OrderingTerm.desc(tbl.updatedAt),
-          ]))
-        .get();
+    final inspections =
+        await (_db.select(_db.inspections)
+              ..where(
+                (tbl) =>
+                    tbl.userId.equals(userId) &
+                    (tbl.status.equals('draft') |
+                        tbl.status.equals('in_progress')),
+              )
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)]))
+            .get();
 
     if (inspections.isEmpty) {
       return const [];
@@ -665,7 +704,8 @@ class InspectionsRepository {
 
     return inspections
         .map((inspection) {
-          final items = answersByInspection[inspection.id] ?? const <InspectionItem>[];
+          final items =
+              answersByInspection[inspection.id] ?? const <InspectionItem>[];
           final answeredCount = items
               .where((item) => item.resultStatus != 'not_checked')
               .length;
@@ -673,10 +713,12 @@ class InspectionsRepository {
             inspectionId: inspection.id,
             productObjectId: inspection.productObjectId,
             productName:
-                objectNames[inspection.productObjectId] ?? inspection.productObjectId,
+                objectNames[inspection.productObjectId] ??
+                inspection.productObjectId,
             targetObjectId: inspection.targetObjectId,
             targetName:
-                objectNames[inspection.targetObjectId] ?? inspection.targetObjectId,
+                objectNames[inspection.targetObjectId] ??
+                inspection.targetObjectId,
             status: inspection.status,
             updatedAt: inspection.updatedAt,
             answeredItems: answeredCount,
@@ -686,32 +728,42 @@ class InspectionsRepository {
         .toList(growable: false);
   }
 
-  Future<List<InspectionResultSummary>> listResults({
-    required String userId,
-  }) async {
-    final inspections = await (_db.select(_db.inspections)
-          ..where(
-            (tbl) =>
-                tbl.userId.equals(userId) &
-                (tbl.status.equals('completed') |
-                    tbl.status.equals('queued') |
-                    tbl.status.equals('synced') |
-                    tbl.status.equals('conflict')),
-          )
-          ..orderBy([
-            (tbl) => OrderingTerm.desc(tbl.completedAt),
-            (tbl) => OrderingTerm.desc(tbl.updatedAt),
-          ]))
-        .get();
+  Future<List<InspectionResultSummary>> listResults({String? userId}) async {
+    final query = _db.select(_db.inspections)
+      ..where(
+        (tbl) =>
+            tbl.status.equals('completed') |
+            tbl.status.equals('queued') |
+            tbl.status.equals('synced') |
+            tbl.status.equals('conflict'),
+      )
+      ..orderBy([
+        (tbl) => OrderingTerm.desc(tbl.completedAt),
+        (tbl) => OrderingTerm.desc(tbl.updatedAt),
+      ]);
+    if (userId != null) {
+      query.where((tbl) => tbl.userId.equals(userId));
+    }
+
+    final inspections = await query.get();
 
     if (inspections.isEmpty) {
       return const [];
     }
 
     final objectNames = await _loadObjectNames();
-    final signatures = await (_db.select(_db.inspectionSignatures)
-          ..where((tbl) => tbl.inspectionId.isIn(inspections.map((item) => item.id))))
-        .get();
+    final users =
+        await (_db.select(_db.users)..where(
+              (tbl) => tbl.id.isIn(inspections.map((item) => item.userId)),
+            ))
+            .get();
+    final userNamesById = {for (final user in users) user.id: user.fullName};
+    final signatures =
+        await (_db.select(_db.inspectionSignatures)..where(
+              (tbl) =>
+                  tbl.inspectionId.isIn(inspections.map((item) => item.id)),
+            ))
+            .get();
     final signatureCounts = <String, int>{};
     for (final signature in signatures) {
       signatureCounts.update(
@@ -725,52 +777,57 @@ class InspectionsRepository {
         .map(
           (inspection) => InspectionResultSummary(
             inspectionId: inspection.id,
+            userId: inspection.userId,
             productObjectId: inspection.productObjectId,
             productName:
-                objectNames[inspection.productObjectId] ?? inspection.productObjectId,
+                objectNames[inspection.productObjectId] ??
+                inspection.productObjectId,
             targetObjectId: inspection.targetObjectId,
             targetName:
-                objectNames[inspection.targetObjectId] ?? inspection.targetObjectId,
+                objectNames[inspection.targetObjectId] ??
+                inspection.targetObjectId,
             status: inspection.status,
             syncStatus: inspection.syncStatus,
             completedAt: inspection.completedAt ?? inspection.updatedAt,
             signatureCount: signatureCounts[inspection.id] ?? 0,
             hasPdf: nullableField(inspection.pdfLocalPath) != null,
+            userName: userNamesById[inspection.userId],
           ),
         )
         .toList(growable: false);
   }
 
   Future<InspectionDraftDetail?> loadInspection(String inspectionId) async {
-    final inspection = await (_db.select(_db.inspections)
-          ..where((tbl) => tbl.id.equals(inspectionId)))
-        .getSingleOrNull();
+    final inspection = await (_db.select(
+      _db.inspections,
+    )..where((tbl) => tbl.id.equals(inspectionId))).getSingleOrNull();
     if (inspection == null) {
       return null;
     }
 
-    final answers = await (_db.select(_db.inspectionItems)
-          ..where((tbl) => tbl.inspectionId.equals(inspectionId))
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.sortOrder),
-            (tbl) => OrderingTerm.asc(tbl.id),
-          ]))
-        .get();
-    final checklistItems = await (_db.select(_db.checklistItems)
-          ..where(
-            (tbl) => tbl.id.isIn(answers.map((item) => item.checklistItemId)),
-          ))
-        .get();
+    final answers =
+        await (_db.select(_db.inspectionItems)
+              ..where((tbl) => tbl.inspectionId.equals(inspectionId))
+              ..orderBy([
+                (tbl) => OrderingTerm.asc(tbl.sortOrder),
+                (tbl) => OrderingTerm.asc(tbl.id),
+              ]))
+            .get();
+    final checklistItems =
+        await (_db.select(_db.checklistItems)..where(
+              (tbl) => tbl.id.isIn(answers.map((item) => item.checklistItemId)),
+            ))
+            .get();
     final checklistItemsById = {
       for (final item in checklistItems) item.id: item,
     };
-    final components = await (_db.select(_db.components)
-          ..where(
-            (tbl) => tbl.id.isIn(
-              answers.map((item) => item.componentId).whereType<String>(),
-            ),
-          ))
-        .get();
+    final components =
+        await (_db.select(_db.components)..where(
+              (tbl) => tbl.id.isIn(
+                answers.map((item) => item.componentId).whereType<String>(),
+              ),
+            ))
+            .get();
     final componentsById = {for (final item in components) item.id: item};
     final componentImagePaths = await _loadComponentImagePaths(
       components.map((component) => component.id),
@@ -809,8 +866,9 @@ class InspectionsRepository {
               resultStatus: answer.resultStatus,
               componentId: answer.componentId,
               componentName: component?.name,
-              componentImagePaths:
-                  component == null ? const [] : componentImagePaths[component.id] ?? const [],
+              componentImagePaths: component == null
+                  ? const []
+                  : componentImagePaths[component.id] ?? const [],
               comment: answer.comment,
               measuredValue: answer.measuredValue,
             );
@@ -838,21 +896,23 @@ class InspectionsRepository {
       productId: product.id,
       objectsById: objectsById,
     )) {
-      throw StateError('Selected target does not belong to the selected product.');
+      throw StateError(
+        'Selected target does not belong to the selected product.',
+      );
     }
 
-    final existingDraft = await (_db.select(_db.inspections)
-          ..where(
-            (tbl) =>
-                tbl.userId.equals(request.userId) &
-                tbl.targetObjectId.equals(request.targetObjectId) &
-                (tbl.status.equals('draft') | tbl.status.equals('in_progress')),
-          )
-          ..orderBy([
-            (tbl) => OrderingTerm.desc(tbl.updatedAt),
-          ])
-          ..limit(1))
-        .getSingleOrNull();
+    final existingDraft =
+        await (_db.select(_db.inspections)
+              ..where(
+                (tbl) =>
+                    tbl.userId.equals(request.userId) &
+                    tbl.targetObjectId.equals(request.targetObjectId) &
+                    (tbl.status.equals('draft') |
+                        tbl.status.equals('in_progress')),
+              )
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)])
+              ..limit(1))
+            .getSingleOrNull();
     if (existingDraft != null) {
       final detail = await loadInspection(existingDraft.id);
       if (detail != null) {
@@ -871,15 +931,16 @@ class InspectionsRepository {
     final now = nowIso();
     final inspectionId = generateId('inspection');
     final device = await _db.select(_db.deviceInfo).getSingleOrNull();
-    final syncState = await (_db.select(_db.syncState)
-          ..orderBy([
-            (tbl) => OrderingTerm.desc(tbl.updatedAt),
-          ])
-          ..limit(1))
-        .getSingleOrNull();
+    final syncState =
+        await (_db.select(_db.syncState)
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)])
+              ..limit(1))
+            .getSingleOrNull();
 
     await _db.transaction(() async {
-      await _db.into(_db.inspections).insert(
+      await _db
+          .into(_db.inspections)
+          .insert(
             InspectionsCompanion.insert(
               id: inspectionId,
               deviceId: device?.id ?? AppConstants.defaultDeviceId,
@@ -889,7 +950,9 @@ class InspectionsRepository {
               startedAt: now,
               status: 'draft',
               syncStatus: 'local_only',
-              sourceReferencePackageId: driftValue(syncState?.lastReferencePackageId),
+              sourceReferencePackageId: driftValue(
+                syncState?.lastReferencePackageId,
+              ),
               sourceReferenceVersion: const Value.absent(),
               createdAt: now,
               updatedAt: now,
@@ -897,22 +960,19 @@ class InspectionsRepository {
           );
 
       await _db.batch((batch) {
-        batch.insertAll(
-          _db.inspectionItems,
-          [
-            for (var index = 0; index < resolvedItems.length; index++)
-              InspectionItemsCompanion.insert(
-                id: generateId('inspection-item'),
-                inspectionId: inspectionId,
-                checklistItemId: resolvedItems[index].item.id,
-                componentId: driftValue(resolvedItems[index].item.componentId),
-                resultStatus: const Value('not_checked'),
-                sortOrder: Value(index),
-                createdAt: now,
-                updatedAt: now,
-              ),
-          ],
-        );
+        batch.insertAll(_db.inspectionItems, [
+          for (var index = 0; index < resolvedItems.length; index++)
+            InspectionItemsCompanion.insert(
+              id: generateId('inspection-item'),
+              inspectionId: inspectionId,
+              checklistItemId: resolvedItems[index].item.id,
+              componentId: driftValue(resolvedItems[index].item.componentId),
+              resultStatus: const Value('not_checked'),
+              sortOrder: Value(index),
+              createdAt: now,
+              updatedAt: now,
+            ),
+        ]);
       });
     });
 
@@ -941,17 +1001,17 @@ class InspectionsRepository {
     String? comment,
     String? measuredValue,
   }) async {
-    final inspection = await (_db.select(_db.inspections)
-          ..where((tbl) => tbl.id.equals(inspectionId)))
-        .getSingleOrNull();
+    final inspection = await (_db.select(
+      _db.inspections,
+    )..where((tbl) => tbl.id.equals(inspectionId))).getSingleOrNull();
     if (inspection == null) {
       throw StateError('Inspection draft not found.');
     }
     _ensureEditableInspection(inspection);
 
-    final answer = await (_db.select(_db.inspectionItems)
-          ..where((tbl) => tbl.id.equals(answerId)))
-        .getSingleOrNull();
+    final answer = await (_db.select(
+      _db.inspectionItems,
+    )..where((tbl) => tbl.id.equals(answerId))).getSingleOrNull();
     if (answer == null || answer.inspectionId != inspectionId) {
       throw StateError('Inspection answer not found.');
     }
@@ -962,12 +1022,14 @@ class InspectionsRepository {
         : resultStatus.trim();
     final normalizedComment = nullableField(comment);
     final normalizedMeasuredValue = nullableField(measuredValue);
-    final nextStatus =
-        normalizedResult == 'not_checked' ? inspection.status : 'in_progress';
+    final nextStatus = normalizedResult == 'not_checked'
+        ? inspection.status
+        : 'in_progress';
 
     await _db.transaction(() async {
-      await (_db.update(_db.inspectionItems)..where((tbl) => tbl.id.equals(answerId)))
-          .write(
+      await (_db.update(
+        _db.inspectionItems,
+      )..where((tbl) => tbl.id.equals(answerId))).write(
         InspectionItemsCompanion(
           resultStatus: Value(normalizedResult),
           comment: Value(normalizedComment),
@@ -975,12 +1037,10 @@ class InspectionsRepository {
           updatedAt: Value(now),
         ),
       );
-      await (_db.update(_db.inspections)..where((tbl) => tbl.id.equals(inspectionId)))
-          .write(
-        InspectionsCompanion(
-          status: Value(nextStatus),
-          updatedAt: Value(now),
-        ),
+      await (_db.update(
+        _db.inspections,
+      )..where((tbl) => tbl.id.equals(inspectionId))).write(
+        InspectionsCompanion(status: Value(nextStatus), updatedAt: Value(now)),
       );
     });
   }
@@ -989,9 +1049,9 @@ class InspectionsRepository {
     required String inspectionId,
     required InspectionSignatureInput input,
   }) async {
-    final inspection = await (_db.select(_db.inspections)
-          ..where((tbl) => tbl.id.equals(inspectionId)))
-        .getSingleOrNull();
+    final inspection = await (_db.select(
+      _db.inspections,
+    )..where((tbl) => tbl.id.equals(inspectionId))).getSingleOrNull();
     if (inspection == null) {
       throw StateError('Inspection draft not found.');
     }
@@ -1011,7 +1071,8 @@ class InspectionsRepository {
     );
     await targetDir.create(recursive: true);
 
-    final fileName = 'signature_${DateTime.now().toUtc().microsecondsSinceEpoch}.png';
+    final fileName =
+        'signature_${DateTime.now().toUtc().microsecondsSinceEpoch}.png';
     final absolutePath = p.join(targetDir.path, fileName);
     final file = File(absolutePath);
     await file.writeAsBytes(input.imageBytes, flush: true);
@@ -1021,7 +1082,9 @@ class InspectionsRepository {
     final now = nowIso();
     final signatureId = generateId('inspection-signature');
 
-    await _db.into(_db.inspectionSignatures).insert(
+    await _db
+        .into(_db.inspectionSignatures)
+        .insert(
           InspectionSignaturesCompanion.insert(
             id: signatureId,
             inspectionId: inspectionId,
@@ -1036,7 +1099,8 @@ class InspectionsRepository {
           ),
         );
 
-    await (_db.update(_db.inspections)..where((tbl) => tbl.id.equals(inspectionId)))
+    await (_db.update(_db.inspections)
+          ..where((tbl) => tbl.id.equals(inspectionId)))
         .write(InspectionsCompanion(updatedAt: Value(now)));
 
     await recordAudit(
@@ -1047,10 +1111,7 @@ class InspectionsRepository {
       entityType: 'inspection',
       entityId: inspectionId,
       message: 'Inspection signature saved locally',
-      payload: {
-        'signer_name': signerName,
-        'signer_role': signerRole,
-      },
+      payload: {'signer_name': signerName, 'signer_role': signerRole},
     );
 
     return InspectionSignatureView(
@@ -1069,17 +1130,17 @@ class InspectionsRepository {
     required String inspectionId,
     required String signatureId,
   }) async {
-    final inspection = await (_db.select(_db.inspections)
-          ..where((tbl) => tbl.id.equals(inspectionId)))
-        .getSingleOrNull();
+    final inspection = await (_db.select(
+      _db.inspections,
+    )..where((tbl) => tbl.id.equals(inspectionId))).getSingleOrNull();
     if (inspection == null) {
       throw StateError('Inspection draft not found.');
     }
     _ensureEditableInspection(inspection);
 
-    final signature = await (_db.select(_db.inspectionSignatures)
-          ..where((tbl) => tbl.id.equals(signatureId)))
-        .getSingleOrNull();
+    final signature = await (_db.select(
+      _db.inspectionSignatures,
+    )..where((tbl) => tbl.id.equals(signatureId))).getSingleOrNull();
     if (signature == null || signature.inspectionId != inspectionId) {
       throw StateError('Signature not found.');
     }
@@ -1090,9 +1151,11 @@ class InspectionsRepository {
       await file.delete();
     }
 
-    await (_db.delete(_db.inspectionSignatures)..where((tbl) => tbl.id.equals(signatureId)))
-        .go();
-    await (_db.update(_db.inspections)..where((tbl) => tbl.id.equals(inspectionId)))
+    await (_db.delete(
+      _db.inspectionSignatures,
+    )..where((tbl) => tbl.id.equals(signatureId))).go();
+    await (_db.update(_db.inspections)
+          ..where((tbl) => tbl.id.equals(inspectionId)))
         .write(InspectionsCompanion(updatedAt: Value(nowIso())));
 
     await recordAudit(
@@ -1114,7 +1177,9 @@ class InspectionsRepository {
     }
 
     final input = _buildReportDocumentInput(detail);
-    final targetDir = Directory(_paths.resolveRelativePath('media/reports/$inspectionId'));
+    final targetDir = Directory(
+      _paths.resolveRelativePath('media/reports/$inspectionId'),
+    );
     await targetDir.create(recursive: true);
     final fileName = 'inspection_report.pdf';
     final file = File(p.join(targetDir.path, fileName));
@@ -1123,7 +1188,9 @@ class InspectionsRepository {
     final relativePath = _paths.reportRelativePath(inspectionId, fileName);
     final now = nowIso();
 
-    await (_db.update(_db.inspections)..where((tbl) => tbl.id.equals(inspectionId))).write(
+    await (_db.update(
+      _db.inspections,
+    )..where((tbl) => tbl.id.equals(inspectionId))).write(
       InspectionsCompanion(
         pdfLocalPath: Value(relativePath),
         pdfChecksum: Value(checksum),
@@ -1175,7 +1242,9 @@ class InspectionsRepository {
       updatedAt: completedAt,
     );
 
-    await (_db.update(_db.inspections)..where((tbl) => tbl.id.equals(inspectionId))).write(
+    await (_db.update(
+      _db.inspections,
+    )..where((tbl) => tbl.id.equals(inspectionId))).write(
       InspectionsCompanion(
         completedAt: Value(completedAt),
         status: const Value('queued'),
@@ -1214,54 +1283,76 @@ class InspectionsRepository {
 
   Future<AndroidInspectionDiagnostics> loadDiagnostics() async {
     final draftCountExpression = _db.inspections.id.count();
-    final draftCount = await (_db.selectOnly(_db.inspections)
-          ..addColumns([draftCountExpression])
-          ..where(
-            _db.inspections.status.equals('draft') |
-                _db.inspections.status.equals('in_progress'),
-          ))
-        .getSingle();
+    final draftCount =
+        await (_db.selectOnly(_db.inspections)
+              ..addColumns([draftCountExpression])
+              ..where(
+                _db.inspections.status.equals('draft') |
+                    _db.inspections.status.equals('in_progress'),
+              ))
+            .getSingle();
     final queuedCountExpression = _db.inspections.id.count();
-    final queuedCount = await (_db.selectOnly(_db.inspections)
-          ..addColumns([queuedCountExpression])
-          ..where(
-            _db.inspections.status.equals('queued') |
-                _db.inspections.syncStatus.equals('queued'),
-          ))
-        .getSingle();
+    final queuedCount =
+        await (_db.selectOnly(_db.inspections)
+              ..addColumns([queuedCountExpression])
+              ..where(
+                _db.inspections.status.equals('queued') |
+                    _db.inspections.syncStatus.equals('queued'),
+              ))
+            .getSingle();
     final failedQueueExpression = _db.syncQueue.id.count();
-    final failedQueue = await (_db.selectOnly(_db.syncQueue)
-          ..addColumns([failedQueueExpression])
-          ..where(_db.syncQueue.status.equals('failed')))
-        .getSingle();
+    final failedQueue =
+        await (_db.selectOnly(_db.syncQueue)
+              ..addColumns([failedQueueExpression])
+              ..where(_db.syncQueue.status.equals('failed')))
+            .getSingle();
+    final retryEligibleExpression = _db.syncQueue.id.count();
+    final retryEligible =
+        await (_db.selectOnly(_db.syncQueue)
+              ..addColumns([retryEligibleExpression])
+              ..where(
+                _db.syncQueue.status.equals('failed') &
+                    (_db.syncQueue.nextAttemptAt.isNull() |
+                        _db.syncQueue.nextAttemptAt.isSmallerOrEqualValue(nowIso())),
+              ))
+            .getSingle();
     final conflictExpression = _db.inspections.id.count();
-    final conflicts = await (_db.selectOnly(_db.inspections)
-          ..addColumns([conflictExpression])
-          ..where(
-            _db.inspections.status.equals('conflict') |
-                _db.inspections.syncStatus.equals('conflict'),
-          ))
-        .getSingle();
-    final lastCompleted = await (_db.select(_db.inspections)
-          ..where((tbl) => tbl.completedAt.isNotNull())
-          ..orderBy([(tbl) => OrderingTerm.desc(tbl.completedAt)])
-          ..limit(1))
-        .getSingleOrNull();
-    final syncState = await (_db.select(_db.syncState)
-          ..orderBy([
-            (tbl) => OrderingTerm.desc(tbl.updatedAt),
-          ])
-          ..limit(1))
-        .getSingleOrNull();
+    final conflicts =
+        await (_db.selectOnly(_db.inspections)
+              ..addColumns([conflictExpression])
+              ..where(
+                _db.inspections.status.equals('conflict') |
+                    _db.inspections.syncStatus.equals('conflict'),
+              ))
+            .getSingle();
+    final lastCompleted =
+        await (_db.select(_db.inspections)
+              ..where((tbl) => tbl.completedAt.isNotNull())
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.completedAt)])
+              ..limit(1))
+            .getSingleOrNull();
+    final syncState =
+        await (_db.select(_db.syncState)
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)])
+              ..limit(1))
+            .getSingleOrNull();
+    final lastRetry =
+        await (_db.select(_db.auditLog)
+              ..where((tbl) => tbl.actionType.equals('sync.retry.run'))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.happenedAt)])
+              ..limit(1))
+            .getSingleOrNull();
 
     return AndroidInspectionDiagnostics(
       localDraftCount: draftCount.read(draftCountExpression) ?? 0,
       queuedResultCount: queuedCount.read(queuedCountExpression) ?? 0,
       failedQueueCount: failedQueue.read(failedQueueExpression) ?? 0,
+      retryEligibleCount: retryEligible.read(retryEligibleExpression) ?? 0,
       conflictCount: conflicts.read(conflictExpression) ?? 0,
       lastReferencePackageId: syncState?.lastReferencePackageId,
       lastReferenceSyncAt: syncState?.lastReferenceSyncAt,
       lastSyncAttemptAt: syncState?.updatedAt,
+      lastRetryAt: lastRetry?.happenedAt,
       lastCompletedInspectionAt: lastCompleted?.completedAt,
     );
   }
@@ -1270,29 +1361,31 @@ class InspectionsRepository {
     required String productObjectId,
     required String targetObjectId,
   }) async {
-    final target = await (_db.select(_db.catalogObjects)
-          ..where(
-            (tbl) =>
-                tbl.id.equals(targetObjectId) &
-                tbl.isDeleted.equals(false) &
-                tbl.isActive.equals(true),
-          ))
-        .getSingleOrNull();
+    final target =
+        await (_db.select(_db.catalogObjects)..where(
+              (tbl) =>
+                  tbl.id.equals(targetObjectId) &
+                  tbl.isDeleted.equals(false) &
+                  tbl.isActive.equals(true),
+            ))
+            .getSingleOrNull();
     if (target == null) {
       return const [];
     }
 
-    final checklists = await (_db.select(_db.checklists)
-          ..where((tbl) => tbl.isDeleted.equals(false) & tbl.isActive.equals(true)))
-        .get();
+    final checklists =
+        await (_db.select(_db.checklists)..where(
+              (tbl) => tbl.isDeleted.equals(false) & tbl.isActive.equals(true),
+            ))
+            .get();
     final activeChecklistIds = checklists.map((item) => item.id).toSet();
-    final bindings = await (_db.select(_db.checklistBindings)
-          ..where(
-            (tbl) =>
-                tbl.isDeleted.equals(false) &
-                tbl.checklistId.isIn(activeChecklistIds),
-          ))
-        .get();
+    final bindings =
+        await (_db.select(_db.checklistBindings)..where(
+              (tbl) =>
+                  tbl.isDeleted.equals(false) &
+                  tbl.checklistId.isIn(activeChecklistIds),
+            ))
+            .get();
 
     final checklistPriorities = <String, int>{};
     for (final binding in bindings) {
@@ -1316,13 +1409,13 @@ class InspectionsRepository {
       return const [];
     }
 
-    final items = await (_db.select(_db.checklistItems)
-          ..where(
-            (tbl) =>
-                tbl.isDeleted.equals(false) &
-                tbl.checklistId.isIn(checklistPriorities.keys),
-          ))
-        .get();
+    final items =
+        await (_db.select(_db.checklistItems)..where(
+              (tbl) =>
+                  tbl.isDeleted.equals(false) &
+                  tbl.checklistId.isIn(checklistPriorities.keys),
+            ))
+            .get();
 
     final resolved = items
         .map(
@@ -1349,7 +1442,9 @@ class InspectionsRepository {
 
   Future<List<CatalogObject>> _listActiveObjects() {
     return (_db.select(_db.catalogObjects)
-          ..where((tbl) => tbl.isDeleted.equals(false) & tbl.isActive.equals(true))
+          ..where(
+            (tbl) => tbl.isDeleted.equals(false) & tbl.isActive.equals(true),
+          )
           ..orderBy([
             (tbl) => OrderingTerm.asc(tbl.sortOrder),
             (tbl) => OrderingTerm.asc(tbl.name),
@@ -1358,9 +1453,9 @@ class InspectionsRepository {
   }
 
   Future<Map<String, String>> _loadObjectNames() async {
-    final objects = await (_db.select(_db.catalogObjects)
-          ..where((tbl) => tbl.isDeleted.equals(false)))
-        .get();
+    final objects = await (_db.select(
+      _db.catalogObjects,
+    )..where((tbl) => tbl.isDeleted.equals(false))).get();
     return {for (final object in objects) object.id: object.name};
   }
 
@@ -1372,12 +1467,14 @@ class InspectionsRepository {
       return const {};
     }
 
-    final answers = await (_db.select(_db.inspectionItems)
-          ..where((tbl) => tbl.inspectionId.isIn(ids)))
-        .get();
+    final answers = await (_db.select(
+      _db.inspectionItems,
+    )..where((tbl) => tbl.inspectionId.isIn(ids))).get();
     final answersByInspection = <String, List<InspectionItem>>{};
     for (final answer in answers) {
-      answersByInspection.putIfAbsent(answer.inspectionId, () => []).add(answer);
+      answersByInspection
+          .putIfAbsent(answer.inspectionId, () => [])
+          .add(answer);
     }
     return answersByInspection;
   }
@@ -1390,37 +1487,38 @@ class InspectionsRepository {
       return const {};
     }
 
-    final images = await (_db.select(_db.componentImages)
-          ..where(
-            (tbl) =>
-                tbl.componentId.isIn(ids) &
-                tbl.isDeleted.equals(false),
-          )
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.sortOrder),
-            (tbl) => OrderingTerm.asc(tbl.fileName),
-          ]))
-        .get();
+    final images =
+        await (_db.select(_db.componentImages)
+              ..where(
+                (tbl) =>
+                    tbl.componentId.isIn(ids) & tbl.isDeleted.equals(false),
+              )
+              ..orderBy([
+                (tbl) => OrderingTerm.asc(tbl.sortOrder),
+                (tbl) => OrderingTerm.asc(tbl.fileName),
+              ]))
+            .get();
     final result = <String, List<String>>{};
     for (final image in images) {
       final localPath = nullableField(image.localPath);
       if (localPath == null) {
         continue;
       }
-      result.putIfAbsent(image.componentId, () => []).add(
-            _paths.resolveRelativePath(localPath),
-          );
+      result
+          .putIfAbsent(image.componentId, () => [])
+          .add(_paths.resolveRelativePath(localPath));
     }
     return result;
   }
 
-  Future<List<InspectionSignatureView>> _loadSignatures(String inspectionId) async {
-    final signatures = await (_db.select(_db.inspectionSignatures)
-          ..where((tbl) => tbl.inspectionId.equals(inspectionId))
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.signedAt),
-          ]))
-        .get();
+  Future<List<InspectionSignatureView>> _loadSignatures(
+    String inspectionId,
+  ) async {
+    final signatures =
+        await (_db.select(_db.inspectionSignatures)
+              ..where((tbl) => tbl.inspectionId.equals(inspectionId))
+              ..orderBy([(tbl) => OrderingTerm.asc(tbl.signedAt)]))
+            .get();
     return signatures
         .map(
           (signature) => InspectionSignatureView(
@@ -1429,7 +1527,9 @@ class InspectionsRepository {
             signerName: signature.signerName,
             signerRole: signature.signerRole,
             imageRelativePath: signature.imageLocalPath,
-            imageAbsolutePath: _paths.resolveRelativePath(signature.imageLocalPath),
+            imageAbsolutePath: _paths.resolveRelativePath(
+              signature.imageLocalPath,
+            ),
             checksum: signature.checksum,
             signedAt: signature.signedAt,
           ),
@@ -1507,14 +1607,17 @@ class InspectionsRepository {
     required String checksum,
     required String updatedAt,
   }) async {
-    final existing = await (_db.select(_db.inspectionFiles)
-          ..where(
-            (tbl) =>
-                tbl.inspectionId.equals(inspectionId) & tbl.fileType.equals('pdf'),
-          ))
-        .getSingleOrNull();
+    final existing =
+        await (_db.select(_db.inspectionFiles)..where(
+              (tbl) =>
+                  tbl.inspectionId.equals(inspectionId) &
+                  tbl.fileType.equals('pdf'),
+            ))
+            .getSingleOrNull();
     if (existing == null) {
-      await _db.into(_db.inspectionFiles).insert(
+      await _db
+          .into(_db.inspectionFiles)
+          .insert(
             InspectionFilesCompanion.insert(
               id: generateId('inspection-file'),
               inspectionId: inspectionId,
@@ -1530,8 +1633,9 @@ class InspectionsRepository {
       return;
     }
 
-    await (_db.update(_db.inspectionFiles)..where((tbl) => tbl.id.equals(existing.id)))
-        .write(
+    await (_db.update(
+      _db.inspectionFiles,
+    )..where((tbl) => tbl.id.equals(existing.id))).write(
       InspectionFilesCompanion(
         fileName: Value(fileName),
         localPath: Value(relativePath),
@@ -1571,9 +1675,9 @@ class InspectionsRepository {
     await dataDir.create(recursive: true);
     await filesDir.create(recursive: true);
 
-    final inspectionFiles = await (_db.select(_db.inspectionFiles)
-          ..where((tbl) => tbl.inspectionId.equals(detail.inspection.id)))
-        .get();
+    final inspectionFiles = await (_db.select(
+      _db.inspectionFiles,
+    )..where((tbl) => tbl.inspectionId.equals(detail.inspection.id))).get();
 
     final copiedSignatures = <Map<String, Object?>>[];
     for (final signature in detail.signatures) {
@@ -1581,7 +1685,9 @@ class InspectionsRepository {
       if (!await source.exists()) {
         continue;
       }
-      final target = File(p.join(filesDir.path, p.basename(signature.imageAbsolutePath)));
+      final target = File(
+        p.join(filesDir.path, p.basename(signature.imageAbsolutePath)),
+      );
       await source.copy(target.path);
       copiedSignatures.add({
         'id': signature.id,
@@ -1642,7 +1748,9 @@ class InspectionsRepository {
             'id': file.id,
             'file_type': file.fileType,
             'file_name': file.fileName,
-            'local_path': file.fileType == 'pdf' ? packagedPdfPath : file.localPath,
+            'local_path': file.fileType == 'pdf'
+                ? packagedPdfPath
+                : file.localPath,
             'checksum': file.checksum,
             'mime_type': file.mimeType,
             'created_at': file.createdAt,
@@ -1654,15 +1762,17 @@ class InspectionsRepository {
     await File(p.join(dataDir.path, 'inspection.json')).writeAsString(
       const JsonEncoder.withIndent('  ').convert(inspectionPayload),
     );
-    await File(p.join(dataDir.path, 'inspection_items.json')).writeAsString(
-      const JsonEncoder.withIndent('  ').convert(itemsPayload),
-    );
-    await File(p.join(dataDir.path, 'inspection_signatures.json')).writeAsString(
+    await File(
+      p.join(dataDir.path, 'inspection_items.json'),
+    ).writeAsString(const JsonEncoder.withIndent('  ').convert(itemsPayload));
+    await File(
+      p.join(dataDir.path, 'inspection_signatures.json'),
+    ).writeAsString(
       const JsonEncoder.withIndent('  ').convert(copiedSignatures),
     );
-    await File(p.join(dataDir.path, 'inspection_files.json')).writeAsString(
-      const JsonEncoder.withIndent('  ').convert(filesPayload),
-    );
+    await File(
+      p.join(dataDir.path, 'inspection_files.json'),
+    ).writeAsString(const JsonEncoder.withIndent('  ').convert(filesPayload));
 
     final manifest = {
       'package_id': detail.inspection.id,
@@ -1670,10 +1780,7 @@ class InspectionsRepository {
       'schema_version': AppConstants.syncSchemaVersion,
       'created_at': nowIso(),
       'inspection_id': detail.inspection.id,
-      'files': {
-        'pdf': packagedPdfPath,
-        'signatures': copiedSignatures.length,
-      },
+      'files': {'pdf': packagedPdfPath, 'signatures': copiedSignatures.length},
     };
     final manifestWithChecksum = {
       ...manifest,
@@ -1691,16 +1798,18 @@ class InspectionsRepository {
     required Directory packageDirectory,
     required String updatedAt,
   }) async {
-    final existing = await (_db.select(_db.syncQueue)
-          ..where(
-            (tbl) =>
-                tbl.packageType.equals('inspection_result') &
-                tbl.packageId.equals(inspectionId),
-          ))
-        .getSingleOrNull();
+    final existing =
+        await (_db.select(_db.syncQueue)..where(
+              (tbl) =>
+                  tbl.packageType.equals('inspection_result') &
+                  tbl.packageId.equals(inspectionId),
+            ))
+            .getSingleOrNull();
     if (existing == null) {
       final id = generateId('queue');
-      await _db.into(_db.syncQueue).insert(
+      await _db
+          .into(_db.syncQueue)
+          .insert(
             SyncQueueCompanion.insert(
               id: id,
               direction: 'outgoing',
@@ -1715,7 +1824,9 @@ class InspectionsRepository {
       return id;
     }
 
-    await (_db.update(_db.syncQueue)..where((tbl) => tbl.id.equals(existing.id))).write(
+    await (_db.update(
+      _db.syncQueue,
+    )..where((tbl) => tbl.id.equals(existing.id))).write(
       SyncQueueCompanion(
         localPath: Value(_paths.relativeToRoot(packageDirectory.path)),
         status: const Value('pending'),
