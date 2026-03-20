@@ -41,7 +41,7 @@ class _AndroidInspectionShellState extends ConsumerState<AndroidInspectionShell>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Android inspections'),
+        title: const Text('Проверки Android'),
         actions: [
           Center(
             child: Padding(
@@ -52,12 +52,12 @@ class _AndroidInspectionShellState extends ConsumerState<AndroidInspectionShell>
           IconButton(
             onPressed: () => context.go('/diagnostics'),
             icon: const Icon(Icons.monitor_heart_outlined),
-            tooltip: 'Diagnostics',
+            tooltip: 'Диагностика',
           ),
           IconButton(
             onPressed: () => context.go('/settings'),
             icon: const Icon(Icons.settings_outlined),
-            tooltip: 'Settings',
+            tooltip: 'Настройки',
           ),
           IconButton(
             onPressed: () async {
@@ -69,7 +69,7 @@ class _AndroidInspectionShellState extends ConsumerState<AndroidInspectionShell>
               context.go('/');
             },
             icon: const Icon(Icons.logout_outlined),
-            tooltip: 'Logout',
+            tooltip: 'Выход',
           ),
         ],
       ),
@@ -94,15 +94,15 @@ class _AndroidInspectionShellState extends ConsumerState<AndroidInspectionShell>
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.fact_check_outlined),
-            label: 'Inspect',
+            label: 'Проверка',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.edit_note_outlined),
-            label: 'Drafts',
+            label: 'Черновики',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.assignment_turned_in_outlined),
-            label: 'Results',
+            label: 'Результаты',
           ),
         ],
       ),
@@ -167,32 +167,32 @@ class _AndroidInspectionHomeTabState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Inspection workspace',
+                    'Рабочее место проверки',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
-                  Text('Local drafts: ${diagnostics.localDraftCount}'),
-                  Text('Queued results: ${diagnostics.queuedResultCount}'),
-                  Text('Failed sync queue: ${diagnostics.failedQueueCount}'),
-                  Text('Conflicts: ${diagnostics.conflictCount}'),
-                  Text('Retry-eligible queue: ${diagnostics.retryEligibleCount}'),
+                  Text('Локальные черновики: ${diagnostics.localDraftCount}'),
+                  Text('Результаты в очереди: ${diagnostics.queuedResultCount}'),
+                  Text('Ошибки очереди синхронизации: ${diagnostics.failedQueueCount}'),
+                  Text('Конфликты: ${diagnostics.conflictCount}'),
+                  Text('Доступно для повтора: ${diagnostics.retryEligibleCount}'),
                   Text(
                     diagnostics.lastReferencePackageId == null
-                        ? 'Reference package: not synced yet'
-                        : 'Reference package: ${diagnostics.lastReferencePackageId}',
+                        ? 'Пакет справочников: ещё не синхронизирован'
+                        : 'Пакет справочников: ${diagnostics.lastReferencePackageId}',
                   ),
                   if (diagnostics.lastReferenceSyncAt != null)
-                    Text('Reference synced at: ${diagnostics.lastReferenceSyncAt}'),
+                    Text('Справочники синхронизированы: ${diagnostics.lastReferenceSyncAt}'),
                   if (diagnostics.lastSyncAttemptAt != null)
-                    Text('Last sync attempt: ${diagnostics.lastSyncAttemptAt}'),
+                    Text('Последняя попытка синхронизации: ${diagnostics.lastSyncAttemptAt}'),
                   if (diagnostics.lastRetryAt != null)
-                    Text('Last retry run: ${diagnostics.lastRetryAt}'),
+                    Text('Последний повтор: ${diagnostics.lastRetryAt}'),
                   if (diagnostics.lastCompletedInspectionAt != null)
                     Text(
-                      'Last completed inspection: ${diagnostics.lastCompletedInspectionAt}',
+                      'Последняя завершённая проверка: ${diagnostics.lastCompletedInspectionAt}',
                     ),
                   if (diagnostics.hasPendingSyncWork)
-                    const Text('Pending sync work is waiting to be retried.'),
+                    const Text('Ожидающие задачи синхронизации ждут повторной обработки.'),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 12,
@@ -207,7 +207,7 @@ class _AndroidInspectionHomeTabState
                                 child: CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Icon(Icons.sync),
-                        label: const Text('Sync now'),
+                        label: const Text('Синхронизировать'),
                       ),
                     ],
                   ),
@@ -217,7 +217,7 @@ class _AndroidInspectionHomeTabState
                 height: 96,
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (error, _) => Text('Failed to load diagnostics: $error'),
+              error: (error, _) => Text('Не удалось загрузить диагностику: $error'),
             ),
           ),
         ),
@@ -226,9 +226,9 @@ class _AndroidInspectionHomeTabState
           const Card(
             child: ListTile(
               leading: Icon(Icons.visibility_outlined),
-              title: Text('Viewer access is read-only'),
+              title: Text('Режим просмотра доступен только для чтения'),
               subtitle: Text(
-                'This role can review inspection results but cannot create or edit drafts.',
+                'Эта роль может просматривать результаты, но не может создавать или редактировать черновики.',
               ),
             ),
           )
@@ -248,16 +248,16 @@ class _AndroidInspectionHomeTabState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Start or resume a draft',
+                        'Начать или продолжить черновик',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 12),
                       if (products.isEmpty)
-                        const Text('No synced products are available yet.')
+                        const Text('Синхронизированные изделия пока недоступны.')
                       else ...[
                         DropdownButtonFormField<String>(
                           initialValue: effectiveProductId,
-                          decoration: const InputDecoration(labelText: 'Product'),
+                          decoration: const InputDecoration(labelText: 'Изделие'),
                           items: [
                             for (final product in products)
                               DropdownMenuItem(
@@ -281,7 +281,7 @@ class _AndroidInspectionHomeTabState
                             return DropdownButtonFormField<String>(
                               initialValue: effectiveTargetId,
                               decoration: const InputDecoration(
-                                labelText: 'Inspection target',
+                                labelText: 'Объект проверки',
                               ),
                               items: [
                                 for (final target in targets)
@@ -300,7 +300,7 @@ class _AndroidInspectionHomeTabState
                             child: LinearProgressIndicator(),
                           ),
                           error: (error, _) =>
-                              Text('Failed to load inspection targets: $error'),
+                              Text('Не удалось загрузить объекты проверки: $error'),
                         ),
                         const SizedBox(height: 12),
                         FilledButton.icon(
@@ -317,7 +317,7 @@ class _AndroidInspectionHomeTabState
                                   child: CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Icon(Icons.playlist_add_check_circle_outlined),
-                          label: const Text('Open draft'),
+                          label: const Text('Открыть черновик'),
                         ),
                       ],
                     ],
@@ -327,7 +327,7 @@ class _AndroidInspectionHomeTabState
                   height: 120,
                   child: Center(child: CircularProgressIndicator()),
                 ),
-                error: (error, _) => Text('Failed to load products: $error'),
+                error: (error, _) => Text('Не удалось загрузить изделия: $error'),
               ),
             ),
           ),
@@ -340,23 +340,23 @@ class _AndroidInspectionHomeTabState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Recent drafts',
+                    'Последние черновики',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 12),
                   if (drafts.isEmpty)
-                    const Text('No local drafts yet.')
+                    const Text('Локальных черновиков пока нет.')
                   else
                     for (final draft in drafts.take(3))
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(draft.targetName),
                         subtitle: Text(
-                          '${draft.productName} - ${draft.answeredItems}/${draft.totalItems} answered',
+                          '${draft.productName} - отвечено ${draft.answeredItems}/${draft.totalItems}',
                         ),
                         trailing: TextButton(
                           onPressed: () => widget.onOpenInspection(draft.inspectionId),
-                          child: const Text('Open'),
+                          child: const Text('Открыть'),
                         ),
                       ),
                 ],
@@ -365,7 +365,7 @@ class _AndroidInspectionHomeTabState
                 height: 96,
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (error, _) => Text('Failed to load drafts: $error'),
+              error: (error, _) => Text('Не удалось загрузить черновики: $error'),
             ),
           ),
         ),
@@ -378,12 +378,12 @@ class _AndroidInspectionHomeTabState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Recent results',
+                    'Последние результаты',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 12),
                   if (results.isEmpty)
-                    const Text('No completed inspections yet.')
+                    const Text('Завершённых проверок пока нет.')
                   else
                     for (final result in results.take(3))
                       ListTile(
@@ -394,7 +394,7 @@ class _AndroidInspectionHomeTabState
                         ),
                         trailing: TextButton(
                           onPressed: () => widget.onOpenInspection(result.inspectionId),
-                          child: const Text('View'),
+                          child: const Text('Просмотр'),
                         ),
                       ),
                 ],
@@ -403,7 +403,7 @@ class _AndroidInspectionHomeTabState
                 height: 96,
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (error, _) => Text('Failed to load results: $error'),
+              error: (error, _) => Text('Не удалось загрузить результаты: $error'),
             ),
           ),
         ),
@@ -417,7 +417,7 @@ class _AndroidInspectionHomeTabState
   }) async {
     if (targetId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select an inspection target first.')),
+        const SnackBar(content: Text('Сначала выберите объект проверки.')),
       );
       return;
     }
@@ -489,7 +489,7 @@ class _AndroidInspectionHomeTabState
 
   String _targetLabel(InspectionTargetOption target) {
     final indent = '  ' * target.depth;
-    return '$indent${target.targetName} (${target.targetType})';
+    return '$indent${target.targetName} (${_objectTypeLabel(target.targetType)})';
   }
 }
 
@@ -513,7 +513,7 @@ class _AndroidDraftsTab extends ConsumerWidget {
       child: draftsAsync.when(
         data: (drafts) {
           if (drafts.isEmpty) {
-            return const Center(child: Text('No draft inspections yet.'));
+            return const Center(child: Text('Черновиков проверок пока нет.'));
           }
 
           return ListView.separated(
@@ -530,12 +530,12 @@ class _AndroidDraftsTab extends ConsumerWidget {
                   ),
                   title: Text(draft.targetName),
                   subtitle: Text(
-                    '${draft.productName}\n${draft.answeredItems}/${draft.totalItems} answered',
+                    '${draft.productName}\nОтвечено ${draft.answeredItems}/${draft.totalItems}',
                   ),
                   isThreeLine: true,
                   trailing: TextButton(
                     onPressed: canEdit ? () => onOpenInspection(draft.inspectionId) : null,
-                    child: Text(canEdit ? 'Open' : 'Blocked'),
+                    child: Text(canEdit ? 'Открыть' : 'Заблокировано'),
                   ),
                 ),
               );
@@ -543,7 +543,7 @@ class _AndroidDraftsTab extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Failed to load drafts: $error')),
+        error: (error, _) => Center(child: Text('Не удалось загрузить черновики: $error')),
       ),
     );
   }
@@ -567,7 +567,7 @@ class _AndroidResultsTab extends ConsumerWidget {
       child: resultsAsync.when(
         data: (results) {
           if (results.isEmpty) {
-            return const Center(child: Text('No completed inspections yet.'));
+            return const Center(child: Text('Завершённых проверок пока нет.'));
           }
 
           return ListView.separated(
@@ -584,12 +584,12 @@ class _AndroidResultsTab extends ConsumerWidget {
                   ),
                   title: Text(result.targetName),
                   subtitle: Text(
-                    '${result.productName}\n${result.status} • ${result.syncStatus} • ${result.completedAt}',
+                    '${result.productName}\n${_inspectionStatusLabel(result.status)} • ${_syncStatusLabel(result.syncStatus)} • ${result.completedAt}',
                   ),
                   isThreeLine: true,
                   trailing: TextButton(
                     onPressed: () => onOpenInspection(result.inspectionId),
-                    child: const Text('View'),
+                    child: const Text('Просмотр'),
                   ),
                 ),
               );
@@ -597,7 +597,7 @@ class _AndroidResultsTab extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Failed to load results: $error')),
+        error: (error, _) => Center(child: Text('Не удалось загрузить результаты: $error')),
       ),
     );
   }
@@ -627,11 +627,11 @@ class _AndroidInspectionDetailScreenState
     final detailAsync = ref.watch(inspectionDetailProvider(widget.inspectionId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Inspection detail')),
+      appBar: AppBar(title: const Text('Детали проверки')),
       body: detailAsync.when(
         data: (detail) {
           if (detail == null) {
-            return const Center(child: Text('Inspection not found.'));
+            return const Center(child: Text('Проверка не найдена.'));
           }
 
           final answeredCount = detail.items
@@ -653,11 +653,11 @@ class _AndroidInspectionDetailScreenState
                       ),
                       const SizedBox(height: 8),
                       Text(detail.productName),
-                      Text('Status: ${detail.inspection.status}'),
-                      Text('Sync status: ${detail.inspection.syncStatus}'),
-                      Text('Answered: $answeredCount/${detail.items.length}'),
+                      Text('Статус: ${_inspectionStatusLabel(detail.inspection.status)}'),
+                      Text('Статус синхронизации: ${_syncStatusLabel(detail.inspection.syncStatus)}'),
+                      Text('Отвечено: $answeredCount/${detail.items.length}'),
                       if (detail.inspection.completedAt != null)
-                        Text('Completed at: ${detail.inspection.completedAt}'),
+                        Text('Завершена: ${detail.inspection.completedAt}'),
                     ],
                   ),
                 ),
@@ -667,9 +667,9 @@ class _AndroidInspectionDetailScreenState
                 const Card(
                   child: ListTile(
                     leading: Icon(Icons.lock_outline),
-                    title: Text('This inspection is read-only'),
+                    title: Text('Эта проверка доступна только для чтения'),
                     subtitle: Text(
-                      'Completed, queued, synced, or conflict inspections cannot be edited.',
+                      'Завершённые, поставленные в очередь, синхронизированные и конфликтные проверки нельзя редактировать.',
                     ),
                   ),
                 ),
@@ -703,7 +703,7 @@ class _AndroidInspectionDetailScreenState
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Failed to load inspection: $error')),
+        error: (error, _) => Center(child: Text('Не удалось загрузить проверку: $error')),
       ),
     );
   }
@@ -820,7 +820,7 @@ class _AndroidInspectionDetailScreenState
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Inspection completed and queued.')),
+        const SnackBar(content: Text('Проверка завершена и поставлена в очередь на синхронизацию.')),
       );
     } on StateError catch (error) {
       if (!mounted) {
@@ -877,7 +877,7 @@ class _ActionSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Actions',
+              'Действия',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
@@ -895,7 +895,7 @@ class _ActionSection extends StatelessWidget {
                         )
                       : const Icon(Icons.picture_as_pdf_outlined),
                   label: Text(
-                    detail.pdfInfo == null ? 'Generate PDF preview' : 'Refresh PDF preview',
+                    detail.pdfInfo == null ? 'Сформировать предпросмотр PDF' : 'Обновить предпросмотр PDF',
                   ),
                 ),
                 OutlinedButton.icon(
@@ -907,7 +907,7 @@ class _ActionSection extends StatelessWidget {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.draw_outlined),
-                  label: const Text('Add signature'),
+                  label: const Text('Добавить подпись'),
                 ),
                 FilledButton.icon(
                   onPressed: isCompleting ? null : onComplete,
@@ -918,14 +918,14 @@ class _ActionSection extends StatelessWidget {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.assignment_turned_in_outlined),
-                  label: const Text('Complete inspection'),
+                  label: const Text('Завершить проверку'),
                 ),
               ],
             ),
             if (detail.pdfInfo != null) ...[
               const SizedBox(height: 12),
               Text('PDF: ${detail.pdfInfo!.relativePath}'),
-              Text('Checksum: ${detail.pdfInfo!.checksum}'),
+              Text('Контрольная сумма: ${detail.pdfInfo!.checksum}'),
             ],
           ],
         ),
@@ -954,12 +954,12 @@ class _SignatureSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Signatures',
+              'Подписи',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
             if (detail.signatures.isEmpty)
-              const Text('No signatures saved yet.')
+              const Text('Подписи пока не сохранены.')
             else
               for (final signature in detail.signatures) ...[
                 ListTile(
@@ -994,7 +994,7 @@ class _SignatureSection extends StatelessWidget {
                               ? null
                               : () => onDeleteSignature!(signature.id),
                           icon: const Icon(Icons.delete_outline),
-                          tooltip: 'Delete signature',
+                          tooltip: 'Удалить подпись',
                         )
                       : null,
                 ),
@@ -1020,11 +1020,11 @@ class AndroidInspectionPdfPreviewScreen extends ConsumerWidget {
     final detailAsync = ref.watch(inspectionDetailProvider(inspectionId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('PDF preview')),
+      appBar: AppBar(title: const Text('Предпросмотр PDF')),
       body: detailAsync.when(
         data: (detail) {
           if (detail == null) {
-            return const Center(child: Text('Inspection not found.'));
+            return const Center(child: Text('Проверка не найдена.'));
           }
 
           final previewText = ref
@@ -1041,12 +1041,12 @@ class AndroidInspectionPdfPreviewScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Generated local report',
+                        'Сформированный локальный отчёт',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
-                      Text('Path: ${detail.pdfInfo?.absolutePath ?? 'not generated'}'),
-                      Text('Checksum: ${detail.pdfInfo?.checksum ?? 'n/a'}'),
+                      Text('Путь: ${detail.pdfInfo?.absolutePath ?? 'не сформирован'}'),
+                      Text('Контрольная сумма: ${detail.pdfInfo?.checksum ?? 'н/д'}'),
                     ],
                   ),
                 ),
@@ -1067,7 +1067,7 @@ class AndroidInspectionPdfPreviewScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Failed to load PDF preview: $error')),
+        error: (error, _) => Center(child: Text('Не удалось загрузить предпросмотр PDF: $error')),
       ),
     );
   }
@@ -1136,7 +1136,7 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
             ),
             if (widget.item.componentName != null) ...[
               const SizedBox(height: 4),
-              Text('Component: ${widget.item.componentName}'),
+              Text('Компонент: ${widget.item.componentName}'),
             ],
             if ((widget.item.description ?? '').isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -1144,7 +1144,7 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
             ],
             if ((widget.item.expectedResult ?? '').isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text('Expected: ${widget.item.expectedResult}'),
+              Text('Ожидаемое значение: ${widget.item.expectedResult}'),
             ],
             if (widget.item.componentImagePaths.isNotEmpty) ...[
               const SizedBox(height: 12),
@@ -1180,7 +1180,7 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
                   const ['not_checked', 'pass', 'fail'],
                 ),
               'number' => _buildValueEditor(
-                  label: 'Measured value',
+                  label: 'Измеренное значение',
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                     signed: false,
@@ -1188,7 +1188,7 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
                   saveAsMeasuredValue: true,
                 ),
               _ => _buildValueEditor(
-                  label: 'Text result',
+                  label: 'Текстовый результат',
                   keyboardType: TextInputType.text,
                   saveAsMeasuredValue: false,
                 ),
@@ -1213,7 +1213,7 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
       children: [
         DropdownButtonFormField<String>(
           initialValue: widget.item.resultStatus,
-          decoration: const InputDecoration(labelText: 'Result'),
+          decoration: const InputDecoration(labelText: 'Результат'),
           items: [
             for (final option in options)
               DropdownMenuItem(
@@ -1236,7 +1236,7 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
           minLines: 2,
           maxLines: 3,
           decoration: const InputDecoration(
-            labelText: 'Comment',
+            labelText: 'Комментарий',
             border: OutlineInputBorder(),
           ),
         ),
@@ -1256,7 +1256,7 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Save note'),
+                : const Text('Сохранить комментарий'),
           ),
         ),
       ],
@@ -1306,7 +1306,7 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Save value'),
+                : const Text('Сохранить значение'),
           ),
         ),
       ],
@@ -1351,10 +1351,10 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
 
   String _statusLabel(String value) {
     return switch (value) {
-      'pass' => 'Pass',
-      'fail' => 'Fail',
-      'na' => 'N/A',
-      _ => 'Not checked',
+      'pass' => 'Пройдено',
+      'fail' => 'Не пройдено',
+      'na' => 'Н/П',
+      _ => 'Не проверено',
     };
   }
 }
@@ -1375,9 +1375,9 @@ class _ReadonlyAnswerView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Result: $resultStatus'),
-        if ((measuredValue ?? '').isNotEmpty) Text('Value: $measuredValue'),
-        if ((comment ?? '').isNotEmpty) Text('Comment: $comment'),
+        Text('Результат: ${_readonlyResultLabel(resultStatus)}'),
+        if ((measuredValue ?? '').isNotEmpty) Text('Значение: $measuredValue'),
+        if ((comment ?? '').isNotEmpty) Text('Комментарий: $comment'),
       ],
     );
   }
@@ -1429,18 +1429,18 @@ class _SignatureCaptureSheetState extends State<SignatureCaptureSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Add signature',
+                'Добавить подпись',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Signer name'),
+                decoration: const InputDecoration(labelText: 'ФИО подписанта'),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _roleController,
-                decoration: const InputDecoration(labelText: 'Signer role'),
+                decoration: const InputDecoration(labelText: 'Роль подписанта'),
               ),
               const SizedBox(height: 12),
               SizedBox(
@@ -1452,12 +1452,12 @@ class _SignatureCaptureSheetState extends State<SignatureCaptureSheet> {
                 children: [
                   OutlinedButton(
                     onPressed: () => _signatureKey.currentState?.clear(),
-                    child: const Text('Clear'),
+                    child: const Text('Очистить'),
                   ),
                   const Spacer(),
                   FilledButton(
                     onPressed: _save,
-                    child: const Text('Save signature'),
+                    child: const Text('Сохранить подпись'),
                   ),
                 ],
               ),
@@ -1475,7 +1475,7 @@ class _SignatureCaptureSheetState extends State<SignatureCaptureSheet> {
     }
     if (imageBytes == null || imageBytes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Draw a signature before saving.')),
+        const SnackBar(content: Text('Сначала нарисуйте подпись.')),
       );
       return;
     }
@@ -1603,4 +1603,49 @@ class _SignatureCaptureResult {
   final String signerName;
   final String signerRole;
   final Uint8List imageBytes;
+}
+
+String _inspectionStatusLabel(String status) {
+  return switch (status) {
+    'draft' => 'Черновик',
+    'in_progress' => 'В работе',
+    'queued' => 'В очереди',
+    'completed' => 'Завершена',
+    'synced' => 'Синхронизирована',
+    'conflict' => 'Конфликт',
+    _ => status,
+  };
+}
+
+String _syncStatusLabel(String status) {
+  return switch (status) {
+    'local_only' => 'Локально',
+    'queued' => 'В очереди',
+    'pending' => 'Ожидает обработки',
+    'synced' => 'Синхронизировано',
+    'failed' => 'Ошибка',
+    'conflict' => 'Конфликт',
+    _ => status,
+  };
+}
+
+String _objectTypeLabel(String type) {
+  return switch (type) {
+    'product' => 'Изделие',
+    'machine' => 'Машина',
+    'place' => 'Место',
+    'node' => 'Узел',
+    'detail' => 'Деталь',
+    _ => type,
+  };
+}
+
+String _readonlyResultLabel(String value) {
+  return switch (value) {
+    'pass' => 'Пройдено',
+    'fail' => 'Не пройдено',
+    'na' => 'Н/П',
+    'not_checked' => 'Не проверено',
+    _ => value,
+  };
 }

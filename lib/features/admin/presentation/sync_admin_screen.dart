@@ -65,7 +65,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
       padding: const EdgeInsets.all(24),
       children: [
         Text(
-          'Sync and export',
+          'Синхронизация и экспорт',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 16),
@@ -78,7 +78,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                 TextField(
                   controller: _tokenController,
                   decoration: const InputDecoration(
-                    labelText: 'Yandex Disk token',
+                    labelText: 'Токен Яндекс.Диска',
                   ),
                   obscureText: true,
                   enabled: canEdit,
@@ -88,23 +88,27 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                   spacing: 12,
                   runSpacing: 12,
                   children: [
-                    FilledButton(
-                      onPressed: canEdit ? _saveToken : null,
-                      child: const Text('Save token'),
-                    ),
-                    OutlinedButton(
+                  FilledButton(
+                    onPressed: canEdit ? _saveToken : null,
+                    child: const Text('Сохранить токен'),
+                  ),
+                  OutlinedButton(
                       onPressed: canEdit && !_isPublishing
                           ? () => _publishReferencePackage(actorUserId)
                           : null,
                       child: Text(
-                        _isPublishing ? 'Publishing...' : 'Publish reference package',
+                        _isPublishing
+                            ? 'Публикация...'
+                            : 'Опубликовать пакет справочников',
                       ),
                     ),
                     OutlinedButton(
                       onPressed: canEdit && !_isSyncing
                           ? () => _runSync(actorUserId)
                           : null,
-                      child: Text(_isSyncing ? 'Running sync...' : 'Run sync now'),
+                      child: Text(
+                        _isSyncing ? 'Синхронизация...' : 'Запустить синхронизацию',
+                      ),
                     ),
                   ],
                 ),
@@ -116,46 +120,48 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
         syncDiagnosticsAsync.when(
           data: (diagnostics) => Card(
             child: ListTile(
-              title: const Text('Sync diagnostics'),
+              title: const Text('Диагностика синхронизации'),
               subtitle: Text(
-                'last reference: ${diagnostics.lastReferencePackageId ?? 'n/a'}\n'
-                'last attempt: ${diagnostics.lastSyncAttemptAt ?? 'n/a'}\n'
-                'last retry: ${diagnostics.lastRetryAt ?? 'n/a'}\n'
-                'last success: ${diagnostics.lastSuccessAt ?? 'n/a'}\n'
-                'last conflict: ${diagnostics.lastConflictAt ?? 'n/a'}\n'
-                'last error: ${diagnostics.lastError ?? 'n/a'}\n'
-                'configured: ${diagnostics.transportConfigured ? 'yes' : 'no'}\n'
-                'connected: ${diagnostics.yandexDiskConnected ? 'yes' : 'no'}\n'
-                'outgoing pending: ${diagnostics.pendingOutgoingCount}\n'
-                'incoming pending: ${diagnostics.pendingIncomingCount}\n'
-                'failed: ${diagnostics.failedQueueCount}\n'
-                'retry eligible: ${diagnostics.retryEligibleCount}\n'
-                'conflicts: ${diagnostics.conflictCount}',
+                'Последний пакет справочников: ${diagnostics.lastReferencePackageId ?? 'н/д'}\n'
+                'Последняя попытка: ${diagnostics.lastSyncAttemptAt ?? 'н/д'}\n'
+                'Последний повтор: ${diagnostics.lastRetryAt ?? 'н/д'}\n'
+                'Последний успех: ${diagnostics.lastSuccessAt ?? 'н/д'}\n'
+                'Последний конфликт: ${diagnostics.lastConflictAt ?? 'н/д'}\n'
+                'Последняя ошибка: ${diagnostics.lastError ?? 'н/д'}\n'
+                'Токен настроен: ${diagnostics.transportConfigured ? 'да' : 'нет'}\n'
+                'Подключение: ${diagnostics.yandexDiskConnected ? 'да' : 'нет'}\n'
+                'Ожидает отправки: ${diagnostics.pendingOutgoingCount}\n'
+                'Ожидает получения: ${diagnostics.pendingIncomingCount}\n'
+                'Ошибок: ${diagnostics.failedQueueCount}\n'
+                'Доступно для повтора: ${diagnostics.retryEligibleCount}\n'
+                'Конфликтов: ${diagnostics.conflictCount}',
               ),
               isThreeLine: true,
             ),
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Text('Failed to load sync diagnostics: $error'),
+          error: (error, _) =>
+              Text('Не удалось загрузить диагностику синхронизации: $error'),
         ),
         const SizedBox(height: 16),
         deviceAsync.when(
           data: (device) => Card(
             child: ListTile(
-              title: const Text('Device info'),
+              title: const Text('Информация об устройстве'),
               subtitle: Text(
                 device == null
-                    ? 'Not available'
-                    : 'id: ${device.id}\nplatform: ${device.platform}\nroot: ${device.rootPath}',
+                    ? 'Недоступно'
+                    : 'ID: ${device.id}\nПлатформа: ${device.platform}\nКорень: ${device.rootPath}',
               ),
             ),
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Text('Failed to load device info: $error'),
+          error: (error, _) =>
+              Text('Не удалось загрузить информацию об устройстве: $error'),
         ),
         const SizedBox(height: 16),
         Text(
-          'Recent sync issues',
+          'Последние проблемы синхронизации',
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 12),
@@ -172,7 +178,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                 .take(5)
                 .toList(growable: false);
             if (issueEntries.isEmpty) {
-              return const Text('No recent sync conflicts or errors.');
+              return const Text('Недавних конфликтов или ошибок синхронизации нет.');
             }
             return Column(
               children: [
@@ -181,7 +187,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                     child: ListTile(
                       title: Text(entry.entry.actionType),
                       subtitle: Text(
-                        '${entry.entry.happenedAt}\n${entry.entry.message ?? 'No details'}',
+                        '${entry.entry.happenedAt}\n${entry.entry.message ?? 'Без подробностей'}',
                       ),
                       isThreeLine: true,
                     ),
@@ -190,27 +196,28 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Text('Failed to load sync issues: $error'),
+          error: (error, _) =>
+              Text('Не удалось загрузить проблемы синхронизации: $error'),
         ),
         const SizedBox(height: 16),
         Text(
-          'Local sync queue',
+          'Локальная очередь синхронизации',
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 12),
         queueAsync.when(
           data: (queue) => queue.isEmpty
-              ? const Text('Queue is empty.')
+              ? const Text('Очередь пуста.')
               : Column(
                   children: [
                     for (final entry in queue)
                       Card(
                         child: ListTile(
-                          title: Text('${entry.packageType} - ${entry.packageId}'),
+                          title: Text('${entry.packageType} | ${entry.packageId}'),
                           subtitle: Text(
                             '${entry.status}\n'
-                            'attempts: ${entry.attemptCount}\n'
-                            'next retry: ${entry.nextAttemptAt ?? 'n/a'}\n'
+                            'Попыток: ${entry.attemptCount}\n'
+                            'Следующий повтор: ${entry.nextAttemptAt ?? 'н/д'}\n'
                             '${entry.localPath}'
                             '${entry.lastError == null ? '' : '\n${entry.lastError}'}',
                           ),
@@ -220,7 +227,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                   ],
                 ),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Text('Failed to load queue: $error'),
+          error: (error, _) => Text('Не удалось загрузить очередь: $error'),
         ),
       ],
     );
@@ -238,7 +245,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Token stored in secure settings.')),
+      const SnackBar(content: Text('Токен сохранен в защищенном хранилище.')),
     );
   }
 
@@ -258,7 +265,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Published ${result.packageId} from ${result.exportDirectory.path}',
+            'Пакет ${result.packageId} опубликован из ${result.exportDirectory.path}',
           ),
         ),
       );

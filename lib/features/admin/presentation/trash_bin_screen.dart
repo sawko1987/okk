@@ -19,20 +19,20 @@ class TrashBinScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(24),
         children: [
           Text(
-            'Trash',
+            'Корзина',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 16),
           if (entries.isEmpty)
-            const Text('Trash is empty.')
+            const Text('Корзина пуста.')
           else
             for (final entry in entries)
               Card(
                 child: ListTile(
                   title: Text(entry.entry.displayName),
                   subtitle: Text(
-                    '${entry.entry.entityType} • deleted ${entry.entry.deletedAt}\n'
-                    'by ${entry.deletedByUserName ?? '-'}',
+                    '${entry.entry.entityType} | удалено ${entry.entry.deletedAt}\n'
+                    'Кем: ${entry.deletedByUserName ?? '-'}',
                   ),
                   trailing: OutlinedButton(
                     onPressed: canEdit
@@ -43,14 +43,15 @@ class TrashBinScreen extends ConsumerWidget {
                               actorUserId,
                             )
                         : null,
-                    child: const Text('Restore'),
+                    child: const Text('Восстановить'),
                   ),
                 ),
               ),
         ],
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Failed to load trash: $error')),
+      error: (error, _) =>
+          Center(child: Text('Не удалось загрузить корзину: $error')),
     );
   }
 

@@ -39,28 +39,28 @@ class ChecklistsAdminScreen extends ConsumerWidget {
                           const Padding(
                             padding: EdgeInsets.only(bottom: 12),
                             child: Text(
-                              'Editing is available only for the administrator role.',
+                              'Редактирование доступно только администратору.',
                             ),
                           ),
                         Row(
                           children: [
                             Expanded(
                               child: Text(
-                                'Checklists',
+                                'Чек-листы',
                                 style: Theme.of(context).textTheme.titleLarge,
                               ),
                             ),
                             FilledButton.icon(
                               onPressed: canEdit ? () => _editChecklist(context, ref) : null,
                               icon: const Icon(Icons.add),
-                              label: const Text('Create'),
+                              label: const Text('Создать'),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
                         if (checklists.isEmpty)
                           const Expanded(
-                            child: Center(child: Text('No checklists yet.')),
+                            child: Center(child: Text('Чек-листов пока нет.')),
                           )
                         else
                           Expanded(
@@ -71,7 +71,7 @@ class ChecklistsAdminScreen extends ConsumerWidget {
                                     child: ListTile(
                                       title: Text(checklist.name),
                                       subtitle: Text(
-                                        checklist.isActive ? 'Active' : 'Inactive',
+                                        checklist.isActive ? 'Активен' : 'Неактивен',
                                       ),
                                       selected: checklist.id == selectedChecklistId,
                                       onTap: () => ref
@@ -94,11 +94,11 @@ class ChecklistsAdminScreen extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: selectedChecklistId == null
-                        ? const Text('Create the first checklist.')
+                        ? const Text('Создайте первый чек-лист.')
                         : detailAsync!.when(
                             data: (detail) {
                               if (detail == null) {
-                                return const Text('Checklist not found.');
+                                return const Text('Чек-лист не найден.');
                               }
 
                               return SingleChildScrollView(
@@ -135,41 +135,41 @@ class ChecklistsAdminScreen extends ConsumerWidget {
                                       ],
                                     ),
                                     const SizedBox(height: 12),
-                                    Text(detail.checklist.description ?? 'No description'),
+                                    Text(detail.checklist.description ?? 'Без описания'),
                                     const SizedBox(height: 24),
                                     Text(
-                                      'Items',
+                                      'Пункты',
                                       style: Theme.of(context).textTheme.titleMedium,
                                     ),
                                     const SizedBox(height: 8),
                                     if (detail.items.isEmpty)
-                                      const Text('No items in this checklist.')
+                                      const Text('В этом чек-листе нет пунктов.')
                                     else
                                       ...detail.items.map(
                                         (item) => Card(
                                           child: ListTile(
                                             title: Text(item.title),
                                             subtitle: Text(
-                                              '${item.resultType} • ${item.isRequired ? 'required' : 'optional'}',
+                                              '${item.resultType} | ${item.isRequired ? 'обязательный' : 'необязательный'}',
                                             ),
                                           ),
                                         ),
                                       ),
                                     const SizedBox(height: 24),
                                     Text(
-                                      'Bindings',
+                                      'Привязки',
                                       style: Theme.of(context).textTheme.titleMedium,
                                     ),
                                     const SizedBox(height: 8),
                                     if (detail.bindings.isEmpty)
-                                      const Text('No bindings for this checklist.')
+                                      const Text('Для этого чек-листа нет привязок.')
                                     else
                                       ...detail.bindings.map(
                                         (binding) => Card(
                                           child: ListTile(
                                             title: Text(binding.targetType),
                                             subtitle: Text(
-                                              'priority ${binding.priority} • ${binding.targetId ?? binding.targetObjectType ?? '-'}',
+                                              'приоритет ${binding.priority} | ${binding.targetId ?? binding.targetObjectType ?? '-'}',
                                             ),
                                           ),
                                         ),
@@ -180,7 +180,7 @@ class ChecklistsAdminScreen extends ConsumerWidget {
                             },
                             loading: () => const Center(child: CircularProgressIndicator()),
                             error: (error, _) =>
-                                Text('Failed to load checklist editor: $error'),
+                                Text('Не удалось загрузить редактор чек-листа: $error'),
                           ),
                   ),
                 ),
@@ -190,7 +190,8 @@ class ChecklistsAdminScreen extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Failed to load checklists: $error')),
+      error: (error, _) =>
+          Center(child: Text('Не удалось загрузить чек-листы: $error')),
     );
   }
 
@@ -208,7 +209,9 @@ class ChecklistsAdminScreen extends ConsumerWidget {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(checklist == null ? 'New checklist' : 'Edit checklist'),
+          title: Text(
+            checklist == null ? 'Новый чек-лист' : 'Редактирование чек-листа',
+          ),
           content: SizedBox(
             width: 420,
             child: Column(
@@ -216,16 +219,16 @@ class ChecklistsAdminScreen extends ConsumerWidget {
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Name'),
+                  decoration: const InputDecoration(labelText: 'Название'),
                 ),
                 TextField(
                   controller: descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description'),
+                  decoration: const InputDecoration(labelText: 'Описание'),
                   maxLines: 3,
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Active'),
+                  title: const Text('Активен'),
                   value: isActive,
                   onChanged: (value) => setState(() => isActive = value),
                 ),
@@ -235,11 +238,11 @@ class ChecklistsAdminScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: const Text('Отмена'),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Save'),
+              child: const Text('Сохранить'),
             ),
           ],
         ),

@@ -57,36 +57,39 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
     final draftSubtitle = canStartInspection
         ? inspectionDiagnostics.when(
             data: (diagnostics) => diagnostics.localDraftCount == 0
-                ? 'Resume local drafts that are still editable.'
-                : 'Resume ${diagnostics.localDraftCount} local drafts that are still editable.',
-            loading: () => 'Checking local drafts...',
-            error: (_, _) => 'Resume local drafts that are still editable.',
+                ? 'Продолжите локальные черновики, которые еще можно редактировать.'
+                : 'Продолжите локальные черновики (${diagnostics.localDraftCount}), которые еще можно редактировать.',
+            loading: () => 'Проверяем локальные черновики...',
+            error: (_, _) =>
+                'Продолжите локальные черновики, которые еще можно редактировать.',
           )
-        : 'Drafts are unavailable for this role.';
+        : 'Черновики недоступны для этой роли.';
     final resultSubtitle = canViewResults
         ? inspectionDiagnostics.when(
             data: (diagnostics) => diagnostics.conflictCount > 0
-                ? 'Review completed results and ${diagnostics.conflictCount} conflict case(s).'
-                : 'Open completed, queued, synced, or conflict results.',
-            loading: () => 'Loading inspection result summary...',
-            error: (_, _) => 'Open completed, queued, synced, or conflict results.',
+                ? 'Просмотрите завершенные результаты и конфликтные случаи (${diagnostics.conflictCount}).'
+                : 'Откройте завершенные, ожидающие, синхронизированные или конфликтные результаты.',
+            loading: () => 'Загружаем сводку по результатам проверок...',
+            error: (_, _) =>
+                'Откройте завершенные, ожидающие, синхронизированные или конфликтные результаты.',
           )
-        : 'This role cannot review inspection results.';
+        : 'Эта роль не может просматривать результаты проверок.';
     final syncSubtitle = canRunSync
         ? syncDiagnostics.when(
             data: (diagnostics) => diagnostics.transportConfigured
                 ? diagnostics.failedQueueCount > 0 || diagnostics.retryEligibleCount > 0
-                    ? 'Review queue issues and run manual synchronization.'
-                    : 'Review queue state and run manual sync.'
-                : 'Configure Yandex Disk access in settings before running sync.',
-            loading: () => 'Loading sync status...',
-            error: (_, _) => 'Review queue state and run manual sync.',
+                    ? 'Проверьте проблемы очереди и запустите синхронизацию вручную.'
+                    : 'Проверьте состояние очереди и запустите синхронизацию вручную.'
+                : 'Настройте доступ к Яндекс.Диску в параметрах перед запуском синхронизации.',
+            loading: () => 'Загружаем статус синхронизации...',
+            error: (_, _) =>
+                'Проверьте состояние очереди и запустите синхронизацию вручную.',
           )
-        : 'Sync is unavailable for this role.';
+        : 'Синхронизация недоступна для этой роли.';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Android workspace'),
+        title: const Text('Рабочее место Android'),
         actions: buildAndroidAppBarActions(
           context: context,
           ref: ref,
@@ -100,35 +103,35 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
             child: ListTile(
               leading: const Icon(Icons.person_outline),
               title: Text(session.fullName),
-              subtitle: Text('Role: ${session.roleName}'),
+              subtitle: Text('Роль: ${session.roleName}'),
             ),
           ),
           const SizedBox(height: 16),
           ...inspectionDiagnostics.when(
             data: (diagnostics) => [
               _StatusCard(
-                title: 'Workspace status',
+                title: 'Состояние рабочего места',
                 lines: [
                   diagnostics.lastReferencePackageId == null
-                      ? 'Reference data: not synced yet'
-                      : 'Reference package: ${diagnostics.lastReferencePackageId}',
-                  'Local drafts: ${diagnostics.localDraftCount}',
-                  'Queued results: ${diagnostics.queuedResultCount}',
-                  'Failed queue entries: ${diagnostics.failedQueueCount}',
-                  'Conflicts: ${diagnostics.conflictCount}',
+                      ? 'Справочные данные еще не синхронизированы'
+                      : 'Пакет справочников: ${diagnostics.lastReferencePackageId}',
+                  'Локальные черновики: ${diagnostics.localDraftCount}',
+                  'Результаты в очереди: ${diagnostics.queuedResultCount}',
+                  'Ошибки очереди: ${diagnostics.failedQueueCount}',
+                  'Конфликты: ${diagnostics.conflictCount}',
                   if (diagnostics.lastReferenceSyncAt != null)
-                    'Last reference sync: ${diagnostics.lastReferenceSyncAt}',
+                    'Последняя синхронизация справочников: ${diagnostics.lastReferenceSyncAt}',
                   if (diagnostics.lastCompletedInspectionAt != null)
-                    'Last completed inspection: ${diagnostics.lastCompletedInspectionAt}',
+                    'Последняя завершенная проверка: ${diagnostics.lastCompletedInspectionAt}',
                 ],
               ),
               const SizedBox(height: 12),
               if (diagnostics.lastReferencePackageId == null || !hasWorkshops)
                 const _CalloutCard(
                   icon: Icons.cloud_off_outlined,
-                  title: 'Reference data is not ready',
+                  title: 'Справочные данные не готовы',
                   message:
-                      'Run synchronization before starting a new inspection. Until reference data is available, the inspection flow stays unavailable.',
+                      'Запустите синхронизацию перед началом новой проверки. Пока справочные данные недоступны, сценарий проверки заблокирован.',
                 ),
               if (diagnostics.hasPendingSyncWork || diagnostics.conflictCount > 0)
                 _CalloutCard(
@@ -136,25 +139,25 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
                       ? Icons.warning_amber_outlined
                       : Icons.sync_problem_outlined,
                   title: diagnostics.conflictCount > 0
-                      ? 'Conflicts need administrator review'
-                      : 'Pending sync work is waiting',
+                      ? 'Конфликты требуют проверки администратора'
+                      : 'Есть ожидающая синхронизация',
                   message: diagnostics.conflictCount > 0
-                      ? 'Completed inspections include conflict cases. Open results or diagnostics before continuing.'
-                      : 'Queued or failed sync work is stored locally. Open synchronization to retry when ready.',
+                      ? 'Среди завершенных проверок есть конфликтные случаи. Перед продолжением откройте результаты или диагностику.'
+                      : 'Ожидающие или ошибочные задания синхронизации хранятся локально. Откройте раздел синхронизации, чтобы повторить отправку.',
                 ),
             ],
             loading: () => const [
               _StatusCard(
-                title: 'Workspace status',
-                lines: ['Loading local Android workspace status...'],
+                title: 'Состояние рабочего места',
+                lines: ['Загрузка состояния локального рабочего места Android...'],
               ),
               SizedBox(height: 12),
             ],
             error: (error, _) => [
               _CalloutCard(
                 icon: Icons.error_outline,
-                title: 'Workspace status unavailable',
-                message: 'Failed to load Android workspace status: $error',
+                title: 'Состояние рабочего места недоступно',
+                message: 'Не удалось загрузить состояние рабочего места Android: $error',
               ),
               const SizedBox(height: 12),
             ],
@@ -162,49 +165,49 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
           ...syncDiagnostics.when(
             data: (diagnostics) => [
               _StatusCard(
-                title: 'Sync status',
+                title: 'Состояние синхронизации',
                 lines: [
-                  'Token configured: ${diagnostics.transportConfigured ? 'yes' : 'no'}',
-                  'Connected: ${diagnostics.yandexDiskConnected ? 'yes' : 'no'}',
-                  'Retry-eligible queue: ${diagnostics.retryEligibleCount}',
+                  'Токен настроен: ${diagnostics.transportConfigured ? 'да' : 'нет'}',
+                  'Подключение: ${diagnostics.yandexDiskConnected ? 'да' : 'нет'}',
+                  'Доступно для повтора: ${diagnostics.retryEligibleCount}',
                   if (diagnostics.lastSyncAttemptAt != null)
-                    'Last sync attempt: ${diagnostics.lastSyncAttemptAt}',
+                    'Последняя попытка синхронизации: ${diagnostics.lastSyncAttemptAt}',
                   if (diagnostics.lastError != null)
-                    'Last sync error: ${diagnostics.lastError}',
+                    'Последняя ошибка синхронизации: ${diagnostics.lastError}',
                 ],
               ),
               const SizedBox(height: 12),
               if (!diagnostics.transportConfigured)
                 _ActionCalloutCard(
                   icon: Icons.vpn_key_outlined,
-                  title: 'Yandex Disk token is not configured',
+                  title: 'Токен Яндекс.Диска не настроен',
                   message:
-                      'Open Android settings and add the OAuth token before running synchronization.',
-                  actionLabel: 'Open settings',
+                      'Откройте настройки Android и добавьте OAuth-токен перед запуском синхронизации.',
+                  actionLabel: 'Открыть настройки',
                   onPressed: () => context.push(AndroidRoutes.settings),
                 ),
             ],
             loading: () => const [
               _StatusCard(
-                title: 'Sync status',
-                lines: ['Loading synchronization diagnostics...'],
+                title: 'Состояние синхронизации',
+                lines: ['Загрузка диагностики синхронизации...'],
               ),
               SizedBox(height: 12),
             ],
             error: (error, _) => [
               _CalloutCard(
                 icon: Icons.error_outline,
-                title: 'Sync status unavailable',
-                message: 'Failed to load sync diagnostics: $error',
+                title: 'Состояние синхронизации недоступно',
+                message: 'Не удалось загрузить диагностику синхронизации: $error',
               ),
               const SizedBox(height: 12),
             ],
           ),
-          Text('Modes', style: Theme.of(context).textTheme.titleLarge),
+          Text('Разделы', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
           _ModeCard(
             icon: Icons.fact_check_outlined,
-            title: 'Inspection flow',
+            title: 'Проведение проверки',
             subtitle: inspectionSubtitle,
             enabled: inspectionFlowEnabled,
             onTap: () => context.push(AndroidRoutes.workshops),
@@ -212,7 +215,7 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
           const SizedBox(height: 12),
           _ModeCard(
             icon: Icons.edit_note_outlined,
-            title: 'Draft inspections',
+            title: 'Черновики проверок',
             subtitle: draftSubtitle,
             enabled: canStartInspection,
             onTap: () => context.push(AndroidRoutes.drafts),
@@ -220,7 +223,7 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
           const SizedBox(height: 12),
           _ModeCard(
             icon: Icons.assignment_turned_in_outlined,
-            title: 'Inspection results',
+            title: 'Результаты проверок',
             subtitle: resultSubtitle,
             enabled: canViewResults,
             onTap: () => context.push(AndroidRoutes.results),
@@ -228,7 +231,7 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
           const SizedBox(height: 12),
           _ModeCard(
             icon: Icons.sync_outlined,
-            title: 'Synchronization',
+            title: 'Синхронизация',
             subtitle: syncSubtitle,
             enabled: canRunSync,
             onTap: () => context.push(AndroidRoutes.sync),
@@ -255,7 +258,7 @@ class AndroidWorkshopSelectionScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select workshop'),
+        title: const Text('Выбор цеха'),
         actions: buildAndroidAppBarActions(
           context: context,
           ref: ref,
@@ -267,7 +270,7 @@ class AndroidWorkshopSelectionScreen extends ConsumerWidget {
               data: (workshops) {
                 if (workshops.isEmpty) {
                   return const Center(
-                    child: Text('No synced workshops with products are available yet.'),
+                    child: Text('Синхронизированные цеха с изделиями пока недоступны.'),
                   );
                 }
 
@@ -285,7 +288,7 @@ class AndroidWorkshopSelectionScreen extends ConsumerWidget {
                           [
                             if ((workshop.departmentName ?? '').isNotEmpty)
                               workshop.departmentName!,
-                            '${workshop.productCount} products',
+                            'Изделий: ${workshop.productCount}',
                           ].join(' • '),
                         ),
                         trailing: const Icon(Icons.chevron_right),
@@ -298,10 +301,10 @@ class AndroidWorkshopSelectionScreen extends ConsumerWidget {
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) =>
-                  Center(child: Text('Failed to load workshops: $error')),
+                  Center(child: Text('Не удалось загрузить цеха: $error')),
             )
           : const Center(
-              child: Text('This role cannot create inspections.'),
+              child: Text('Эта роль не может создавать проверки.'),
             ),
     );
   }
@@ -333,7 +336,7 @@ class AndroidProductSelectionScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Products: $workshopName'),
+        title: Text('Изделия: $workshopName'),
         actions: buildAndroidAppBarActions(
           context: context,
           ref: ref,
@@ -344,7 +347,7 @@ class AndroidProductSelectionScreen extends ConsumerWidget {
         data: (products) {
           if (products.isEmpty) {
             return const Center(
-              child: Text('No synced products are available for this workshop.'),
+              child: Text('Для этого цеха нет синхронизированных изделий.'),
             );
           }
 
@@ -358,7 +361,7 @@ class AndroidProductSelectionScreen extends ConsumerWidget {
                 child: ListTile(
                   leading: const Icon(Icons.inventory_2_outlined),
                   title: Text(product.productName),
-                  subtitle: Text('Section: ${product.sectionName}'),
+                  subtitle: Text('Участок: ${product.sectionName}'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.push(
                     AndroidRoutes.targets(
@@ -372,7 +375,8 @@ class AndroidProductSelectionScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Failed to load products: $error')),
+        error: (error, _) =>
+            Center(child: Text('Не удалось загрузить изделия: $error')),
       ),
     );
   }
@@ -407,7 +411,7 @@ class AndroidTargetSelectionScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Targets: $productName'),
+        title: Text('Объекты проверки: $productName'),
         actions: buildAndroidAppBarActions(
           context: context,
           ref: ref,
@@ -418,7 +422,7 @@ class AndroidTargetSelectionScreen extends ConsumerWidget {
         data: (targets) {
           if (targets.isEmpty) {
             return const Center(
-              child: Text('No inspection targets are available for this product.'),
+              child: Text('Для этого изделия нет доступных объектов проверки.'),
             );
           }
 
@@ -432,7 +436,7 @@ class AndroidTargetSelectionScreen extends ConsumerWidget {
                 child: ListTile(
                   leading: const Icon(Icons.account_tree_outlined),
                   title: Text('${'  ' * target.depth}${target.targetName}'),
-                  subtitle: Text('Type: ${target.targetType}'),
+                  subtitle: Text('Тип: ${_objectTypeLabel(target.targetType)}'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.push(
                     AndroidRoutes.components(
@@ -447,7 +451,8 @@ class AndroidTargetSelectionScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Failed to load targets: $error')),
+        error: (error, _) =>
+            Center(child: Text('Не удалось загрузить объекты проверки: $error')),
       ),
     );
   }
@@ -487,7 +492,7 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Components'),
+        title: const Text('Компоненты'),
         actions: buildAndroidAppBarActions(
           context: context,
           ref: ref,
@@ -501,7 +506,7 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
               .cast<InspectionTargetOption?>()
               .firstWhere((value) => value != null, orElse: () => null);
           if (selectedTarget == null) {
-            return const Center(child: Text('Inspection target not found.'));
+            return const Center(child: Text('Объект проверки не найден.'));
           }
 
           return componentsAsync.when(
@@ -519,9 +524,9 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 8),
-                        Text('Product: ${selectedTarget.productName}'),
-                        Text('Target type: ${selectedTarget.targetType}'),
-                        Text('Components: ${components.length}'),
+                        Text('Изделие: ${selectedTarget.productName}'),
+                        Text('Тип объекта: ${_objectTypeLabel(selectedTarget.targetType)}'),
+                        Text('Компонентов: ${components.length}'),
                       ],
                     ),
                   ),
@@ -534,13 +539,13 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Inspection action',
+                          'Действие с проверкой',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 12),
                         if (!canStartInspection)
                           const Text(
-                            'This role can review data but cannot create or edit drafts.',
+                            'Эта роль может просматривать данные, но не может создавать или редактировать черновики.',
                           )
                         else
                           FilledButton.icon(
@@ -557,7 +562,7 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
                                     child: CircularProgressIndicator(strokeWidth: 2),
                                   )
                                 : const Icon(Icons.playlist_add_check_circle_outlined),
-                            label: const Text('Open draft'),
+                            label: const Text('Открыть черновик'),
                           ),
                       ],
                     ),
@@ -565,14 +570,14 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Component list',
+                  'Список компонентов',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 12),
                 if (components.isEmpty)
                   const Card(
                     child: ListTile(
-                      title: Text('No components are assigned to this object.'),
+                      title: Text('Для этого объекта компоненты не назначены.'),
                     ),
                   )
                 else
@@ -584,9 +589,9 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
                         subtitle: Text(
                           [
                             if ((component.code ?? '').isNotEmpty)
-                              'Code: ${component.code}',
-                            component.isRequired ? 'Required' : 'Optional',
-                            '${component.imagePaths.length} images',
+                              'Код: ${component.code}',
+                            component.isRequired ? 'Обязательный' : 'Необязательный',
+                            'Изображений: ${component.imagePaths.length}',
                           ].join(' • '),
                         ),
                         trailing: const Icon(Icons.chevron_right),
@@ -606,11 +611,12 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
             ),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, _) =>
-                Center(child: Text('Failed to load components: $error')),
+                Center(child: Text('Не удалось загрузить компоненты: $error')),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Failed to load target: $error')),
+        error: (error, _) =>
+            Center(child: Text('Не удалось загрузить объект проверки: $error')),
       ),
     );
   }
@@ -670,7 +676,7 @@ class AndroidComponentDetailsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Component card'),
+        title: const Text('Карточка компонента'),
         actions: buildAndroidAppBarActions(
           context: context,
           ref: ref,
@@ -680,7 +686,7 @@ class AndroidComponentDetailsScreen extends ConsumerWidget {
       body: componentAsync.when(
         data: (component) {
           if (component == null) {
-            return const Center(child: Text('Component not found.'));
+            return const Center(child: Text('Компонент не найден.'));
           }
 
           return ListView(
@@ -698,8 +704,12 @@ class AndroidComponentDetailsScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       if ((component.code ?? '').isNotEmpty)
-                        Text('Code: ${component.code}'),
-                      Text(component.isRequired ? 'Required component' : 'Optional component'),
+                        Text('Код: ${component.code}'),
+                      Text(
+                        component.isRequired
+                            ? 'Обязательный компонент'
+                            : 'Необязательный компонент',
+                      ),
                       if ((component.description ?? '').isNotEmpty) ...[
                         const SizedBox(height: 12),
                         Text(component.description!),
@@ -710,14 +720,14 @@ class AndroidComponentDetailsScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Local images',
+                'Локальные изображения',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 12),
               if (component.imagePaths.isEmpty)
                 const Card(
                   child: ListTile(
-                    title: Text('No local images are available for this component.'),
+                    title: Text('Для этого компонента нет локальных изображений.'),
                   ),
                 )
               else
@@ -754,7 +764,8 @@ class AndroidComponentDetailsScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Failed to load component: $error')),
+        error: (error, _) =>
+            Center(child: Text('Не удалось загрузить компонент: $error')),
       ),
     );
   }
@@ -776,7 +787,7 @@ class AndroidDraftsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Draft inspections'),
+        title: const Text('Черновики проверок'),
         actions: buildAndroidAppBarActions(
           context: context,
           ref: ref,
@@ -792,10 +803,10 @@ class AndroidDraftsScreen extends ConsumerWidget {
                       padding: const EdgeInsets.all(20),
                       child: _ActionCalloutCard(
                         icon: Icons.edit_note_outlined,
-                        title: 'No draft inspections yet',
+                        title: 'Черновиков проверок пока нет',
                         message:
-                            'Start a new inspection from the workspace flow to create the first draft on this device.',
-                        actionLabel: 'Open inspection flow',
+                            'Начните новую проверку из рабочего места, чтобы создать первый черновик на этом устройстве.',
+                        actionLabel: 'Открыть сценарий проверки',
                         onPressed: () => context.go(AndroidRoutes.workshops),
                       ),
                     ),
@@ -813,7 +824,7 @@ class AndroidDraftsScreen extends ConsumerWidget {
                         leading: const Icon(Icons.edit_note_outlined),
                         title: Text(draft.targetName),
                         subtitle: Text(
-                          '${draft.productName} • ${draft.answeredItems}/${draft.totalItems} answered • ${draft.updatedAt}',
+                          '${draft.productName} | ${draft.answeredItems}/${draft.totalItems} отвечено | ${draft.updatedAt}',
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () =>
@@ -825,10 +836,10 @@ class AndroidDraftsScreen extends ConsumerWidget {
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) =>
-                  Center(child: Text('Failed to load drafts: $error')),
+                  Center(child: Text('Не удалось загрузить черновики: $error')),
             )
           : const Center(
-              child: Text('This role cannot create or edit draft inspections.'),
+              child: Text('Эта роль не может создавать или редактировать черновики проверок.'),
             ),
     );
   }
@@ -850,7 +861,7 @@ class AndroidResultsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inspection results'),
+        title: const Text('Результаты проверок'),
         actions: buildAndroidAppBarActions(
           context: context,
           ref: ref,
@@ -866,10 +877,10 @@ class AndroidResultsScreen extends ConsumerWidget {
                       padding: const EdgeInsets.all(20),
                       child: _ActionCalloutCard(
                         icon: Icons.assignment_turned_in_outlined,
-                        title: 'No completed inspections yet',
+                        title: 'Завершенных проверок пока нет',
                         message:
-                            'Completed inspections will appear here after local completion and can then be reviewed or synchronized.',
-                        actionLabel: 'Open workspace',
+                            'Завершенные проверки появятся здесь после локального завершения, после чего их можно будет просмотреть или синхронизировать.',
+                        actionLabel: 'Открыть рабочее место',
                         onPressed: () => context.go(AndroidRoutes.home),
                       ),
                     ),
@@ -887,7 +898,7 @@ class AndroidResultsScreen extends ConsumerWidget {
                         leading: const Icon(Icons.assignment_turned_in_outlined),
                         title: Text(result.targetName),
                         subtitle: Text(
-                          '${result.productName} • ${result.status}/${result.syncStatus} • signatures: ${result.signatureCount} • pdf: ${result.hasPdf ? 'yes' : 'no'}',
+                          '${result.productName} | ${_inspectionStatusLabel(result.status)} / ${_syncStatusLabel(result.syncStatus)} | подписей: ${result.signatureCount} | PDF: ${result.hasPdf ? 'да' : 'нет'}',
                         ),
                         trailing: Text(result.completedAt),
                         onTap: () =>
@@ -899,10 +910,10 @@ class AndroidResultsScreen extends ConsumerWidget {
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) =>
-                  Center(child: Text('Failed to load results: $error')),
+                  Center(child: Text('Не удалось загрузить результаты: $error')),
             )
           : const Center(
-              child: Text('This role cannot review inspection results.'),
+              child: Text('Эта роль не может просматривать результаты проверок.'),
             ),
     );
   }
@@ -931,7 +942,7 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Synchronization'),
+        title: const Text('Синхронизация'),
         actions: buildAndroidAppBarActions(
           context: context,
           ref: ref,
@@ -948,12 +959,12 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Sync actions',
+                    'Действия синхронизации',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 12),
                   if (!canRunSync)
-                    const Text('This role cannot run synchronization.')
+                    const Text('Эта роль не может запускать синхронизацию.')
                   else
                     Wrap(
                       spacing: 12,
@@ -968,17 +979,17 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
                                   child: CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Icon(Icons.sync),
-                          label: const Text('Sync now'),
+                          label: const Text('Синхронизировать'),
                         ),
                         OutlinedButton.icon(
                           onPressed: () => context.push(AndroidRoutes.settings),
                           icon: const Icon(Icons.settings_outlined),
-                          label: const Text('Settings'),
+                          label: const Text('Настройки'),
                         ),
                         OutlinedButton.icon(
                           onPressed: () => context.push(AndroidRoutes.diagnostics),
                           icon: const Icon(Icons.monitor_heart_outlined),
-                          label: const Text('Diagnostics'),
+                          label: const Text('Диагностика'),
                         ),
                       ],
                     ),
@@ -990,42 +1001,42 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
           ...inspectionDiagnostics.when(
             data: (diagnostics) => [
               _InfoCard(
-                title: 'Inspection workspace',
+                title: 'Рабочее место проверки',
                 lines: [
-                  'Local drafts: ${diagnostics.localDraftCount}',
-                  'Queued results: ${diagnostics.queuedResultCount}',
-                  'Failed queue entries: ${diagnostics.failedQueueCount}',
-                  'Conflicts: ${diagnostics.conflictCount}',
-                  'Last reference package: ${diagnostics.lastReferencePackageId ?? 'n/a'}',
-                  'Last reference sync: ${diagnostics.lastReferenceSyncAt ?? 'n/a'}',
-                  'Last sync attempt: ${diagnostics.lastSyncAttemptAt ?? 'n/a'}',
-                  'Last completed inspection: ${diagnostics.lastCompletedInspectionAt ?? 'n/a'}',
+                  'Локальные черновики: ${diagnostics.localDraftCount}',
+                  'Результаты в очереди: ${diagnostics.queuedResultCount}',
+                  'Ошибки очереди: ${diagnostics.failedQueueCount}',
+                  'Конфликты: ${diagnostics.conflictCount}',
+                  'Последний пакет справочников: ${diagnostics.lastReferencePackageId ?? 'н/д'}',
+                  'Последняя синхронизация справочников: ${diagnostics.lastReferenceSyncAt ?? 'н/д'}',
+                  'Последняя попытка синхронизации: ${diagnostics.lastSyncAttemptAt ?? 'н/д'}',
+                  'Последняя завершенная проверка: ${diagnostics.lastCompletedInspectionAt ?? 'н/д'}',
                 ],
               ),
               if (diagnostics.lastReferencePackageId == null)
                 _ActionCalloutCard(
                   icon: Icons.cloud_download_outlined,
-                  title: 'Reference data has not been synchronized yet',
+                  title: 'Справочные данные еще не синхронизированы',
                   message:
-                      'Run synchronization after the Windows administrator publishes a reference package.',
-                  actionLabel: 'Refresh workspace',
+                      'Запустите синхронизацию после того, как администратор Windows опубликует пакет справочников.',
+                  actionLabel: 'Обновить рабочее место',
                   onPressed: () => context.go(AndroidRoutes.home),
                 ),
               if (diagnostics.hasPendingSyncWork)
                 const _CalloutCard(
                   icon: Icons.schedule_outlined,
-                  title: 'Pending local sync work',
+                  title: 'Есть ожидающая локальная синхронизация',
                   message:
-                      'Queued or failed result packages are still stored on this device until synchronization completes successfully.',
+                      'Ожидающие или ошибочные пакеты результатов остаются на устройстве, пока синхронизация не завершится успешно.',
                 ),
             ],
             loading: () => const [
-              _InfoCard(title: 'Inspection workspace', lines: ['loading...']),
+              _InfoCard(title: 'Рабочее место проверки', lines: ['Загрузка...']),
             ],
             error: (error, _) => [
               _InfoCard(
-                title: 'Inspection workspace',
-                lines: ['error: $error'],
+                title: 'Рабочее место проверки',
+                lines: ['Ошибка: $error'],
               ),
             ],
           ),
@@ -1033,26 +1044,26 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
           ...syncDiagnostics.when(
             data: (diagnostics) => [
               _InfoCard(
-                title: 'Transport diagnostics',
+                title: 'Диагностика транспорта',
                 lines: _syncLines(diagnostics),
               ),
               if (!diagnostics.transportConfigured)
                 _ActionCalloutCard(
                   icon: Icons.vpn_key_outlined,
-                  title: 'Yandex Disk token is missing',
+                  title: 'Токен Яндекс.Диска отсутствует',
                   message:
-                      'Open Android settings and store the OAuth token before running synchronization.',
-                  actionLabel: 'Open settings',
+                      'Откройте настройки Android и сохраните OAuth-токен перед запуском синхронизации.',
+                  actionLabel: 'Открыть настройки',
                   onPressed: () => context.push(AndroidRoutes.settings),
                 ),
             ],
             loading: () => const [
-              _InfoCard(title: 'Transport diagnostics', lines: ['loading...']),
+              _InfoCard(title: 'Диагностика транспорта', lines: ['Загрузка...']),
             ],
             error: (error, _) => [
               _InfoCard(
-                title: 'Transport diagnostics',
-                lines: ['error: $error'],
+                title: 'Диагностика транспорта',
+                lines: ['Ошибка: $error'],
               ),
             ],
           ),
@@ -1096,22 +1107,57 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
 
 List<String> _syncLines(SyncDiagnosticsSnapshot diagnostics) {
   return [
-    'Device id: ${diagnostics.deviceId ?? 'n/a'}',
-    'Last result push: ${diagnostics.lastResultPushAt ?? 'n/a'}',
-    'Last result pull: ${diagnostics.lastResultPullAt ?? 'n/a'}',
-    'Last success: ${diagnostics.lastSuccessAt ?? 'n/a'}',
-    'Last attempt: ${diagnostics.lastSyncAttemptAt ?? 'n/a'}',
-    'Last retry run: ${diagnostics.lastRetryAt ?? 'n/a'}',
-    'Last conflict: ${diagnostics.lastConflictAt ?? 'n/a'}',
-    'Last error: ${diagnostics.lastError ?? 'n/a'}',
-    'Pending outgoing: ${diagnostics.pendingOutgoingCount}',
-    'Pending incoming: ${diagnostics.pendingIncomingCount}',
-    'Failed queue entries: ${diagnostics.failedQueueCount}',
-    'Retry-eligible queue entries: ${diagnostics.retryEligibleCount}',
-    'Conflict count: ${diagnostics.conflictCount}',
-    'Token configured: ${diagnostics.transportConfigured ? 'yes' : 'no'}',
-    'Connected: ${diagnostics.yandexDiskConnected ? 'yes' : 'no'}',
+    'ID устройства: ${diagnostics.deviceId ?? 'н/д'}',
+    'Последняя отправка результата: ${diagnostics.lastResultPushAt ?? 'н/д'}',
+    'Последнее получение результата: ${diagnostics.lastResultPullAt ?? 'н/д'}',
+    'Последний успех: ${diagnostics.lastSuccessAt ?? 'н/д'}',
+    'Последняя попытка: ${diagnostics.lastSyncAttemptAt ?? 'н/д'}',
+    'Последний повтор: ${diagnostics.lastRetryAt ?? 'н/д'}',
+    'Последний конфликт: ${diagnostics.lastConflictAt ?? 'н/д'}',
+    'Последняя ошибка: ${diagnostics.lastError ?? 'н/д'}',
+    'Ожидает отправки: ${diagnostics.pendingOutgoingCount}',
+    'Ожидает получения: ${diagnostics.pendingIncomingCount}',
+    'Ошибки очереди: ${diagnostics.failedQueueCount}',
+    'Доступно для повтора: ${diagnostics.retryEligibleCount}',
+    'Количество конфликтов: ${diagnostics.conflictCount}',
+    'Токен настроен: ${diagnostics.transportConfigured ? 'да' : 'нет'}',
+    'Подключение: ${diagnostics.yandexDiskConnected ? 'да' : 'нет'}',
   ];
+}
+
+String _inspectionStatusLabel(String status) {
+  return switch (status) {
+    'draft' => 'Черновик',
+    'in_progress' => 'В работе',
+    'queued' => 'В очереди',
+    'completed' => 'Завершена',
+    'synced' => 'Синхронизирована',
+    'conflict' => 'Конфликт',
+    _ => status,
+  };
+}
+
+String _syncStatusLabel(String status) {
+  return switch (status) {
+    'local_only' => 'Локально',
+    'queued' => 'В очереди',
+    'pending' => 'Ожидает обработки',
+    'synced' => 'Синхронизировано',
+    'failed' => 'Ошибка',
+    'conflict' => 'Конфликт',
+    _ => status,
+  };
+}
+
+String _objectTypeLabel(String type) {
+  return switch (type) {
+    'product' => 'Изделие',
+    'machine' => 'Машина',
+    'place' => 'Место',
+    'node' => 'Узел',
+    'detail' => 'Деталь',
+    _ => type,
+  };
 }
 
 String _inspectionFlowSubtitle({
@@ -1119,15 +1165,15 @@ String _inspectionFlowSubtitle({
   required AsyncValue<List<InspectionWorkshopOption>> workshopsAsync,
 }) {
   if (!canStartInspection) {
-    return 'This role cannot create or edit inspections.';
+    return 'Эта роль не может создавать или редактировать проверки.';
   }
   return workshopsAsync.when(
     data: (workshops) => workshops.isEmpty
-        ? 'No synced workshops with products are available yet. Run synchronization first.'
-        : 'Select workshop, product, target, review components, and open a draft.',
-    loading: () => 'Checking synced workshops and products...',
+        ? 'Синхронизированные цеха с изделиями пока недоступны. Сначала выполните синхронизацию.'
+        : 'Выберите цех, изделие и объект проверки, изучите компоненты и откройте черновик.',
+    loading: () => 'Проверяем синхронизированные цеха и изделия...',
     error: (error, _) =>
-        'Failed to load synced workshops. Review diagnostics before starting a new inspection.',
+        'Не удалось загрузить синхронизированные цеха. Перед началом новой проверки проверьте диагностику.',
   );
 }
 

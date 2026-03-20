@@ -164,7 +164,7 @@ class UsersRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageUsers,
-      deniedMessage: 'Only administrators can manage users.',
+      deniedMessage: 'Только администратор может управлять пользователями.',
     );
     final now = nowIso();
     final cleanedShortName = nullableField(shortName) ?? firstWords(fullName);
@@ -239,7 +239,7 @@ class UsersRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageUsers,
-      deniedMessage: 'Only administrators can manage users.',
+      deniedMessage: 'Только администратор может управлять пользователями.',
     );
     final existing = await (_db.select(_db.users)..where((tbl) => tbl.id.equals(id)))
         .getSingle();
@@ -307,7 +307,7 @@ class ComponentImagesRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify component media.',
+      deniedMessage: 'Только администратор может изменять медиафайлы компонентов.',
     );
     final sanitizedPaths = sourcePaths
         .map((path) => path.trim())
@@ -371,7 +371,7 @@ class ComponentImagesRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify component media.',
+      deniedMessage: 'Только администратор может изменять медиафайлы компонентов.',
     );
     final existing = await (_db.select(_db.componentImages)
           ..where((tbl) => tbl.id.equals(imageId)))
@@ -502,7 +502,7 @@ class TrashRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageTrash,
-      deniedMessage: 'Only administrators can restore items from trash.',
+      deniedMessage: 'Только администратор может восстанавливать элементы из корзины.',
     );
     final trashEntry = await (_db.select(_db.trashBin)
           ..where((tbl) => tbl.id.equals(trashId)))
@@ -600,7 +600,7 @@ class ReferencePackageRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageSync,
-      deniedMessage: 'Only administrators can publish reference packages.',
+      deniedMessage: 'Только администратор может публиковать пакеты справочников.',
     );
     final packageId = generateId('reference');
     final exportDir = Directory(

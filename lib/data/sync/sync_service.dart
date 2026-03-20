@@ -102,29 +102,31 @@ class SyncRunReport {
   String summaryLabel() {
     final parts = <String>[];
     if (referencePublishedCount > 0) {
-      parts.add('published $referencePublishedCount reference');
+      parts.add('опубликовано пакетов справочников: $referencePublishedCount');
     }
     if (referencePulledCount > 0) {
-      parts.add('pulled $referencePulledCount reference');
+      parts.add('получено пакетов справочников: $referencePulledCount');
     }
     if (resultPushedCount > 0) {
-      parts.add('pushed $resultPushedCount result');
+      parts.add('отправлено результатов: $resultPushedCount');
     }
     if (resultImportedCount > 0) {
-      parts.add('imported $resultImportedCount result');
+      parts.add('импортировано результатов: $resultImportedCount');
     }
     if (conflictCount > 0) {
-      parts.add('$conflictCount conflict');
+      parts.add('конфликтов: $conflictCount');
     }
     if (failureCount > 0) {
-      parts.add('$failureCount failed');
+      parts.add('ошибок: $failureCount');
     }
     if (parts.isEmpty) {
-      return hasIssues ? 'Sync finished with issues.' : 'Sync completed with no changes.';
+      return hasIssues
+          ? 'Синхронизация завершена с проблемами.'
+          : 'Синхронизация завершена, изменений нет.';
     }
     final prefix = switch (status) {
-      SyncRunStatus.success => 'Sync completed',
-      SyncRunStatus.partial => 'Sync finished with issues',
+      SyncRunStatus.success => 'Синхронизация завершена',
+      SyncRunStatus.partial => 'Синхронизация завершена с проблемами',
     };
     return '$prefix: ${parts.join(', ')}.';
   }
@@ -361,7 +363,7 @@ class SyncService {
         pushedResultCount += pushResult.successCount;
         failureCount += pullResult.failureCount + pushResult.failureCount;
       case AppPlatform.unsupported:
-        throw StateError('Sync is not supported on this platform.');
+        throw StateError('Синхронизация не поддерживается на этой платформе.');
     }
 
     final report = SyncRunReport(
@@ -391,7 +393,7 @@ class SyncService {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageSync,
-      deniedMessage: 'Only administrators can publish reference packages.',
+      deniedMessage: 'Только администратор может публиковать пакеты справочников.',
     );
     await _ensureConfiguredTransport();
     final result = await _referencePackageRepository.exportPackage(
@@ -412,7 +414,7 @@ class SyncService {
       _db,
       actorUserId: request.userId,
       capability: AppCapability.startInspection,
-      deniedMessage: 'This role cannot start inspections.',
+      deniedMessage: 'Эта роль не может запускать проверки.',
     );
     var lockAcquired = false;
     try {
@@ -441,7 +443,7 @@ class SyncService {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.completeInspection,
-      deniedMessage: 'This role cannot complete inspections.',
+      deniedMessage: 'Эта роль не может завершать проверки.',
     );
     final completion = await _inspectionsRepository.completeInspection(
       inspectionId: inspectionId,
@@ -1908,9 +1910,9 @@ class SyncService {
       AppPlatform.unsupported => AppCapability.runSync,
     };
     final deniedMessage = switch (platform) {
-      AppPlatform.windows => 'Only administrators can run Windows sync.',
-      AppPlatform.android => 'This role cannot run Android sync.',
-      AppPlatform.unsupported => 'Sync is not supported on this platform.',
+      AppPlatform.windows => 'Только администратор может запускать синхронизацию Windows.',
+      AppPlatform.android => 'Эта роль не может запускать синхронизацию Android.',
+      AppPlatform.unsupported => 'Синхронизация не поддерживается на этой платформе.',
     };
     await requireUserCapability(
       _db,

@@ -22,12 +22,12 @@ class WindowsDashboardScreen extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       children: [
         Text(
-          'Этап 3A: master-data для Windows',
+          'Этап 3A: справочные данные для Windows',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 12),
         Text(
-          'Подготовка справочников, структуры, объектов, компонентов и чек-листов.',
+          'Подготовка справочников, структуры предприятия, объектов, компонентов и чек-листов.',
           style: Theme.of(context).textTheme.bodyLarge,
         ),
         const SizedBox(height: 24),
@@ -38,8 +38,8 @@ class WindowsDashboardScreen extends StatelessWidget {
             SectionCard(
               title: 'SQLite',
               lines: [
-                'schemaVersion: $schemaVersion',
-                'db: $databasePath',
+                'Версия схемы: $schemaVersion',
+                'База данных: $databasePath',
               ],
             ),
             SectionCard(

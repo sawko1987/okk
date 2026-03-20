@@ -256,7 +256,7 @@ class EnterpriseStructureRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify enterprise structure.',
+      deniedMessage: 'Только администратор может изменять структуру предприятия.',
     );
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
@@ -311,7 +311,7 @@ class EnterpriseStructureRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify enterprise structure.',
+      deniedMessage: 'Только администратор может изменять структуру предприятия.',
     );
     final activeWorkshops = await (_db.select(_db.workshops)
           ..where(
@@ -365,7 +365,7 @@ class EnterpriseStructureRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify enterprise structure.',
+      deniedMessage: 'Только администратор может изменять структуру предприятия.',
     );
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
@@ -422,7 +422,7 @@ class EnterpriseStructureRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify enterprise structure.',
+      deniedMessage: 'Только администратор может изменять структуру предприятия.',
     );
     final activeSections = await (_db.select(_db.sections)
           ..where(
@@ -481,7 +481,7 @@ class EnterpriseStructureRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify enterprise structure.',
+      deniedMessage: 'Только администратор может изменять структуру предприятия.',
     );
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
@@ -538,7 +538,7 @@ class EnterpriseStructureRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify enterprise structure.',
+      deniedMessage: 'Только администратор может изменять структуру предприятия.',
     );
     final activeObjects = await (_db.select(_db.catalogObjects)
           ..where(
@@ -670,7 +670,7 @@ class ObjectsRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify catalog objects.',
+      deniedMessage: 'Только администратор может изменять объекты справочника.',
     );
     final now = _nowIso();
     final cleanedSectionId = _nullableText(sectionId);
@@ -764,7 +764,7 @@ class ObjectsRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify catalog objects.',
+      deniedMessage: 'Только администратор может изменять объекты справочника.',
     );
     final children = await (_db.select(_db.catalogObjects)
           ..where(
@@ -948,7 +948,7 @@ class ComponentsRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify components.',
+      deniedMessage: 'Только администратор может изменять компоненты.',
     );
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
@@ -1010,7 +1010,7 @@ class ComponentsRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify components.',
+      deniedMessage: 'Только администратор может изменять компоненты.',
     );
     final checklistItems = await (_db.select(_db.checklistItems)
           ..where(
@@ -1146,7 +1146,7 @@ class ChecklistsRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify checklists.',
+      deniedMessage: 'Только администратор может изменять чек-листы.',
     );
     final now = _nowIso();
     final cleanedDescription = _nullableText(description);
@@ -1202,7 +1202,7 @@ class ChecklistsRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify checklists.',
+      deniedMessage: 'Только администратор может изменять чек-листы.',
     );
     final checklist = await _getChecklist(id);
     final now = _nowIso();
@@ -1289,7 +1289,7 @@ class ChecklistsRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify checklist items.',
+      deniedMessage: 'Только администратор может изменять пункты чек-листа.',
     );
     final now = _nowIso();
     final cleanedComponentId = _nullableText(componentId);
@@ -1357,7 +1357,7 @@ class ChecklistsRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify checklist items.',
+      deniedMessage: 'Только администратор может изменять пункты чек-листа.',
     );
     final existing = await _getChecklistItem(id);
     final now = _nowIso();
@@ -1407,7 +1407,7 @@ class ChecklistsRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify checklist bindings.',
+      deniedMessage: 'Только администратор может изменять привязки чек-листов.',
     );
     final now = _nowIso();
     final cleanedTargetId = _nullableText(targetId);
@@ -1482,7 +1482,7 @@ class ChecklistsRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Only administrators can modify checklist bindings.',
+      deniedMessage: 'Только администратор может изменять привязки чек-листов.',
     );
     final existing = await _getChecklistBinding(id);
     final now = _nowIso();

@@ -24,14 +24,13 @@ class _InspectionHistoryScreenState
         if (results.isEmpty) {
           return Center(
             child: Text(
-              'No completed inspections have been recorded yet.',
+              'Завершённые проверки пока не зарегистрированы.',
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           );
         }
 
-        final effectiveSelectedId =
-            results.any(
+        final effectiveSelectedId = results.any(
               (result) => result.inspectionId == _selectedInspectionId,
             )
             ? _selectedInspectionId!
@@ -57,21 +56,19 @@ class _InspectionHistoryScreenState
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Inspection history',
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineSmall,
+                                'История проверок',
+                                style: Theme.of(context).textTheme.headlineSmall,
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${results.length} completed inspection(s)',
+                                'Завершённых проверок: ${results.length}',
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                             ],
                           ),
                         ),
                         IconButton(
-                          tooltip: 'Refresh',
+                          tooltip: 'Обновить',
                           onPressed: () {
                             ref.invalidate(allInspectionResultsProvider);
                             ref.invalidate(
@@ -106,9 +103,9 @@ class _InspectionHistoryScreenState
                               [
                                 result.productName,
                                 result.userName ?? result.userId,
-                                '${result.status}/${result.syncStatus}',
-                                'signatures: ${result.signatureCount}',
-                                'pdf: ${result.hasPdf ? 'yes' : 'no'}',
+                                '${_inspectionStatusLabel(result.status)} / ${_syncStatusLabel(result.syncStatus)}',
+                                'подписей: ${result.signatureCount}',
+                                'PDF: ${result.hasPdf ? 'да' : 'нет'}',
                               ].join(' • '),
                             ),
                             trailing: SizedBox(
@@ -139,7 +136,7 @@ class _InspectionHistoryScreenState
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, _) =>
-          Center(child: Text('Failed to load inspection history: $error')),
+          Center(child: Text('Не удалось загрузить историю проверок: $error')),
     );
   }
 }
@@ -159,7 +156,7 @@ class _InspectionResultDetailPane extends ConsumerWidget {
       data: (detail) {
         if (detail == null) {
           return const Center(
-            child: Text('Inspection details are no longer available.'),
+            child: Text('Детали проверки больше недоступны.'),
           );
         }
 
@@ -177,47 +174,50 @@ class _InspectionResultDetailPane extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             _DetailCard(
-              title: 'Inspection summary',
+              title: 'Сводка проверки',
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _DetailRow(
-                    label: 'Inspection ID',
+                    label: 'ID проверки',
                     value: detail.inspection.id,
                   ),
                   _DetailRow(
-                    label: 'Inspector',
+                    label: 'Инспектор',
                     value: summary.userName ?? summary.userId,
                   ),
-                  _DetailRow(label: 'Status', value: detail.inspection.status),
                   _DetailRow(
-                    label: 'Sync status',
-                    value: detail.inspection.syncStatus,
+                    label: 'Статус',
+                    value: _inspectionStatusLabel(detail.inspection.status),
                   ),
                   _DetailRow(
-                    label: 'Started at',
+                    label: 'Статус синхронизации',
+                    value: _syncStatusLabel(detail.inspection.syncStatus),
+                  ),
+                  _DetailRow(
+                    label: 'Начата',
                     value: detail.inspection.startedAt,
                   ),
                   _DetailRow(
-                    label: 'Completed at',
-                    value: detail.inspection.completedAt ?? 'n/a',
+                    label: 'Завершена',
+                    value: detail.inspection.completedAt ?? 'н/д',
                   ),
                   _DetailRow(
-                    label: 'Signatures',
+                    label: 'Подписи',
                     value: '${detail.signatures.length}',
                   ),
                   _DetailRow(
-                    label: 'PDF report',
-                    value: detail.pdfInfo?.relativePath ?? 'not generated',
+                    label: 'PDF-отчёт',
+                    value: detail.pdfInfo?.relativePath ?? 'не сформирован',
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
             _DetailCard(
-              title: 'Signatures',
+              title: 'Подписи',
               child: detail.signatures.isEmpty
-                  ? const Text('No signatures recorded.')
+                  ? const Text('Подписи отсутствуют.')
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -235,7 +235,7 @@ class _InspectionResultDetailPane extends ConsumerWidget {
                                 SelectableText(signature.imageRelativePath),
                                 const SizedBox(height: 2),
                                 Text(
-                                  'Signed at: ${signature.signedAt}',
+                                  'Подписано: ${signature.signedAt}',
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),
                               ],
@@ -246,7 +246,7 @@ class _InspectionResultDetailPane extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             _DetailCard(
-              title: 'Checklist result',
+              title: 'Результат чек-листа',
               child: Column(
                 children: [
                   for (final item in detail.items)
@@ -262,7 +262,7 @@ class _InspectionResultDetailPane extends ConsumerWidget {
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, _) =>
-          Center(child: Text('Failed to load inspection details: $error')),
+          Center(child: Text('Не удалось загрузить детали проверки: $error')),
     );
   }
 }
@@ -275,17 +275,17 @@ class _ChecklistItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final details = <String>[
-      'type: ${item.resultType}',
-      'result: ${item.resultStatus}',
+      'тип: ${_resultTypeLabel(item.resultType)}',
+      'результат: ${_resultStatusLabel(item.resultStatus)}',
       if ((item.componentName ?? '').isNotEmpty)
-        'component: ${item.componentName}',
+        'компонент: ${item.componentName}',
       if ((item.expectedResult ?? '').isNotEmpty)
-        'expected: ${item.expectedResult}',
+        'ожидаемое значение: ${item.expectedResult}',
       if ((item.measuredValue ?? '').isNotEmpty)
-        'measured: ${item.measuredValue}',
-      if ((item.comment ?? '').isNotEmpty) 'comment: ${item.comment}',
+        'измеренное значение: ${item.measuredValue}',
+      if ((item.comment ?? '').isNotEmpty) 'комментарий: ${item.comment}',
       if (item.componentImagePaths.isNotEmpty)
-        'images: ${item.componentImagePaths.length}',
+        'изображений: ${item.componentImagePaths.length}',
     ];
 
     return ListTile(
@@ -348,4 +348,48 @@ class _DetailRow extends StatelessWidget {
       ),
     );
   }
+}
+
+String _inspectionStatusLabel(String status) {
+  return switch (status) {
+    'draft' => 'Черновик',
+    'in_progress' => 'В работе',
+    'queued' => 'В очереди',
+    'completed' => 'Завершена',
+    'synced' => 'Синхронизирована',
+    'conflict' => 'Конфликт',
+    _ => status,
+  };
+}
+
+String _syncStatusLabel(String status) {
+  return switch (status) {
+    'local_only' => 'Локально',
+    'queued' => 'В очереди',
+    'pending' => 'Ожидает обработки',
+    'synced' => 'Синхронизировано',
+    'failed' => 'Ошибка',
+    'conflict' => 'Конфликт',
+    _ => status,
+  };
+}
+
+String _resultStatusLabel(String status) {
+  return switch (status) {
+    'pass' => 'Пройдено',
+    'fail' => 'Не пройдено',
+    'na' => 'Н/П',
+    'not_checked' => 'Не проверено',
+    _ => status,
+  };
+}
+
+String _resultTypeLabel(String type) {
+  return switch (type) {
+    'pass_fail' => 'Да/нет',
+    'pass_fail_na' => 'Да/нет/не применяется',
+    'number' => 'Числовой',
+    'text' => 'Текстовый',
+    _ => type,
+  };
 }

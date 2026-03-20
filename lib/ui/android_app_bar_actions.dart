@@ -17,7 +17,7 @@ List<Widget> buildAndroidAppBarActions({
       IconButton(
         onPressed: () => context.go(AndroidRoutes.home),
         icon: const Icon(Icons.home_outlined),
-        tooltip: 'Workspace',
+        tooltip: 'Рабочее место',
       ),
     Center(
       child: Padding(
@@ -30,14 +30,14 @@ List<Widget> buildAndroidAppBarActions({
           ? null
           : () => context.push(AndroidRoutes.diagnostics),
       icon: const Icon(Icons.monitor_heart_outlined),
-      tooltip: 'Diagnostics',
+      tooltip: 'Диагностика',
     ),
     IconButton(
       onPressed: currentPath == AndroidRoutes.settings
           ? null
           : () => context.push(AndroidRoutes.settings),
       icon: const Icon(Icons.settings_outlined),
-      tooltip: 'Settings',
+      tooltip: 'Настройки',
     ),
     IconButton(
       onPressed: () async {
@@ -49,7 +49,7 @@ List<Widget> buildAndroidAppBarActions({
         context.go('/');
       },
       icon: const Icon(Icons.logout_outlined),
-      tooltip: 'Logout',
+      tooltip: 'Выход',
     ),
   ];
 }

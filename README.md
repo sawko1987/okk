@@ -16,6 +16,7 @@ The repository is now beyond foundation and spans Stage 3 Windows master-data, S
 - local reference package export into `sync/outgoing`
 - Android route-based workflow with explicit mode, workshop, product, target, component, drafts, results, sync, settings, and diagnostics screens
 - Android workspace UX now surfaces role restrictions, missing reference data, pending sync work, and missing token prerequisites directly on-device
+- active Windows and Android operator/admin screens are being aligned to the Russian-only UI requirement from the specification
 - Android draft/result workflow with product-target selection, draft answers, local signatures, PDF generation, and queued result packages
 - Sync v1 orchestration with startup/manual sync, Yandex Disk transport, remote package upload/download, reference import on Android, result import on Windows, basic remote product locks, and best-effort Android pre/post sync around inspections
 - automatic retry-aware sync scheduling with queue backoff and app-resume retry entrypoints
@@ -107,3 +108,11 @@ Current local verification status:
 - focused sync hardening coverage was added in `test/sync_retry_policy_test.dart`
 - Android route/state widget coverage was added in `test/android_workflow_screens_test.dart`
 - inspection/sync tests need follow-up verification because `flutter test` currently hangs when loading the inspection modules in this environment
+
+## Next Focus
+
+The practical next stage is not project scaffolding anymore. The codebase already contains the core Windows admin, Android workflow, and sync v1 layers. The highest-value follow-up work is:
+
+- finish the remaining Russian UI/localization sweep and remove raw technical status codes from user-facing screens
+- harden offline behavior and delayed retry/background sync
+- close the backup/export/restore gaps and run broader environment-stable verification

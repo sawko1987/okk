@@ -47,7 +47,7 @@ class StructureAdminScreen extends ConsumerWidget {
                 const Padding(
                   padding: EdgeInsets.only(bottom: 12),
                   child: Text(
-                    'Editing is available only for the administrator role.',
+                    'Редактирование доступно только администратору.',
                   ),
                 ),
               Expanded(
@@ -56,8 +56,8 @@ class StructureAdminScreen extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: _StructureColumn(
-                        title: 'Departments',
-                        addLabel: 'Add department',
+                        title: 'Подразделения',
+                        addLabel: 'Добавить подразделение',
                         onAdd: canEdit ? () => _editDepartment(context, ref) : null,
                         onEdit: !canEdit || tree.isEmpty
                             ? null
@@ -77,7 +77,7 @@ class StructureAdminScreen extends ConsumerWidget {
                           for (final node in tree)
                             _SelectableTile(
                               title: node.department.name,
-                              subtitle: node.department.code ?? 'No code',
+                              subtitle: node.department.code ?? 'Без кода',
                               selected: node.department.id == departmentNode.department.id,
                               onTap: () {
                                 ref.read(_selectedDepartmentIdProvider.notifier).state =
@@ -92,8 +92,8 @@ class StructureAdminScreen extends ConsumerWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       child: _StructureColumn(
-                        title: 'Workshops',
-                        addLabel: 'Add workshop',
+                        title: 'Цеха',
+                        addLabel: 'Добавить цех',
                         onAdd: !canEdit || tree.isEmpty
                             ? null
                             : () => _editWorkshop(
@@ -122,7 +122,7 @@ class StructureAdminScreen extends ConsumerWidget {
                           for (final node in departmentNode.workshops)
                             _SelectableTile(
                               title: node.workshop.name,
-                              subtitle: node.workshop.code ?? 'No code',
+                              subtitle: node.workshop.code ?? 'Без кода',
                               selected: node.workshop.id == workshopNode.workshop.id,
                               onTap: () {
                                 ref.read(_selectedWorkshopIdProvider.notifier).state =
@@ -136,8 +136,8 @@ class StructureAdminScreen extends ConsumerWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       child: _StructureColumn(
-                        title: 'Sections',
-                        addLabel: 'Add section',
+                        title: 'Участки',
+                        addLabel: 'Добавить участок',
                         onAdd: !canEdit || departmentNode.workshops.isEmpty
                             ? null
                             : () => _editSection(
@@ -166,7 +166,7 @@ class StructureAdminScreen extends ConsumerWidget {
                           for (final section in workshopNode.sections)
                             _SelectableTile(
                               title: section.name,
-                              subtitle: section.code ?? 'No code',
+                              subtitle: section.code ?? 'Без кода',
                               selected: section.id == selectedSection.id,
                               onTap: () {
                                 ref.read(_selectedSectionIdProvider.notifier).state =
@@ -184,7 +184,8 @@ class StructureAdminScreen extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Failed to load structure: $error')),
+      error: (error, _) =>
+          Center(child: Text('Не удалось загрузить структуру: $error')),
     );
   }
 
@@ -196,7 +197,9 @@ class StructureAdminScreen extends ConsumerWidget {
     final result = await showDialog<_StructureFormResult>(
       context: context,
       builder: (context) => _NameCodeSortDialog(
-        title: department == null ? 'New department' : 'Edit department',
+        title: department == null
+            ? 'Новое подразделение'
+            : 'Редактирование подразделения',
         initialName: department?.name,
         initialCode: department?.code,
         initialSortOrder: department?.sortOrder ?? 0,
@@ -232,8 +235,8 @@ class StructureAdminScreen extends ConsumerWidget {
     final result = await showDialog<_ParentFormResult>(
       context: context,
       builder: (context) => _ParentSelectionDialog(
-        title: workshop == null ? 'New workshop' : 'Edit workshop',
-        parentLabel: 'Department',
+        title: workshop == null ? 'Новый цех' : 'Редактирование цеха',
+        parentLabel: 'Подразделение',
         parentOptions: [
           for (final node in departments)
             DropdownMenuItem<String>(
@@ -281,8 +284,8 @@ class StructureAdminScreen extends ConsumerWidget {
     final result = await showDialog<_ParentFormResult>(
       context: context,
       builder: (context) => _ParentSelectionDialog(
-        title: section == null ? 'New section' : 'Edit section',
-        parentLabel: 'Workshop',
+        title: section == null ? 'Новый участок' : 'Редактирование участка',
+        parentLabel: 'Цех',
         parentOptions: [
           for (final workshopNode in workshops)
             DropdownMenuItem<String>(
@@ -474,10 +477,7 @@ class _StructureColumn extends StatelessWidget {
               label: Text(addLabel),
             ),
             const SizedBox(height: 16),
-            if (children.isEmpty)
-              const Text('Nothing here yet.')
-            else
-              ...children,
+            if (children.isEmpty) const Text('Здесь пока пусто.') else ...children,
           ],
         ),
       ),
@@ -563,17 +563,21 @@ class _NameCodeSortDialogState extends State<_NameCodeSortDialog> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
+                decoration: const InputDecoration(labelText: 'Название'),
                 validator: (value) =>
-                    value == null || value.trim().isEmpty ? 'Enter a name' : null,
+                    value == null || value.trim().isEmpty
+                    ? 'Введите название'
+                    : null,
               ),
               TextFormField(
                 controller: _codeController,
-                decoration: const InputDecoration(labelText: 'Code'),
+                decoration: const InputDecoration(labelText: 'Код'),
               ),
               TextFormField(
                 controller: _sortController,
-                decoration: const InputDecoration(labelText: 'Sort order'),
+                decoration: const InputDecoration(
+                  labelText: 'Порядок сортировки',
+                ),
                 keyboardType: TextInputType.number,
               ),
             ],
@@ -583,7 +587,7 @@ class _NameCodeSortDialogState extends State<_NameCodeSortDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: const Text('Отмена'),
         ),
         FilledButton(
           onPressed: () {
@@ -598,7 +602,7 @@ class _NameCodeSortDialogState extends State<_NameCodeSortDialog> {
               ),
             );
           },
-          child: const Text('Save'),
+          child: const Text('Сохранить'),
         ),
       ],
     );
@@ -671,17 +675,21 @@ class _ParentSelectionDialogState extends State<_ParentSelectionDialog> {
               ),
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
+                decoration: const InputDecoration(labelText: 'Название'),
                 validator: (value) =>
-                    value == null || value.trim().isEmpty ? 'Enter a name' : null,
+                    value == null || value.trim().isEmpty
+                    ? 'Введите название'
+                    : null,
               ),
               TextFormField(
                 controller: _codeController,
-                decoration: const InputDecoration(labelText: 'Code'),
+                decoration: const InputDecoration(labelText: 'Код'),
               ),
               TextFormField(
                 controller: _sortController,
-                decoration: const InputDecoration(labelText: 'Sort order'),
+                decoration: const InputDecoration(
+                  labelText: 'Порядок сортировки',
+                ),
                 keyboardType: TextInputType.number,
               ),
             ],
@@ -691,7 +699,7 @@ class _ParentSelectionDialogState extends State<_ParentSelectionDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: const Text('Отмена'),
         ),
         FilledButton(
           onPressed: () {
@@ -707,7 +715,7 @@ class _ParentSelectionDialogState extends State<_ParentSelectionDialog> {
               ),
             );
           },
-          child: const Text('Save'),
+          child: const Text('Сохранить'),
         ),
       ],
     );

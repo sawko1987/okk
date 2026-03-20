@@ -100,7 +100,7 @@ List<String> buildInspectionReportLines(InspectionReportDocumentInput input) {
 }
 
 String buildInspectionReportPreviewText(InspectionReportDocumentInput input) {
-  return buildInspectionReportLines(input).join('\n');
+  return _buildInspectionReportPreviewLines(input).join('\n');
 }
 
 List<int> buildInspectionPdfBytes(InspectionReportDocumentInput input) {
@@ -178,4 +178,79 @@ String _asciiSafe(String value) {
     }
   }
   return buffer.toString();
+}
+
+List<String> _buildInspectionReportPreviewLines(
+  InspectionReportDocumentInput input,
+) {
+  final lines = <String>[
+    'Отчёт по проверке ОКК',
+    'ID проверки: ${input.inspectionId}',
+    'Статус: ${_inspectionStatusLabel(input.status)}',
+    'Изделие: ${input.productName}',
+    'Объект проверки: ${input.targetName}',
+    'Начата: ${input.startedAt}',
+    'Завершена: ${input.completedAt ?? 'не завершена'}',
+    '',
+    'Пункты проверки',
+  ];
+
+  for (var index = 0; index < input.items.length; index++) {
+    final item = input.items[index];
+    lines.add('${index + 1}. ${item.title}');
+    lines.add('   Результат: ${_previewResultLabel(item.resultLabel)}');
+    if ((item.componentName ?? '').isNotEmpty) {
+      lines.add('   Компонент: ${item.componentName}');
+    }
+    if ((item.description ?? '').isNotEmpty) {
+      lines.add('   Описание: ${item.description}');
+    }
+    if ((item.expectedResult ?? '').isNotEmpty) {
+      lines.add('   Ожидаемое значение: ${item.expectedResult}');
+    }
+    if ((item.measuredValue ?? '').isNotEmpty) {
+      lines.add('   Измеренное значение: ${item.measuredValue}');
+    }
+    if ((item.comment ?? '').isNotEmpty) {
+      lines.add('   Комментарий: ${item.comment}');
+    }
+  }
+
+  lines.add('');
+  lines.add('Подписи');
+  if (input.signers.isEmpty) {
+    lines.add('Подписи отсутствуют.');
+  } else {
+    for (final signer in input.signers) {
+      lines.add('- ${signer.name} (${signer.role}) - ${signer.signedAt}');
+    }
+  }
+
+  return lines;
+}
+
+String _inspectionStatusLabel(String status) {
+  return switch (status) {
+    'draft' => 'Черновик',
+    'in_progress' => 'В работе',
+    'queued' => 'В очереди',
+    'completed' => 'Завершена',
+    'synced' => 'Синхронизирована',
+    'conflict' => 'Конфликт',
+    _ => status,
+  };
+}
+
+String _previewResultLabel(String value) {
+  return switch (value) {
+    'Pass' => 'Пройдено',
+    'Fail' => 'Не пройдено',
+    'N/A' => 'Н/П',
+    'Not checked' => 'Не проверено',
+    'pass' => 'Пройдено',
+    'fail' => 'Не пройдено',
+    'na' => 'Н/П',
+    'not_checked' => 'Не проверено',
+    _ => value,
+  };
 }

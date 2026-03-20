@@ -39,14 +39,14 @@ class ObjectsAdminScreen extends ConsumerWidget {
                           const Padding(
                             padding: EdgeInsets.only(bottom: 12),
                             child: Text(
-                              'Editing is available only for the administrator role.',
+                              'Редактирование доступно только администратору.',
                             ),
                           ),
                         Row(
                           children: [
                             Expanded(
                               child: Text(
-                                'Object tree',
+                                'Дерево объектов',
                                 style: Theme.of(context).textTheme.titleLarge,
                               ),
                             ),
@@ -55,14 +55,14 @@ class ObjectsAdminScreen extends ConsumerWidget {
                                   ? () => _editObject(context, ref, data: data)
                                   : null,
                               icon: const Icon(Icons.add),
-                              label: const Text('Add'),
+                              label: const Text('Добавить'),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
                         if (data.allObjects.isEmpty)
                           const Expanded(
-                            child: Center(child: Text('No objects created yet.')),
+                            child: Center(child: Text('Объекты пока не созданы.')),
                           )
                         else
                           Expanded(
@@ -90,7 +90,9 @@ class ObjectsAdminScreen extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: data.allObjects.isEmpty
-                        ? const Text('Create the first object to start structuring products.')
+                        ? const Text(
+                            'Создайте первый объект, чтобы начать формировать структуру изделий.',
+                          )
                         : Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -126,16 +128,22 @@ class ObjectsAdminScreen extends ConsumerWidget {
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              _DetailRow('Type', selectedObject.type),
-                              _DetailRow('Code', selectedObject.code ?? 'No code'),
-                              _DetailRow('Section', _sectionName(data, selectedObject.sectionId)),
-                              _DetailRow('Parent', _parentName(data, selectedObject.parentId)),
+                              _DetailRow('Тип', _objectTypeLabel(selectedObject.type)),
+                              _DetailRow('Код', selectedObject.code ?? 'Без кода'),
                               _DetailRow(
-                                'Status',
-                                selectedObject.isActive ? 'Active' : 'Inactive',
+                                'Участок',
+                                _sectionName(data, selectedObject.sectionId),
+                              ),
+                              _DetailRow(
+                                'Родитель',
+                                _parentName(data, selectedObject.parentId),
+                              ),
+                              _DetailRow(
+                                'Статус',
+                                selectedObject.isActive ? 'Активен' : 'Неактивен',
                               ),
                               if ((selectedObject.description ?? '').isNotEmpty)
-                                _DetailRow('Description', selectedObject.description!),
+                                _DetailRow('Описание', selectedObject.description!),
                             ],
                           ),
                   ),
@@ -146,7 +154,8 @@ class ObjectsAdminScreen extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Failed to load objects: $error')),
+      error: (error, _) =>
+          Center(child: Text('Не удалось загрузить объекты: $error')),
     );
   }
 
@@ -161,7 +170,9 @@ class ObjectsAdminScreen extends ConsumerWidget {
         child: ListTile(
           contentPadding: EdgeInsets.only(left: 16.0 + depth * 20, right: 16),
           title: Text(node.object.name),
-          subtitle: Text('${node.object.type} • ${node.object.code ?? 'no code'}'),
+          subtitle: Text(
+            '${_objectTypeLabel(node.object.type)} • ${node.object.code ?? 'без кода'}',
+          ),
           selected: node.object.id == selectedObjectId,
           onTap: () => ref.read(_selectedObjectIdProvider.notifier).state = node.object.id,
         ),
@@ -232,24 +243,24 @@ class ObjectsAdminScreen extends ConsumerWidget {
 
   String _sectionName(ObjectsViewData data, String? sectionId) {
     if (sectionId == null) {
-      return 'Not set';
+      return 'Не задан';
     }
     final section = data.sections.firstWhere(
       (candidate) => candidate.id == sectionId,
       orElse: () => _emptySection,
     );
-    return section.name.isEmpty ? 'Not found' : section.name;
+    return section.name.isEmpty ? 'Не найден' : section.name;
   }
 
   String _parentName(ObjectsViewData data, String? parentId) {
     if (parentId == null) {
-      return 'Root object';
+      return 'Корневой объект';
     }
     final object = data.allObjects.firstWhere(
       (candidate) => candidate.id == parentId,
       orElse: () => _emptyObject,
     );
-    return object.name.isEmpty ? 'Not found' : object.name;
+    return object.name.isEmpty ? 'Не найден' : object.name;
   }
 }
 
@@ -336,8 +347,12 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
     super.initState();
     _nameController = TextEditingController(text: widget.object?.name ?? '');
     _codeController = TextEditingController(text: widget.object?.code ?? '');
-    _descriptionController = TextEditingController(text: widget.object?.description ?? '');
-    _sortController = TextEditingController(text: '${widget.object?.sortOrder ?? 0}');
+    _descriptionController = TextEditingController(
+      text: widget.object?.description ?? '',
+    );
+    _sortController = TextEditingController(
+      text: '${widget.object?.sortOrder ?? 0}',
+    );
     _type = widget.object?.type ?? objectTypeOptions.first;
     _sectionId = widget.object?.sectionId;
     _parentId = widget.object?.parentId;
@@ -360,7 +375,9 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
         .toList(growable: false);
 
     return AlertDialog(
-      title: Text(widget.object == null ? 'New object' : 'Edit object'),
+      title: Text(
+        widget.object == null ? 'Новый объект' : 'Редактирование объекта',
+      ),
       content: Form(
         key: _formKey,
         child: SizedBox(
@@ -373,22 +390,28 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
                   initialValue: _type,
                   items: [
                     for (final value in objectTypeOptions)
-                      DropdownMenuItem(value: value, child: Text(value)),
+                      DropdownMenuItem(
+                        value: value,
+                        child: Text(_objectTypeLabel(value)),
+                      ),
                   ],
-                  decoration: const InputDecoration(labelText: 'Type'),
+                  decoration: const InputDecoration(labelText: 'Тип'),
                   onChanged: (value) => setState(() => _type = value ?? _type),
                 ),
                 DropdownButtonFormField<String?>(
                   initialValue: _sectionId,
                   items: [
-                    const DropdownMenuItem<String?>(value: null, child: Text('Not set')),
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('Не задан'),
+                    ),
                     for (final section in widget.sections)
                       DropdownMenuItem<String?>(
                         value: section.id,
                         child: Text(section.name),
                       ),
                   ],
-                  decoration: const InputDecoration(labelText: 'Section'),
+                  decoration: const InputDecoration(labelText: 'Участок'),
                   onChanged: (value) => setState(() => _sectionId = value),
                 ),
                 DropdownButtonFormField<String?>(
@@ -396,7 +419,7 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
                   items: [
                     const DropdownMenuItem<String?>(
                       value: null,
-                      child: Text('Root object'),
+                      child: Text('Корневой объект'),
                     ),
                     for (final object in availableParents)
                       DropdownMenuItem<String?>(
@@ -404,32 +427,36 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
                         child: Text(object.name),
                       ),
                   ],
-                  decoration: const InputDecoration(labelText: 'Parent'),
+                  decoration: const InputDecoration(labelText: 'Родитель'),
                   onChanged: (value) => setState(() => _parentId = value),
                 ),
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Name'),
+                  decoration: const InputDecoration(labelText: 'Название'),
                   validator: (value) =>
-                      value == null || value.trim().isEmpty ? 'Enter a name' : null,
+                      value == null || value.trim().isEmpty
+                      ? 'Введите название'
+                      : null,
                 ),
                 TextFormField(
                   controller: _codeController,
-                  decoration: const InputDecoration(labelText: 'Code'),
+                  decoration: const InputDecoration(labelText: 'Код'),
                 ),
                 TextFormField(
                   controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description'),
+                  decoration: const InputDecoration(labelText: 'Описание'),
                   maxLines: 3,
                 ),
                 TextFormField(
                   controller: _sortController,
-                  decoration: const InputDecoration(labelText: 'Sort order'),
+                  decoration: const InputDecoration(
+                    labelText: 'Порядок сортировки',
+                  ),
                   keyboardType: TextInputType.number,
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Active'),
+                  title: const Text('Активен'),
                   value: _isActive,
                   onChanged: (value) => setState(() => _isActive = value),
                 ),
@@ -441,7 +468,7 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: const Text('Отмена'),
         ),
         FilledButton(
           onPressed: () {
@@ -461,7 +488,7 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
               ),
             );
           },
-          child: const Text('Save'),
+          child: const Text('Сохранить'),
         ),
       ],
     );
@@ -494,4 +521,15 @@ void _showObjectsMessage(BuildContext context, String message) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text(message)),
   );
+}
+
+String _objectTypeLabel(String type) {
+  return switch (type) {
+    'product' => 'Изделие',
+    'machine' => 'Машина',
+    'place' => 'Место',
+    'node' => 'Узел',
+    'detail' => 'Деталь',
+    _ => type,
+  };
 }

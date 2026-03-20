@@ -27,7 +27,7 @@ class AppEntryScreen extends ConsumerWidget {
               section: WindowsAdminSection.dashboard,
             ),
           AppPlatform.unsupported => const Scaffold(
-              body: Center(child: Text('Unsupported platform.')),
+              body: Center(child: Text('Платформа не поддерживается.')),
             ),
         };
       },
@@ -35,7 +35,7 @@ class AppEntryScreen extends ConsumerWidget {
         body: Center(child: CircularProgressIndicator()),
       ),
       error: (error, _) => Scaffold(
-        body: Center(child: Text('Failed to initialize session: $error')),
+        body: Center(child: Text('Не удалось инициализировать сессию: $error')),
       ),
     );
   }

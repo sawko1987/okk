@@ -44,7 +44,7 @@ class UsersAdminScreen extends ConsumerWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  'Users',
+                                  'Пользователи',
                                   style: Theme.of(context).textTheme.titleLarge,
                                 ),
                               ),
@@ -53,21 +53,21 @@ class UsersAdminScreen extends ConsumerWidget {
                                     ? () => _editUser(context, ref, roles: roles)
                                     : null,
                                 icon: const Icon(Icons.add),
-                                label: const Text('Add'),
+                                label: const Text('Добавить'),
                               ),
                             ],
                           ),
                           if (!canEdit) ...[
                             const SizedBox(height: 12),
                             const Text(
-                              'Editing is available only for the administrator role.',
+                              'Редактирование доступно только администратору.',
                             ),
                           ],
                           const SizedBox(height: 16),
                           if (users.isEmpty)
                             const Expanded(
                               child: Center(
-                                child: Text('No users configured yet.'),
+                                child: Text('Пользователи пока не настроены.'),
                               ),
                             )
                           else
@@ -77,16 +77,24 @@ class UsersAdminScreen extends ConsumerWidget {
                                   for (final managedUser in users)
                                     Card(
                                       child: ListTile(
-                                        selected: managedUser.user.id == selectedUser.user.id,
+                                        selected:
+                                            managedUser.user.id ==
+                                            selectedUser.user.id,
                                         title: Text(managedUser.user.fullName),
                                         subtitle: Text(
-                                          '${managedUser.role.name} • ${managedUser.user.isActive ? 'active' : 'inactive'}',
+                                          '${managedUser.role.name} • ${managedUser.user.isActive ? 'Активен' : 'Неактивен'}',
                                         ),
-                                        trailing: managedUser.user.id == session?.userId
-                                            ? const Icon(Icons.verified_user_outlined)
+                                        trailing:
+                                            managedUser.user.id == session?.userId
+                                            ? const Icon(
+                                                Icons.verified_user_outlined,
+                                              )
                                             : null,
                                         onTap: () => ref
-                                            .read(_selectedManagedUserIdProvider.notifier)
+                                            .read(
+                                              _selectedManagedUserIdProvider
+                                                  .notifier,
+                                            )
                                             .state = managedUser.user.id,
                                       ),
                                     ),
@@ -105,7 +113,9 @@ class UsersAdminScreen extends ConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: users.isEmpty
-                          ? const Text('Create the first user to manage local access.')
+                          ? const Text(
+                              'Создайте первого пользователя для управления локальным доступом.',
+                            )
                           : Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -114,7 +124,9 @@ class UsersAdminScreen extends ConsumerWidget {
                                     Expanded(
                                       child: Text(
                                         selectedUser.user.fullName,
-                                        style: Theme.of(context).textTheme.titleLarge,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.titleLarge,
                                       ),
                                     ),
                                     IconButton(
@@ -142,25 +154,32 @@ class UsersAdminScreen extends ConsumerWidget {
                                   ],
                                 ),
                                 const SizedBox(height: 12),
-                                _UserDetailRow('Short name', selectedUser.user.shortName ?? '—'),
-                                _UserDetailRow('Role', selectedUser.role.name),
                                 _UserDetailRow(
-                                  'Status',
-                                  selectedUser.user.isActive ? 'Active' : 'Inactive',
+                                  'Краткое имя',
+                                  selectedUser.user.shortName ?? '—',
+                                ),
+                                _UserDetailRow('Роль', selectedUser.role.name),
+                                _UserDetailRow(
+                                  'Статус',
+                                  selectedUser.user.isActive
+                                      ? 'Активен'
+                                      : 'Неактивен',
                                 ),
                                 _UserDetailRow(
                                   'PIN',
                                   (selectedUser.user.pinHash ?? '').isEmpty
-                                      ? 'Not set'
-                                      : 'Configured',
+                                      ? 'Не задан'
+                                      : 'Настроен',
                                 ),
                                 _UserDetailRow(
-                                  'Last login',
-                                  selectedUser.user.lastLoginAt ?? 'Never',
+                                  'Последний вход',
+                                  selectedUser.user.lastLoginAt ?? 'Никогда',
                                 ),
                                 if (selectedUser.user.id == session?.userId) ...[
                                   const Divider(height: 32),
-                                  const Text('This user is currently active in the local session.'),
+                                  const Text(
+                                    'Этот пользователь сейчас активен в локальной сессии.',
+                                  ),
                                 ],
                               ],
                             ),
@@ -172,10 +191,12 @@ class UsersAdminScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Failed to load roles: $error')),
+        error: (error, _) =>
+            Center(child: Text('Не удалось загрузить роли: $error')),
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Failed to load users: $error')),
+      error: (error, _) =>
+          Center(child: Text('Не удалось загрузить пользователей: $error')),
     );
   }
 
@@ -218,7 +239,7 @@ class UsersAdminScreen extends ConsumerWidget {
     String? actorUserId,
   ) async {
     if (actorUserId == user.user.id) {
-      _showUserMessage(context, 'The active session user cannot be deleted.');
+      _showUserMessage(context, 'Нельзя удалить пользователя из активной сессии.');
       return;
     }
 
@@ -278,9 +299,12 @@ class _UserEditorDialogState extends State<_UserEditorDialog> {
   @override
   void initState() {
     super.initState();
-    _fullNameController = TextEditingController(text: widget.user?.user.fullName ?? '');
-    _shortNameController =
-        TextEditingController(text: widget.user?.user.shortName ?? '');
+    _fullNameController = TextEditingController(
+      text: widget.user?.user.fullName ?? '',
+    );
+    _shortNameController = TextEditingController(
+      text: widget.user?.user.shortName ?? '',
+    );
     _pinController = TextEditingController();
     _roleId = widget.user?.role.id ?? widget.roles.first.id;
     _isActive = widget.user?.user.isActive ?? true;
@@ -297,7 +321,11 @@ class _UserEditorDialogState extends State<_UserEditorDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.user == null ? 'New user' : 'Edit user'),
+      title: Text(
+        widget.user == null
+            ? 'Новый пользователь'
+            : 'Редактирование пользователя',
+      ),
       content: Form(
         key: _formKey,
         child: SizedBox(
@@ -307,17 +335,18 @@ class _UserEditorDialogState extends State<_UserEditorDialog> {
             children: [
               TextFormField(
                 controller: _fullNameController,
-                decoration: const InputDecoration(labelText: 'Full name'),
-                validator: (value) =>
-                    value == null || value.trim().isEmpty ? 'Enter full name' : null,
+                decoration: const InputDecoration(labelText: 'Полное имя'),
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? 'Введите полное имя'
+                    : null,
               ),
               TextFormField(
                 controller: _shortNameController,
-                decoration: const InputDecoration(labelText: 'Short name'),
+                decoration: const InputDecoration(labelText: 'Краткое имя'),
               ),
               DropdownButtonFormField<String>(
                 initialValue: _roleId,
-                decoration: const InputDecoration(labelText: 'Role'),
+                decoration: const InputDecoration(labelText: 'Роль'),
                 items: [
                   for (final role in widget.roles)
                     DropdownMenuItem(
@@ -330,13 +359,15 @@ class _UserEditorDialogState extends State<_UserEditorDialog> {
               TextFormField(
                 controller: _pinController,
                 decoration: InputDecoration(
-                  labelText: widget.user == null ? 'PIN' : 'PIN (leave blank to keep)',
+                  labelText: widget.user == null
+                      ? 'PIN'
+                      : 'PIN (оставьте пустым, чтобы не менять)',
                 ),
                 obscureText: true,
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Active'),
+                title: const Text('Активен'),
                 value: _isActive,
                 onChanged: (value) => setState(() => _isActive = value),
               ),
@@ -347,7 +378,7 @@ class _UserEditorDialogState extends State<_UserEditorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: const Text('Отмена'),
         ),
         FilledButton(
           onPressed: () {
@@ -365,7 +396,7 @@ class _UserEditorDialogState extends State<_UserEditorDialog> {
               ),
             );
           },
-          child: const Text('Save'),
+          child: const Text('Сохранить'),
         ),
       ],
     );

@@ -64,7 +64,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: const Text('Настройки'),
         actions: isAndroid
             ? buildAndroidAppBarActions(
                 context: context,
@@ -80,28 +80,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const Card(
               child: ListTile(
                 leading: Icon(Icons.phone_android_outlined),
-                title: Text('Android device settings'),
+                title: Text('Настройки устройства Android'),
                 subtitle: Text(
-                  'Use this screen to confirm local storage paths and manage Yandex Disk access for the current device.',
+                  'На этом экране можно проверить локальные пути хранения и управлять доступом к Яндекс.Диску для текущего устройства.',
                 ),
               ),
             ),
             const SizedBox(height: 16),
           ],
           _SettingsCard(
-            title: 'Application',
+            title: 'Приложение',
             children: [
-              _SettingsRow(label: 'Application', value: AppConstants.appName),
+              _SettingsRow(label: 'Приложение', value: AppConstants.appName),
               _SettingsRow(
-                label: 'Database schema version',
+                label: 'Версия схемы базы данных',
                 value: '${AppConstants.appSchemaVersion}',
               ),
               _SettingsRow(
-                label: 'Sync schema version',
+                label: 'Версия схемы синхронизации',
                 value: AppConstants.syncSchemaVersion,
               ),
-              _SettingsRow(label: 'Storage root', value: paths.rootDir.path),
-              _SettingsRow(label: 'Database file', value: paths.databaseFile.path),
+              _SettingsRow(label: 'Корень хранилища', value: paths.rootDir.path),
+              _SettingsRow(label: 'Файл базы данных', value: paths.databaseFile.path),
             ],
           ),
           const SizedBox(height: 16),
@@ -112,14 +112,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const Padding(
                   padding: EdgeInsets.only(bottom: 12),
                   child: Text(
-                    'Sync settings can be changed only by an administrator.',
+                    'Настройки синхронизации может менять только администратор.',
                   ),
                 ),
               TextField(
                 controller: _tokenController,
                 decoration: const InputDecoration(
-                  labelText: 'OAuth token',
-                  hintText: 'Paste Yandex Disk token',
+                  labelText: 'OAuth-токен',
+                  hintText: 'Вставьте токен Яндекс.Диска',
                 ),
                 obscureText: true,
                 enabled: canEditSyncSettings && !_isSaving && !_isClearing,
@@ -133,13 +133,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onPressed: canEditSyncSettings && !_isSaving && !_isClearing
                         ? _saveToken
                         : null,
-                    child: Text(_isSaving ? 'Saving...' : 'Save token'),
+                    child: Text(_isSaving ? 'Сохранение...' : 'Сохранить токен'),
                   ),
                   OutlinedButton(
                     onPressed: canEditSyncSettings && !_isSaving && !_isClearing
                         ? _clearToken
                         : null,
-                    child: Text(_isClearing ? 'Clearing...' : 'Clear token'),
+                    child: Text(_isClearing ? 'Очистка...' : 'Удалить токен'),
                   ),
                 ],
               ),
@@ -149,32 +149,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _SettingsRow(
-                      label: 'Token configured',
-                      value: diagnostics.transportConfigured ? 'yes' : 'no',
+                      label: 'Токен настроен',
+                      value: diagnostics.transportConfigured ? 'Да' : 'Нет',
                     ),
                     _SettingsRow(
-                      label: 'Remote connectivity',
-                      value: diagnostics.yandexDiskConnected ? 'connected' : 'unknown/error',
+                      label: 'Удаленное подключение',
+                      value: diagnostics.yandexDiskConnected
+                          ? 'Подключено'
+                          : 'Неизвестно или ошибка',
                     ),
                     _SettingsRow(
-                      label: 'Last sync attempt',
-                      value: diagnostics.lastSyncAttemptAt ?? 'not available',
+                      label: 'Последняя попытка синхронизации',
+                      value: diagnostics.lastSyncAttemptAt ?? 'Недоступно',
                     ),
                     _SettingsRow(
-                      label: 'Last sync success',
-                      value: diagnostics.lastSuccessAt ?? 'not available',
+                      label: 'Последняя успешная синхронизация',
+                      value: diagnostics.lastSuccessAt ?? 'Недоступно',
                     ),
                     _SettingsRow(
-                      label: 'Last retry run',
-                      value: diagnostics.lastRetryAt ?? 'not available',
+                      label: 'Последний повторный запуск',
+                      value: diagnostics.lastRetryAt ?? 'Недоступно',
                     ),
                     _SettingsRow(
-                      label: 'Retry-eligible queue entries',
+                      label: 'Элементы очереди, доступные для повтора',
                       value: '${diagnostics.retryEligibleCount}',
                     ),
                     _SettingsRow(
-                      label: 'Last sync error',
-                      value: diagnostics.lastError ?? 'not available',
+                      label: 'Последняя ошибка синхронизации',
+                      value: diagnostics.lastError ?? 'Недоступно',
                     ),
                   ],
                 ),
@@ -182,7 +184,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: LinearProgressIndicator(),
                 ),
-                error: (error, _) => Text('Failed to load sync settings: $error'),
+                error: (error, _) =>
+                    Text('Не удалось загрузить настройки синхронизации: $error'),
               ),
             ],
           ),
@@ -202,7 +205,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Token stored in secure settings.')),
+        const SnackBar(content: Text('Токен сохранен в защищенном хранилище.')),
       );
     } finally {
       if (mounted) {
@@ -221,7 +224,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Token removed from secure settings.')),
+        const SnackBar(content: Text('Токен удален из защищенного хранилища.')),
       );
     } finally {
       if (mounted) {

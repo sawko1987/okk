@@ -47,43 +47,43 @@ bool roleHasCapability(String? roleCode, AppCapability capability) {
 
 String capabilityLabel(AppCapability capability) {
   return switch (capability) {
-    AppCapability.manageCatalog => 'Manage catalog',
-    AppCapability.manageUsers => 'Manage users',
-    AppCapability.manageTrash => 'Manage trash',
-    AppCapability.manageSync => 'Run Windows sync',
-    AppCapability.manageSyncSettings => 'Manage sync settings',
-    AppCapability.runSync => 'Run device sync',
-    AppCapability.viewAudit => 'View audit log',
-    AppCapability.startInspection => 'Start inspections',
-    AppCapability.completeInspection => 'Complete inspections',
-    AppCapability.signInspection => 'Sign inspections',
-    AppCapability.viewResults => 'View results',
+    AppCapability.manageCatalog => 'Управление справочниками',
+    AppCapability.manageUsers => 'Управление пользователями',
+    AppCapability.manageTrash => 'Управление корзиной',
+    AppCapability.manageSync => 'Синхронизация Windows',
+    AppCapability.manageSyncSettings => 'Настройки синхронизации',
+    AppCapability.runSync => 'Синхронизация устройства',
+    AppCapability.viewAudit => 'Просмотр журнала',
+    AppCapability.startInspection => 'Запуск проверок',
+    AppCapability.completeInspection => 'Завершение проверок',
+    AppCapability.signInspection => 'Подписание проверок',
+    AppCapability.viewResults => 'Просмотр результатов',
   };
 }
 
 String capabilityDescription(AppCapability capability) {
   return switch (capability) {
     AppCapability.manageCatalog =>
-      'Edit enterprise structure, objects, components, and checklists.',
+      'Редактирование структуры предприятия, объектов, компонентов и чек-листов.',
     AppCapability.manageUsers =>
-      'Create users, change role assignments, and deactivate access.',
+      'Создание пользователей, назначение ролей и отключение доступа.',
     AppCapability.manageTrash =>
-      'Restore or review deleted records in the trash bin.',
+      'Просмотр и восстановление удаленных записей из корзины.',
     AppCapability.manageSync =>
-      'Publish and import sync packages from the Windows admin app.',
+      'Публикация и импорт пакетов синхронизации из Windows-приложения.',
     AppCapability.manageSyncSettings =>
-      'Configure Yandex Disk token and sync diagnostics settings.',
+      'Настройка токена Яндекс.Диска и параметров диагностики синхронизации.',
     AppCapability.runSync =>
-      'Start manual synchronization from the current device.',
+      'Запуск ручной синхронизации с текущего устройства.',
     AppCapability.viewAudit =>
-      'Read audit history and recent operational events.',
+      'Просмотр журнала действий и последних эксплуатационных событий.',
     AppCapability.startInspection =>
-      'Create or resume inspection drafts from Android.',
+      'Создание новых проверок и продолжение черновиков на Android.',
     AppCapability.completeInspection =>
-      'Finish inspections, generate PDF, and queue results.',
+      'Завершение проверок, генерация PDF и постановка результатов в очередь.',
     AppCapability.signInspection =>
-      'Add commission signatures during inspection completion.',
+      'Добавление подписей комиссии при завершении проверки.',
     AppCapability.viewResults =>
-      'Open completed, queued, synced, or conflict results.',
+      'Просмотр завершенных, ожидающих, синхронизированных и конфликтных результатов.',
   };
 }

@@ -28,7 +28,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final usersAsync = ref.watch(loginUsersProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Local login')),
+      appBar: AppBar(title: const Text('Локальный вход')),
       body: usersAsync.when(
         data: (users) {
           final selectedUserId =
@@ -48,16 +48,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Select a local user',
+                      'Выберите локального пользователя',
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 16),
                     if (users.isEmpty)
-                      const Text('No active users are available.')
+                      const Text('Нет активных пользователей.')
                     else ...[
                       DropdownButtonFormField<String>(
                         initialValue: selectedUserId,
-                        decoration: const InputDecoration(labelText: 'User'),
+                        decoration: const InputDecoration(
+                          labelText: 'Пользователь',
+                        ),
                         items: [
                           for (final user in users)
                             DropdownMenuItem(
@@ -74,7 +76,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         decoration: InputDecoration(
                           labelText: selectedUser?.requiresPin == true
                               ? 'PIN'
-                              : 'PIN (optional)',
+                              : 'PIN (необязательно)',
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -82,7 +84,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onPressed: selectedUserId == null
                             ? null
                             : () => _login(context, selectedUserId),
-                        child: const Text('Login'),
+                        child: const Text('Войти'),
                       ),
                     ],
                   ],
@@ -92,7 +94,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Failed to load users: $error')),
+        error: (error, _) =>
+            Center(child: Text('Не удалось загрузить пользователей: $error')),
       ),
     );
   }

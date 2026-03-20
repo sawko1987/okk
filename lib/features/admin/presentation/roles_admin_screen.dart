@@ -27,7 +27,7 @@ class RolesAdminScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(24),
             children: [
               Text(
-                'Roles',
+                'Роли',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 16),
@@ -38,12 +38,12 @@ class RolesAdminScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Fixed role model',
+                        'Фиксированная ролевая модель',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Version 1 uses a fixed permission matrix in code. Administrators assign roles to users, but capability sets are not edited from the UI.',
+                        'В версии 1 используется фиксированная матрица прав в коде. Администратор назначает роли пользователям, но не редактирует набор возможностей через интерфейс.',
                       ),
                     ],
                   ),
@@ -65,10 +65,11 @@ class RolesAdminScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Failed to load users: $error')),
+        error: (error, _) =>
+            Center(child: Text('Не удалось загрузить пользователей: $error')),
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Failed to load roles: $error')),
+      error: (error, _) => Center(child: Text('Не удалось загрузить роли: $error')),
     );
   }
 }
@@ -105,14 +106,14 @@ class _RoleCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            Chip(label: Text('$userCount users')),
+            Chip(label: Text('Пользователей: $userCount')),
           ],
         ),
         const SizedBox(height: 16),
-        Text('Capabilities', style: Theme.of(context).textTheme.titleMedium),
+        Text('Возможности', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         if (capabilities.isEmpty)
-          const Text('No capabilities are assigned.')
+          const Text('Для этой роли возможности не назначены.')
         else
           Wrap(
             spacing: 8,
@@ -128,10 +129,10 @@ class _RoleCard extends StatelessWidget {
             ],
           ),
         const SizedBox(height: 16),
-        Text('Assigned users', style: Theme.of(context).textTheme.titleMedium),
+        Text('Назначенные пользователи', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         if (assignedUsers.isEmpty)
-          const Text('No users are currently assigned to this role.')
+          const Text('Пользователи для этой роли пока не назначены.')
         else
           Column(
             children: [
@@ -143,8 +144,8 @@ class _RoleCard extends StatelessWidget {
                   title: Text(managedUser.user.fullName),
                   subtitle: Text(
                     managedUser.user.isActive
-                        ? 'Active user'
-                        : 'Inactive user',
+                        ? 'Активный пользователь'
+                        : 'Неактивный пользователь',
                   ),
                 ),
             ],

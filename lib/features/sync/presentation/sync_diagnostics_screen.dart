@@ -25,7 +25,7 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Diagnostics'),
+        title: const Text('Диагностика'),
         actions: isAndroid
             ? buildAndroidAppBarActions(
                 context: context,
@@ -41,154 +41,154 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
             const Card(
               child: ListTile(
                 leading: Icon(Icons.monitor_heart_outlined),
-                title: Text('Android diagnostics'),
+                title: Text('Диагностика Android'),
                 subtitle: Text(
-                  'Use diagnostics to verify local reference data, queued results, and Yandex Disk connectivity before field work.',
+                  'Используйте диагностику, чтобы проверить локальные справочные данные, очередь результатов и подключение к Яндекс.Диску перед работой.',
                 ),
               ),
             ),
             const SizedBox(height: 16),
           ],
-          _DiagnosticTile(title: 'App version', value: AppConstants.appVersion),
+          _DiagnosticTile(title: 'Версия приложения', value: AppConstants.appVersion),
           _DiagnosticTile(
-            title: 'Database schema version',
+            title: 'Версия схемы базы данных',
             value: '${AppConstants.appSchemaVersion}',
           ),
           _DiagnosticTile(
-            title: 'Sync schema version',
+            title: 'Версия схемы синхронизации',
             value: AppConstants.syncSchemaVersion,
           ),
           _DiagnosticTile(
-            title: 'Local database path',
+            title: 'Путь к локальной базе данных',
             value: paths.databaseFile.path,
           ),
-          _DiagnosticTile(title: 'Log file path', value: paths.logFile.path),
+          _DiagnosticTile(title: 'Путь к файлу лога', value: paths.logFile.path),
           _DiagnosticTile(
-            title: 'Logger',
+            title: 'Логгер',
             value: bootstrap.logger.runtimeType.toString(),
           ),
           ...inspectionDiagnostics.when(
             data: (diagnostics) => [
               _DiagnosticTile(
-                title: 'Local draft inspections',
+                title: 'Локальные черновики проверок',
                 value: '${diagnostics.localDraftCount}',
               ),
               _DiagnosticTile(
-                title: 'Queued inspection results',
+                title: 'Результаты проверок в очереди',
                 value: '${diagnostics.queuedResultCount}',
               ),
               _DiagnosticTile(
-                title: 'Failed sync queue entries',
+                title: 'Ошибки в очереди синхронизации',
                 value: '${diagnostics.failedQueueCount}',
               ),
               _DiagnosticTile(
-                title: 'Conflict inspections',
+                title: 'Конфликтные проверки',
                 value: '${diagnostics.conflictCount}',
               ),
               _DiagnosticTile(
-                title: 'Pending sync work',
-                value: diagnostics.hasPendingSyncWork ? 'yes' : 'no',
+                title: 'Есть ожидающая синхронизация',
+                value: diagnostics.hasPendingSyncWork ? 'Да' : 'Нет',
               ),
               _DiagnosticTile(
-                title: 'Last reference package',
-                value: diagnostics.lastReferencePackageId ?? 'not available',
+                title: 'Последний пакет справочников',
+                value: diagnostics.lastReferencePackageId ?? 'Недоступно',
               ),
               _DiagnosticTile(
-                title: 'Last reference sync',
-                value: diagnostics.lastReferenceSyncAt ?? 'not available',
+                title: 'Последняя синхронизация справочников',
+                value: diagnostics.lastReferenceSyncAt ?? 'Недоступно',
               ),
               _DiagnosticTile(
-                title: 'Last sync attempt',
-                value: diagnostics.lastSyncAttemptAt ?? 'not available',
+                title: 'Последняя попытка синхронизации',
+                value: diagnostics.lastSyncAttemptAt ?? 'Недоступно',
               ),
               _DiagnosticTile(
-                title: 'Last completed inspection',
-                value: diagnostics.lastCompletedInspectionAt ?? 'not available',
+                title: 'Последняя завершенная проверка',
+                value: diagnostics.lastCompletedInspectionAt ?? 'Недоступно',
               ),
             ],
             loading: () => const [
               _DiagnosticTile(
-                title: 'Inspection diagnostics',
-                value: 'loading...',
+                title: 'Диагностика проверок',
+                value: 'Загрузка...',
               ),
             ],
             error: (error, _) => [
               _DiagnosticTile(
-                title: 'Inspection diagnostics',
-                value: 'error: $error',
+                title: 'Диагностика проверок',
+                value: 'Ошибка: $error',
               ),
             ],
           ),
           ...syncDiagnostics.when(
             data: (diagnostics) => [
               _DiagnosticTile(
-                title: 'Sync device id',
-                value: diagnostics.deviceId ?? 'not available',
+                title: 'Идентификатор устройства синхронизации',
+                value: diagnostics.deviceId ?? 'Недоступно',
               ),
               _DiagnosticTile(
-                title: 'Last result push',
-                value: diagnostics.lastResultPushAt ?? 'not available',
+                title: 'Последняя отправка результата',
+                value: diagnostics.lastResultPushAt ?? 'Недоступно',
               ),
               _DiagnosticTile(
-                title: 'Last result pull',
-                value: diagnostics.lastResultPullAt ?? 'not available',
+                title: 'Последнее получение результата',
+                value: diagnostics.lastResultPullAt ?? 'Недоступно',
               ),
               _DiagnosticTile(
-                title: 'Last sync success',
-                value: diagnostics.lastSuccessAt ?? 'not available',
+                title: 'Последняя успешная синхронизация',
+                value: diagnostics.lastSuccessAt ?? 'Недоступно',
               ),
               _DiagnosticTile(
-                title: 'Last sync attempt',
-                value: diagnostics.lastSyncAttemptAt ?? 'not available',
+                title: 'Последняя попытка синхронизации',
+                value: diagnostics.lastSyncAttemptAt ?? 'Недоступно',
               ),
               _DiagnosticTile(
-                title: 'Last retry run',
-                value: diagnostics.lastRetryAt ?? 'not available',
+                title: 'Последний повторный запуск',
+                value: diagnostics.lastRetryAt ?? 'Недоступно',
               ),
               _DiagnosticTile(
-                title: 'Last conflict',
-                value: diagnostics.lastConflictAt ?? 'not available',
+                title: 'Последний конфликт',
+                value: diagnostics.lastConflictAt ?? 'Недоступно',
               ),
               _DiagnosticTile(
-                title: 'Last sync error',
-                value: diagnostics.lastError ?? 'not available',
+                title: 'Последняя ошибка синхронизации',
+                value: diagnostics.lastError ?? 'Недоступно',
               ),
               _DiagnosticTile(
-                title: 'Pending outgoing queue',
+                title: 'Ожидает отправки',
                 value: '${diagnostics.pendingOutgoingCount}',
               ),
               _DiagnosticTile(
-                title: 'Pending incoming queue',
+                title: 'Ожидает получения',
                 value: '${diagnostics.pendingIncomingCount}',
               ),
               _DiagnosticTile(
-                title: 'Failed queue entries',
+                title: 'Ошибки очереди',
                 value: '${diagnostics.failedQueueCount}',
               ),
               _DiagnosticTile(
-                title: 'Retry-eligible queue entries',
+                title: 'Элементы очереди, доступные для повтора',
                 value: '${diagnostics.retryEligibleCount}',
               ),
               _DiagnosticTile(
-                title: 'Conflict count',
+                title: 'Количество конфликтов',
                 value: '${diagnostics.conflictCount}',
               ),
               _DiagnosticTile(
-                title: 'Yandex Disk token configured',
-                value: diagnostics.transportConfigured ? 'yes' : 'no',
+                title: 'Токен Яндекс.Диска настроен',
+                value: diagnostics.transportConfigured ? 'Да' : 'Нет',
               ),
               _DiagnosticTile(
-                title: 'Yandex Disk connected',
-                value: diagnostics.yandexDiskConnected ? 'yes' : 'no',
+                title: 'Подключение к Яндекс.Диску',
+                value: diagnostics.yandexDiskConnected ? 'Да' : 'Нет',
               ),
             ],
             loading: () => const [
-              _DiagnosticTile(title: 'Sync diagnostics', value: 'loading...'),
+              _DiagnosticTile(title: 'Диагностика синхронизации', value: 'Загрузка...'),
             ],
             error: (error, _) => [
               _DiagnosticTile(
-                title: 'Sync diagnostics',
-                value: 'error: $error',
+                title: 'Диагностика синхронизации',
+                value: 'Ошибка: $error',
               ),
             ],
           ),

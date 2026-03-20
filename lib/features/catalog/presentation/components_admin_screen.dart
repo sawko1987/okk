@@ -35,7 +35,7 @@ class ComponentsAdminScreen extends ConsumerWidget {
                 const Padding(
                   padding: EdgeInsets.only(bottom: 12),
                   child: Text(
-                    'Editing is available only for the administrator role.',
+                    'Редактирование доступно только администратору.',
                   ),
                 ),
               Row(
@@ -44,7 +44,7 @@ class ComponentsAdminScreen extends ConsumerWidget {
                     child: DropdownButtonFormField<String>(
                       initialValue: selectedObjectId,
                       decoration: const InputDecoration(
-                        labelText: 'Object for components',
+                        labelText: 'Объект для компонентов',
                       ),
                       items: [
                         for (final object in screenData.objects)
@@ -69,13 +69,15 @@ class ComponentsAdminScreen extends ConsumerWidget {
                             )
                         : null,
                     icon: const Icon(Icons.add),
-                    label: const Text('Add component'),
+                    label: const Text('Добавить компонент'),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
               if (selectedObjectId == null)
-                const Expanded(child: Center(child: Text('Create an object first.')))
+                const Expanded(
+                  child: Center(child: Text('Сначала создайте объект.')),
+                )
               else
                 Expanded(
                   child: componentsAsync.when(
@@ -105,14 +107,14 @@ class ComponentsAdminScreen extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Components of "${selectedObject.name}"',
+                                      'Компоненты объекта "${selectedObject.name}"',
                                       style: Theme.of(context).textTheme.titleLarge,
                                     ),
                                     const SizedBox(height: 16),
                                     if (components.isEmpty)
                                       const Expanded(
                                         child: Center(
-                                          child: Text('No components for this object yet.'),
+                                          child: Text('Для этого объекта пока нет компонентов.'),
                                         ),
                                       )
                                     else
@@ -123,7 +125,7 @@ class ComponentsAdminScreen extends ConsumerWidget {
                                               Card(
                                                 child: ListTile(
                                                   title: Text(component.name),
-                                                  subtitle: Text(component.code ?? 'No code'),
+                                                  subtitle: Text(component.code ?? 'Без кода'),
                                                   selected: component.id == selectedComponent.id,
                                                   onTap: () => ref
                                                       .read(_selectedComponentIdProvider.notifier)
@@ -145,7 +147,7 @@ class ComponentsAdminScreen extends ConsumerWidget {
                               child: Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: components.isEmpty
-                                    ? const Text('Select or create a component.')
+                                    ? const Text('Выберите или создайте компонент.')
                                     : Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
@@ -184,16 +186,16 @@ class ComponentsAdminScreen extends ConsumerWidget {
                                           ),
                                           const SizedBox(height: 12),
                                           _ComponentDetailRow(
-                                            'Code',
-                                            selectedComponent.code ?? 'No code',
+                                            'Код',
+                                            selectedComponent.code ?? 'Не указан',
                                           ),
                                           _ComponentDetailRow(
-                                            'Required',
-                                            selectedComponent.isRequired ? 'Yes' : 'No',
+                                            'Обязательный',
+                                            selectedComponent.isRequired ? 'Да' : 'Нет',
                                           ),
                                           if ((selectedComponent.description ?? '').isNotEmpty)
                                             _ComponentDetailRow(
-                                              'Description',
+                                              'Описание',
                                               selectedComponent.description!,
                                             ),
                                           const Divider(height: 32),
@@ -201,7 +203,7 @@ class ComponentsAdminScreen extends ConsumerWidget {
                                             children: [
                                               Expanded(
                                                 child: Text(
-                                                  'Images',
+                                                  'Изображения',
                                                   style: Theme.of(context)
                                                       .textTheme
                                                       .titleMedium,
@@ -216,7 +218,7 @@ class ComponentsAdminScreen extends ConsumerWidget {
                                                         )
                                                     : null,
                                                 icon: const Icon(Icons.upload_file_outlined),
-                                                label: const Text('Import'),
+                                                label: const Text('Импортировать'),
                                               ),
                                             ],
                                           ),
@@ -226,7 +228,7 @@ class ComponentsAdminScreen extends ConsumerWidget {
                                                   data: (images) => images.isEmpty
                                                       ? const Center(
                                                           child: Text(
-                                                            'No images imported yet.',
+                                                            'Изображения пока не импортированы.',
                                                           ),
                                                         )
                                                       : ListView(
@@ -259,7 +261,7 @@ class ComponentsAdminScreen extends ConsumerWidget {
                                                       const Center(child: CircularProgressIndicator()),
                                                   error: (error, _) => Center(
                                                     child: Text(
-                                                      'Failed to load images: $error',
+                                                      'Не удалось загрузить изображения: $error',
                                                     ),
                                                   ),
                                                 ) ??
@@ -275,7 +277,7 @@ class ComponentsAdminScreen extends ConsumerWidget {
                     },
                     loading: () => const Center(child: CircularProgressIndicator()),
                     error: (error, _) =>
-                        Center(child: Text('Failed to load components: $error')),
+                        Center(child: Text('Не удалось загрузить компоненты: $error')),
                   ),
                 ),
             ],
@@ -283,7 +285,7 @@ class ComponentsAdminScreen extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Failed to load objects: $error')),
+      error: (error, _) => Center(child: Text('Не удалось загрузить объекты: $error')),
     );
   }
 
@@ -482,7 +484,9 @@ class _ComponentEditorDialogState extends State<_ComponentEditorDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.component == null ? 'New component' : 'Edit component'),
+      title: Text(
+        widget.component == null ? 'Новый компонент' : 'Редактирование компонента',
+      ),
       content: Form(
         key: _formKey,
         child: SizedBox(
@@ -492,27 +496,27 @@ class _ComponentEditorDialogState extends State<_ComponentEditorDialog> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
+                decoration: const InputDecoration(labelText: 'Название'),
                 validator: (value) =>
-                    value == null || value.trim().isEmpty ? 'Enter a name' : null,
+                    value == null || value.trim().isEmpty ? 'Введите название' : null,
               ),
               TextFormField(
                 controller: _codeController,
-                decoration: const InputDecoration(labelText: 'Code'),
+                decoration: const InputDecoration(labelText: 'Код'),
               ),
               TextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
+                decoration: const InputDecoration(labelText: 'Описание'),
                 maxLines: 3,
               ),
               TextFormField(
                 controller: _sortController,
-                decoration: const InputDecoration(labelText: 'Sort order'),
+                decoration: const InputDecoration(labelText: 'Порядок сортировки'),
                 keyboardType: TextInputType.number,
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Required component'),
+                title: const Text('Обязательный компонент'),
                 value: _isRequired,
                 onChanged: (value) => setState(() => _isRequired = value),
               ),
@@ -523,7 +527,7 @@ class _ComponentEditorDialogState extends State<_ComponentEditorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: const Text('Отмена'),
         ),
         FilledButton(
           onPressed: () {
@@ -540,7 +544,7 @@ class _ComponentEditorDialogState extends State<_ComponentEditorDialog> {
               ),
             );
           },
-          child: const Text('Save'),
+          child: const Text('Сохранить'),
         ),
       ],
     );
@@ -566,14 +570,14 @@ class _ImageImportDialogState extends State<_ImageImportDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Import images'),
+      title: const Text('Импорт изображений'),
       content: SizedBox(
         width: 420,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Enter one source file path per line.'),
+            const Text('Укажите по одному пути к исходному файлу на строку.'),
             const SizedBox(height: 12),
             TextField(
               controller: _controller,
@@ -590,7 +594,7 @@ class _ImageImportDialogState extends State<_ImageImportDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: const Text('Отмена'),
         ),
         FilledButton(
           onPressed: () {
@@ -601,7 +605,7 @@ class _ImageImportDialogState extends State<_ImageImportDialog> {
                 .toList(growable: false);
             Navigator.of(context).pop(_ImageImportResult(paths));
           },
-          child: const Text('Import'),
+          child: const Text('Импортировать'),
         ),
       ],
     );

@@ -287,3 +287,11 @@
 - [x] Assigned users per fixed v1 role are now visible from Windows admin
 - [x] Added repository-level verification that non-admin users cannot manage users
 - [x] Synced checklist markers with the actual implemented sync/audit/security status in code
+
+## 22. Update 2026-03-20: UI Localization Alignment
+- [x] Re-checked the implemented app state against the technical specification, architecture notes, and development checklist
+- [x] Confirmed the project is already beyond foundation and that the practical next stage is offline/sync hardening plus broader verification
+- [x] Translated active Windows admin screens and Android workflow screens toward the Russian-only UI requirement
+- [x] Reduced raw English labels in inspection history, sync, settings, users, roles, objects, structure, and Android route-based workflow screens
+- [ ] Finish the remaining localization sweep in legacy/secondary screens and user-visible status labels that still leak technical codes
+- [ ] Re-run environment-stable verification for analyzer and inspection/sync widget tests after the localization sweep

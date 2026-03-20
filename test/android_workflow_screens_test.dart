@@ -84,13 +84,18 @@ void main() {
         ],
       );
 
-      expect(find.text('This role cannot create or edit inspections.'), findsOneWidget);
       expect(
-        find.text('Open completed, queued, synced, or conflict results.'),
+        find.text('Эта роль не может создавать или редактировать проверки.'),
         findsOneWidget,
       );
-      expect(find.text('Reference data is not ready'), findsOneWidget);
-      expect(find.text('Yandex Disk token is not configured'), findsOneWidget);
+      expect(
+        find.text(
+          'Откройте завершенные, ожидающие, синхронизированные или конфликтные результаты.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Справочные данные не готовы'), findsOneWidget);
+      expect(find.text('Токен Яндекс.Диска не настроен'), findsOneWidget);
     },
   );
 
@@ -149,11 +154,11 @@ void main() {
         ],
       );
 
-      expect(find.text('Sync now'), findsOneWidget);
-      expect(find.text('Settings'), findsOneWidget);
-      expect(find.text('Diagnostics'), findsOneWidget);
-      expect(find.text('Pending local sync work'), findsOneWidget);
-      expect(find.text('Yandex Disk token is missing'), findsOneWidget);
+      expect(find.text('Синхронизировать'), findsOneWidget);
+      expect(find.text('Настройки'), findsOneWidget);
+      expect(find.text('Диагностика'), findsOneWidget);
+      expect(find.text('Есть ожидающая локальная синхронизация'), findsOneWidget);
+      expect(find.text('Токен Яндекс.Диска отсутствует'), findsOneWidget);
     },
   );
 
@@ -178,8 +183,8 @@ void main() {
         ],
       );
 
-      expect(find.text('No draft inspections yet'), findsOneWidget);
-      expect(find.text('Open inspection flow'), findsOneWidget);
+      expect(find.text('Черновиков проверок пока нет'), findsOneWidget);
+      expect(find.text('Открыть сценарий проверки'), findsOneWidget);
     },
   );
 }
