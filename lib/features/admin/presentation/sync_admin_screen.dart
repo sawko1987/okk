@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/app_permissions.dart';
 import '../../../core/platform/app_platform.dart';
+import '../../../core/utils/user_message.dart';
 import '../../../data/sync/sync_service.dart';
 import '../../auth/data/auth_service.dart';
 import '../../../data/storage/secure_settings_provider.dart';
@@ -88,11 +89,11 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                   spacing: 12,
                   runSpacing: 12,
                   children: [
-                  FilledButton(
-                    onPressed: canEdit ? _saveToken : null,
-                    child: const Text('Сохранить токен'),
-                  ),
-                  OutlinedButton(
+                    FilledButton(
+                      onPressed: canEdit ? _saveToken : null,
+                      child: const Text('Сохранить токен'),
+                    ),
+                    OutlinedButton(
                       onPressed: canEdit && !_isPublishing
                           ? () => _publishReferencePackage(actorUserId)
                           : null,
@@ -107,7 +108,9 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                           ? () => _runSync(actorUserId)
                           : null,
                       child: Text(
-                        _isSyncing ? 'Синхронизация...' : 'Запустить синхронизацию',
+                        _isSyncing
+                            ? 'Синхронизация...'
+                            : 'Запустить синхронизацию',
                       ),
                     ),
                   ],
@@ -140,8 +143,9 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
             ),
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) =>
-              Text('Не удалось загрузить диагностику синхронизации: $error'),
+          error: (error, _) => Text(
+            'Не удалось загрузить диагностику синхронизации. ${userMessageFromError(error, fallback: 'Проверьте локальные данные и повторите попытку.')}',
+          ),
         ),
         const SizedBox(height: 16),
         deviceAsync.when(
@@ -156,8 +160,9 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
             ),
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) =>
-              Text('Не удалось загрузить информацию об устройстве: $error'),
+          error: (error, _) => Text(
+            'Не удалось загрузить информацию об устройстве. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+          ),
         ),
         const SizedBox(height: 16),
         Text(
@@ -178,16 +183,19 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                 .take(5)
                 .toList(growable: false);
             if (issueEntries.isEmpty) {
-              return const Text('Недавних конфликтов или ошибок синхронизации нет.');
+              return const Text(
+                'Недавних конфликтов или ошибок синхронизации нет.',
+              );
             }
             return Column(
               children: [
                 for (final entry in issueEntries)
                   Card(
                     child: ListTile(
-                      title: Text(entry.entry.actionType),
+                      title: Text(_syncActionLabel(entry.entry.actionType)),
                       subtitle: Text(
-                        '${entry.entry.happenedAt}\n${entry.entry.message ?? 'Без подробностей'}',
+                        '${_syncResultLabel(entry.entry.resultStatus)} • ${entry.entry.happenedAt}\n'
+                        '${entry.entry.message ?? 'Без подробностей'}',
                       ),
                       isThreeLine: true,
                     ),
@@ -196,8 +204,9 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) =>
-              Text('Не удалось загрузить проблемы синхронизации: $error'),
+          error: (error, _) => Text(
+            'Не удалось загрузить проблемы синхронизации. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+          ),
         ),
         const SizedBox(height: 16),
         Text(
@@ -213,9 +222,11 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                     for (final entry in queue)
                       Card(
                         child: ListTile(
-                          title: Text('${entry.packageType} | ${entry.packageId}'),
+                          title: Text(
+                            '${_queuePackageTypeLabel(entry.packageType)} | ${entry.packageId}',
+                          ),
                           subtitle: Text(
-                            '${entry.status}\n'
+                            '${_queueStatusLabel(entry.status)}\n'
                             'Попыток: ${entry.attemptCount}\n'
                             'Следующий повтор: ${entry.nextAttemptAt ?? 'н/д'}\n'
                             '${entry.localPath}'
@@ -227,7 +238,9 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                   ],
                 ),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Text('Не удалось загрузить очередь: $error'),
+          error: (error, _) => Text(
+            'Не удалось загрузить очередь синхронизации. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+          ),
         ),
       ],
     );
@@ -252,9 +265,9 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
   Future<void> _publishReferencePackage(String? actorUserId) async {
     setState(() => _isPublishing = true);
     try {
-      final result = await ref.read(syncServiceProvider).publishReferencePackage(
-            actorUserId: actorUserId,
-          );
+      final result = await ref
+          .read(syncServiceProvider)
+          .publishReferencePackage(actorUserId: actorUserId);
       ref.invalidate(syncQueueEntriesProvider);
       ref.invalidate(auditEntriesProvider);
       ref.invalidate(syncDiagnosticsProvider);
@@ -274,7 +287,14 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось опубликовать пакет справочников.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -286,7 +306,9 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
   Future<void> _runSync(String? actorUserId) async {
     setState(() => _isSyncing = true);
     try {
-      final report = await ref.read(syncServiceProvider).runManualSync(
+      final report = await ref
+          .read(syncServiceProvider)
+          .runManualSync(
             platform: AppPlatform.windows,
             actorUserId: actorUserId,
           );
@@ -297,15 +319,22 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(report.summaryLabel())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(report.summaryLabel())));
     } catch (error) {
       if (!mounted) {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось выполнить синхронизацию.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -313,4 +342,52 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
       }
     }
   }
+}
+
+String _syncActionLabel(String actionType) {
+  return switch (actionType) {
+    'sync.run.start' => 'Запуск синхронизации',
+    'sync.run.finish' => 'Завершение синхронизации',
+    'sync.retry.run' => 'Автоматический повтор синхронизации',
+    'sync.reference.push' => 'Публикация пакета справочников',
+    'sync.reference.pull' => 'Получение пакета справочников',
+    'sync.result.push' => 'Отправка результатов проверки',
+    'sync.result.pull' => 'Получение результатов проверки',
+    'sync.result.import' => 'Импорт результатов проверки',
+    'sync.result.conflict' => 'Конфликт результатов проверки',
+    'sync.lock.acquire' => 'Установка блокировки изделия',
+    'sync.lock.release' => 'Снятие блокировки изделия',
+    _ => actionType,
+  };
+}
+
+String _syncResultLabel(String status) {
+  return switch (status) {
+    'pending' => 'Ожидает выполнения',
+    'success' => 'Успешно',
+    'partial' => 'Завершено с проблемами',
+    'conflict' => 'Конфликт',
+    'error' => 'Ошибка',
+    'noop' => 'Без изменений',
+    _ => status,
+  };
+}
+
+String _queuePackageTypeLabel(String packageType) {
+  return switch (packageType) {
+    'reference' => 'Пакет справочников',
+    'inspection_result' => 'Результат проверки',
+    _ => packageType,
+  };
+}
+
+String _queueStatusLabel(String status) {
+  return switch (status) {
+    'pending' => 'Ожидает обработки',
+    'processing' => 'Обрабатывается',
+    'done' => 'Обработано',
+    'failed' => 'Ошибка',
+    'conflict' => 'Конфликт',
+    _ => status,
+  };
 }

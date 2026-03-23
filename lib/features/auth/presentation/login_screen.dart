@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/platform/app_platform.dart';
+import '../../../core/utils/user_message.dart';
 import '../../inspections/presentation/android_routes.dart';
 import '../data/auth_service.dart';
 
@@ -64,7 +65,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           for (final user in users)
                             DropdownMenuItem(
                               value: user.userId,
-                              child: Text('${user.fullName} (${user.roleCode})'),
+                              child: Text('${user.fullName} (${user.roleName})'),
                             ),
                         ],
                         onChanged: (value) => setState(() => _selectedUserId = value),
@@ -94,8 +95,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text('Не удалось загрузить пользователей: $error')),
+        error: (error, _) => Center(
+          child: Text(
+            'Не удалось загрузить пользователей. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+          ),
+        ),
       ),
     );
   }
@@ -118,7 +122,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromText(
+              error.message.toString(),
+              fallback: 'Не удалось выполнить вход.',
+            ),
+          ),
+        ),
       );
     }
   }

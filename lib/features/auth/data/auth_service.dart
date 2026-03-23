@@ -27,6 +27,7 @@ class LoginUserOption {
     required this.fullName,
     required this.shortName,
     required this.roleCode,
+    required this.roleName,
     required this.requiresPin,
   });
 
@@ -34,6 +35,7 @@ class LoginUserOption {
   final String fullName;
   final String? shortName;
   final String roleCode;
+  final String roleName;
   final bool requiresPin;
 }
 
@@ -82,6 +84,7 @@ class AuthService {
             fullName: user.fullName,
             shortName: user.shortName,
             roleCode: rolesById[user.roleId]?.code ?? 'viewer',
+            roleName: rolesById[user.roleId]?.name ?? 'Наблюдатель',
             requiresPin: (user.pinHash ?? '').isNotEmpty,
           ),
         )
@@ -106,7 +109,7 @@ class AuthService {
   }) async {
     final session = await _loadSession(userId);
     if (session == null) {
-      throw StateError('Selected user is unavailable.');
+      throw StateError('Выбранный пользователь недоступен.');
     }
 
     final user = await (_db.select(_db.users)..where((tbl) => tbl.id.equals(userId)))
@@ -120,9 +123,9 @@ class AuthService {
         userId: userId,
         entityType: 'user',
         entityId: userId,
-        message: 'Invalid PIN',
+        message: 'Введён неверный PIN-код',
       );
-      throw StateError('Invalid PIN.');
+      throw StateError('Неверный PIN-код.');
     }
 
     final now = nowIso();
@@ -147,7 +150,7 @@ class AuthService {
       userId: userId,
       entityType: 'user',
       entityId: userId,
-      message: 'Local login completed',
+      message: 'Локальный вход выполнен',
     );
   }
 
@@ -164,7 +167,7 @@ class AuthService {
       userId: session?.userId,
       entityType: 'user',
       entityId: session?.userId,
-      message: 'Local session cleared',
+      message: 'Локальная сессия завершена',
     );
   }
 

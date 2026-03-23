@@ -886,10 +886,10 @@ class InspectionsRepository {
     final product = objectsById[request.productObjectId];
     final target = objectsById[request.targetObjectId];
     if (product == null || product.type != 'product') {
-      throw StateError('Selected product is unavailable.');
+      throw StateError('Выбранное изделие недоступно.');
     }
     if (target == null) {
-      throw StateError('Selected inspection target is unavailable.');
+      throw StateError('Выбранный объект проверки недоступен.');
     }
     if (!_belongsToProduct(
       targetId: target.id,
@@ -897,7 +897,7 @@ class InspectionsRepository {
       objectsById: objectsById,
     )) {
       throw StateError(
-        'Selected target does not belong to the selected product.',
+        'Выбранный объект проверки не относится к выбранному изделию.',
       );
     }
 
@@ -925,7 +925,7 @@ class InspectionsRepository {
       targetObjectId: target.id,
     );
     if (resolvedItems.isEmpty) {
-      throw StateError('No checklist is assigned to the selected target.');
+      throw StateError('Для выбранного объекта проверки не назначен чек-лист.');
     }
 
     final now = nowIso();
@@ -983,7 +983,7 @@ class InspectionsRepository {
       userId: request.userId,
       entityType: 'inspection',
       entityId: inspectionId,
-      message: 'Local inspection draft created',
+      message: 'Создан локальный черновик проверки',
       payload: {
         'product_object_id': product.id,
         'target_object_id': target.id,
@@ -1005,7 +1005,7 @@ class InspectionsRepository {
       _db.inspections,
     )..where((tbl) => tbl.id.equals(inspectionId))).getSingleOrNull();
     if (inspection == null) {
-      throw StateError('Inspection draft not found.');
+      throw StateError('Черновик проверки не найден.');
     }
     _ensureEditableInspection(inspection);
 
@@ -1013,7 +1013,7 @@ class InspectionsRepository {
       _db.inspectionItems,
     )..where((tbl) => tbl.id.equals(answerId))).getSingleOrNull();
     if (answer == null || answer.inspectionId != inspectionId) {
-      throw StateError('Inspection answer not found.');
+      throw StateError('Ответ по пункту проверки не найден.');
     }
 
     final now = nowIso();
@@ -1053,17 +1053,17 @@ class InspectionsRepository {
       _db.inspections,
     )..where((tbl) => tbl.id.equals(inspectionId))).getSingleOrNull();
     if (inspection == null) {
-      throw StateError('Inspection draft not found.');
+      throw StateError('Черновик проверки не найден.');
     }
     _ensureEditableInspection(inspection);
 
     final signerName = nullableField(input.signerName);
     final signerRole = nullableField(input.signerRole);
     if (signerName == null || signerRole == null) {
-      throw StateError('Signer name and role are required.');
+      throw StateError('Укажите ФИО и роль подписанта.');
     }
     if (input.imageBytes.isEmpty) {
-      throw StateError('Signature image is empty.');
+      throw StateError('Подпись не сохранена. Повторите ввод подписи.');
     }
 
     final targetDir = Directory(
@@ -1110,7 +1110,7 @@ class InspectionsRepository {
       userId: input.signerUserId ?? inspection.userId,
       entityType: 'inspection',
       entityId: inspectionId,
-      message: 'Inspection signature saved locally',
+      message: 'Подпись сохранена локально',
       payload: {'signer_name': signerName, 'signer_role': signerRole},
     );
 
@@ -1134,7 +1134,7 @@ class InspectionsRepository {
       _db.inspections,
     )..where((tbl) => tbl.id.equals(inspectionId))).getSingleOrNull();
     if (inspection == null) {
-      throw StateError('Inspection draft not found.');
+      throw StateError('Черновик проверки не найден.');
     }
     _ensureEditableInspection(inspection);
 
@@ -1142,7 +1142,7 @@ class InspectionsRepository {
       _db.inspectionSignatures,
     )..where((tbl) => tbl.id.equals(signatureId))).getSingleOrNull();
     if (signature == null || signature.inspectionId != inspectionId) {
-      throw StateError('Signature not found.');
+      throw StateError('Подпись не найдена.');
     }
 
     final absolutePath = _paths.resolveRelativePath(signature.imageLocalPath);
@@ -1165,7 +1165,7 @@ class InspectionsRepository {
       userId: inspection.userId,
       entityType: 'inspection',
       entityId: inspectionId,
-      message: 'Inspection signature deleted',
+      message: 'Подпись удалена',
       payload: {'signature_id': signatureId},
     );
   }
@@ -1173,7 +1173,7 @@ class InspectionsRepository {
   Future<InspectionPdfInfo> generatePdf(String inspectionId) async {
     final detail = await loadInspection(inspectionId);
     if (detail == null) {
-      throw StateError('Inspection not found.');
+      throw StateError('Проверка не найдена.');
     }
 
     final input = _buildReportDocumentInput(detail);
@@ -1212,7 +1212,7 @@ class InspectionsRepository {
       userId: detail.inspection.userId,
       entityType: 'inspection',
       entityId: inspectionId,
-      message: 'Inspection PDF generated locally',
+      message: 'PDF-отчёт сформирован локально',
     );
 
     return InspectionPdfInfo(
@@ -1228,7 +1228,7 @@ class InspectionsRepository {
   }) async {
     final detail = await loadInspection(inspectionId);
     if (detail == null) {
-      throw StateError('Inspection not found.');
+      throw StateError('Проверка не найдена.');
     }
     _ensureEditableInspection(detail.inspection);
     _validateCompletion(detail);
@@ -1260,7 +1260,7 @@ class InspectionsRepository {
       userId: actorUserId,
       entityType: 'inspection',
       entityId: inspectionId,
-      message: 'Inspection completed and queued for sync',
+      message: 'Проверка завершена и поставлена в очередь синхронизации',
       payload: {
         'queue_record_id': queueRecordId,
         'package_path': _paths.relativeToRoot(packageDir.path),
@@ -1652,11 +1652,11 @@ class InspectionsRepository {
     );
     if (missingRequired.isNotEmpty) {
       throw StateError(
-        'Complete all required checklist items before finishing the inspection.',
+        'Перед завершением проверки заполните все обязательные пункты.',
       );
     }
     if (detail.signatures.isEmpty) {
-      throw StateError('At least one signature is required before completion.');
+      throw StateError('Перед завершением проверки нужна хотя бы одна подпись.');
     }
   }
 
@@ -1839,7 +1839,7 @@ class InspectionsRepository {
 
   void _ensureEditableInspection(Inspection inspection) {
     if (!_isEditableStatus(inspection.status)) {
-      throw StateError('Completed inspections are read-only.');
+      throw StateError('Завершённые проверки доступны только для просмотра.');
     }
   }
 

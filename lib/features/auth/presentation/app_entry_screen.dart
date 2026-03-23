@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/platform/app_platform.dart';
+import '../../../core/utils/user_message.dart';
 import '../../catalog/presentation/windows_admin_sections.dart';
 import '../../catalog/presentation/windows_admin_shell.dart';
 import '../../inspections/presentation/android_workflow_screens.dart';
@@ -35,7 +36,11 @@ class AppEntryScreen extends ConsumerWidget {
         body: Center(child: CircularProgressIndicator()),
       ),
       error: (error, _) => Scaffold(
-        body: Center(child: Text('Не удалось инициализировать сессию: $error')),
+        body: Center(
+          child: Text(
+            'Не удалось инициализировать сессию. ${userMessageFromError(error, fallback: 'Повторите запуск приложения.')}',
+          ),
+        ),
       ),
     );
   }

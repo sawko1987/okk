@@ -84,9 +84,25 @@ void main() {
         ],
       );
 
+      expect(find.text('Справочные данные не готовы'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Токен Яндекс.Диска не настроен'),
+        250,
+      );
+      expect(find.text('Токен Яндекс.Диска не настроен'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Эта роль не может создавать или редактировать проверки.'),
+        300,
+      );
       expect(
         find.text('Эта роль не может создавать или редактировать проверки.'),
         findsOneWidget,
+      );
+      await tester.scrollUntilVisible(
+        find.text(
+          'Откройте завершенные, ожидающие, синхронизированные или конфликтные результаты.',
+        ),
+        300,
       );
       expect(
         find.text(
@@ -94,8 +110,6 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.text('Справочные данные не готовы'), findsOneWidget);
-      expect(find.text('Токен Яндекс.Диска не настроен'), findsOneWidget);
     },
   );
 
@@ -157,7 +171,18 @@ void main() {
       expect(find.text('Синхронизировать'), findsOneWidget);
       expect(find.text('Настройки'), findsOneWidget);
       expect(find.text('Диагностика'), findsOneWidget);
-      expect(find.text('Есть ожидающая локальная синхронизация'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Есть ожидающая локальная синхронизация'),
+        300,
+      );
+      expect(
+        find.text('Есть ожидающая локальная синхронизация'),
+        findsOneWidget,
+      );
+      await tester.scrollUntilVisible(
+        find.text('Токен Яндекс.Диска отсутствует'),
+        300,
+      );
       expect(find.text('Токен Яндекс.Диска отсутствует'), findsOneWidget);
     },
   );
@@ -179,7 +204,9 @@ void main() {
               roleName: 'Worker',
             ),
           ),
-          inspectionDraftsProvider.overrideWith((ref, userId) async => const []),
+          inspectionDraftsProvider.overrideWith(
+            (ref, userId) async => const [],
+          ),
         ],
       );
 
@@ -195,12 +222,7 @@ Future<void> _pumpAndroidScreen(
   required List<Override> overrides,
 }) async {
   final router = GoRouter(
-    routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => child,
-      ),
-    ],
+    routes: [GoRoute(path: '/', builder: (context, state) => child)],
   );
 
   await tester.pumpWidget(
@@ -210,7 +232,9 @@ Future<void> _pumpAndroidScreen(
     ),
   );
   await tester.pump();
-  await tester.pump(const Duration(milliseconds: 50));
+  for (var i = 0; i < 6; i++) {
+    await tester.pump(const Duration(milliseconds: 50));
+  }
 }
 
 class _TestHarness {

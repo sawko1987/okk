@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/platform/app_platform.dart';
+import '../../../core/utils/user_message.dart';
 import '../../../data/sync/sync_service.dart';
 import '../../auth/data/auth_service.dart';
 import '../data/inspection_repositories.dart';
@@ -478,7 +479,14 @@ class _AndroidInspectionHomeTabState
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось выполнить синхронизацию.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {

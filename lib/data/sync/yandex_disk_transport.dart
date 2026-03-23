@@ -71,8 +71,8 @@ class YandexDiskTransport implements SyncTransport {
   YandexDiskTransport({
     required SecureSettingsStore secureSettingsStore,
     required http.Client client,
-  })  : _secureSettingsStore = secureSettingsStore,
-        _client = client;
+  }) : _secureSettingsStore = secureSettingsStore,
+       _client = client;
 
   final SecureSettingsStore _secureSettingsStore;
   final http.Client _client;
@@ -130,7 +130,9 @@ class YandexDiskTransport implements SyncTransport {
     );
     final href = uploadMeta['href'] as String?;
     if (href == null || href.isEmpty) {
-      throw const SyncTransportException('Upload URL was not returned by Yandex Disk.');
+      throw const SyncTransportException(
+        'Яндекс.Диск не вернул ссылку для загрузки файла.',
+      );
     }
 
     final request = http.Request(
@@ -146,7 +148,8 @@ class YandexDiskTransport implements SyncTransport {
     final response = await http.Response.fromStream(streamed);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw SyncTransportException(
-        'Upload failed for $remotePath: ${response.statusCode} ${response.body}',
+        'Не удалось загрузить файл в Яндекс.Диск: '
+        '$remotePath (${response.statusCode}).',
         statusCode: response.statusCode,
       );
     }
@@ -181,9 +184,11 @@ class YandexDiskTransport implements SyncTransport {
     required File destinationFile,
   }) async {
     final token = await _requireToken();
-    final downloadUri = Uri.https(_apiHost, '$_apiBasePath/resources/download', {
-      'path': _diskPath(remotePath),
-    });
+    final downloadUri = Uri.https(
+      _apiHost,
+      '$_apiBasePath/resources/download',
+      {'path': _diskPath(remotePath)},
+    );
     final downloadMeta = await _sendJsonRequest(
       token: token,
       request: http.Request('GET', downloadUri),
@@ -191,13 +196,16 @@ class YandexDiskTransport implements SyncTransport {
     );
     final href = downloadMeta['href'] as String?;
     if (href == null || href.isEmpty) {
-      throw const SyncTransportException('Download URL was not returned by Yandex Disk.');
+      throw const SyncTransportException(
+        'Яндекс.Диск не вернул ссылку для скачивания файла.',
+      );
     }
 
     final response = await _client.get(Uri.parse(href));
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw SyncTransportException(
-        'Download failed for $remotePath: ${response.statusCode} ${response.body}',
+        'Не удалось скачать файл из Яндекс.Диска: '
+        '$remotePath (${response.statusCode}).',
         statusCode: response.statusCode,
       );
     }
@@ -214,9 +222,11 @@ class YandexDiskTransport implements SyncTransport {
       return null;
     }
 
-    final downloadUri = Uri.https(_apiHost, '$_apiBasePath/resources/download', {
-      'path': _diskPath(remotePath),
-    });
+    final downloadUri = Uri.https(
+      _apiHost,
+      '$_apiBasePath/resources/download',
+      {'path': _diskPath(remotePath)},
+    );
     final request = http.Request('GET', downloadUri);
     final response = await _sendRequest(
       token: token,
@@ -227,7 +237,8 @@ class YandexDiskTransport implements SyncTransport {
       return null;
     }
 
-    final href = (jsonDecode(response.body) as Map<String, dynamic>)['href'] as String?;
+    final href =
+        (jsonDecode(response.body) as Map<String, dynamic>)['href'] as String?;
     if (href == null || href.isEmpty) {
       return null;
     }
@@ -238,7 +249,8 @@ class YandexDiskTransport implements SyncTransport {
     }
     if (fileResponse.statusCode < 200 || fileResponse.statusCode >= 300) {
       throw SyncTransportException(
-        'Download failed for $remotePath: ${fileResponse.statusCode} ${fileResponse.body}',
+        'Не удалось скачать файл из Яндекс.Диска: '
+        '$remotePath (${fileResponse.statusCode}).',
         statusCode: fileResponse.statusCode,
       );
     }
@@ -298,7 +310,9 @@ class YandexDiskTransport implements SyncTransport {
 
   Future<void> _createDirectory(String diskPath) async {
     final token = await _requireToken();
-    final uri = Uri.https(_apiHost, '$_apiBasePath/resources', {'path': diskPath});
+    final uri = Uri.https(_apiHost, '$_apiBasePath/resources', {
+      'path': diskPath,
+    });
     await _sendRequest(
       token: token,
       request: http.Request('PUT', uri),
@@ -337,7 +351,8 @@ class YandexDiskTransport implements SyncTransport {
     final response = await http.Response.fromStream(streamed);
     if (!expectedStatusCodes.contains(response.statusCode)) {
       throw SyncTransportException(
-        'Yandex Disk request failed: ${response.statusCode} ${response.body}',
+        'Запрос к Яндекс.Диску завершился ошибкой: '
+        '${response.statusCode}.',
         statusCode: response.statusCode,
       );
     }
@@ -362,7 +377,7 @@ class YandexDiskTransport implements SyncTransport {
   Future<String> _requireToken() async {
     final token = await _loadToken();
     if (token == null) {
-      throw const SyncTransportException('Yandex Disk token is not configured.');
+      throw const SyncTransportException('Токен Яндекс.Диска не настроен.');
     }
     return token;
   }

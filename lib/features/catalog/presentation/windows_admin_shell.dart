@@ -62,7 +62,7 @@ class _WindowsAdminShellState extends ConsumerState<WindowsAdminShell> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Администрирование Windows: ${effectiveSection.label}'),
+        title: Text('Рабочее место администратора: ${effectiveSection.label}'),
         actions: [
           if (session != null)
             Center(

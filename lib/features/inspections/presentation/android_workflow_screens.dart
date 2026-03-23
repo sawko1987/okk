@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/auth/app_permissions.dart';
 import '../../../core/platform/app_platform.dart';
+import '../../../core/utils/user_message.dart';
 import '../../../data/sync/sync_service.dart';
 import '../../../ui/android_app_bar_actions.dart';
 import '../../auth/data/auth_service.dart';
@@ -157,7 +158,8 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
               _CalloutCard(
                 icon: Icons.error_outline,
                 title: 'Состояние рабочего места недоступно',
-                message: 'Не удалось загрузить состояние рабочего места Android: $error',
+                message:
+                    'Не удалось загрузить состояние рабочего места. ${userMessageFromError(error, fallback: 'Проверьте локальные данные и повторите попытку.')}',
               ),
               const SizedBox(height: 12),
             ],
@@ -198,7 +200,8 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
               _CalloutCard(
                 icon: Icons.error_outline,
                 title: 'Состояние синхронизации недоступно',
-                message: 'Не удалось загрузить диагностику синхронизации: $error',
+                message:
+                    'Не удалось загрузить диагностику синхронизации. ${userMessageFromError(error, fallback: 'Проверьте настройки и повторите попытку.')}',
               ),
               const SizedBox(height: 12),
             ],
@@ -300,8 +303,11 @@ class AndroidWorkshopSelectionScreen extends ConsumerWidget {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) =>
-                  Center(child: Text('Не удалось загрузить цеха: $error')),
+              error: (error, _) => Center(
+                child: Text(
+                  'Не удалось загрузить цеха. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+                ),
+              ),
             )
           : const Center(
               child: Text('Эта роль не может создавать проверки.'),
@@ -375,8 +381,11 @@ class AndroidProductSelectionScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text('Не удалось загрузить изделия: $error')),
+        error: (error, _) => Center(
+          child: Text(
+            'Не удалось загрузить изделия. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+          ),
+        ),
       ),
     );
   }
@@ -451,8 +460,11 @@ class AndroidTargetSelectionScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text('Не удалось загрузить объекты проверки: $error')),
+        error: (error, _) => Center(
+          child: Text(
+            'Не удалось загрузить объекты проверки. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+          ),
+        ),
       ),
     );
   }
@@ -610,13 +622,19 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
               ],
             ),
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) =>
-                Center(child: Text('Не удалось загрузить компоненты: $error')),
+            error: (error, _) => Center(
+              child: Text(
+                'Не удалось загрузить компоненты. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+              ),
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text('Не удалось загрузить объект проверки: $error')),
+        error: (error, _) => Center(
+          child: Text(
+            'Не удалось загрузить объект проверки. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+          ),
+        ),
       ),
     );
   }
@@ -647,7 +665,14 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromText(
+              error.message.toString(),
+              fallback: 'Не удалось открыть черновик проверки.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -764,8 +789,11 @@ class AndroidComponentDetailsScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text('Не удалось загрузить компонент: $error')),
+        error: (error, _) => Center(
+          child: Text(
+            'Не удалось загрузить компонент. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+          ),
+        ),
       ),
     );
   }
@@ -835,8 +863,11 @@ class AndroidDraftsScreen extends ConsumerWidget {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) =>
-                  Center(child: Text('Не удалось загрузить черновики: $error')),
+              error: (error, _) => Center(
+                child: Text(
+                  'Не удалось загрузить черновики. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+                ),
+              ),
             )
           : const Center(
               child: Text('Эта роль не может создавать или редактировать черновики проверок.'),
@@ -909,8 +940,11 @@ class AndroidResultsScreen extends ConsumerWidget {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) =>
-                  Center(child: Text('Не удалось загрузить результаты: $error')),
+              error: (error, _) => Center(
+                child: Text(
+                  'Не удалось загрузить результаты. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+                ),
+              ),
             )
           : const Center(
               child: Text('Эта роль не может просматривать результаты проверок.'),
@@ -1036,7 +1070,12 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
             error: (error, _) => [
               _InfoCard(
                 title: 'Рабочее место проверки',
-                lines: ['Ошибка: $error'],
+                lines: [
+                  userMessageFromError(
+                    error,
+                    fallback: 'Не удалось загрузить данные рабочего места.',
+                  ),
+                ],
               ),
             ],
           ),
@@ -1063,7 +1102,12 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
             error: (error, _) => [
               _InfoCard(
                 title: 'Диагностика транспорта',
-                lines: ['Ошибка: $error'],
+                lines: [
+                  userMessageFromError(
+                    error,
+                    fallback: 'Не удалось загрузить диагностику транспорта.',
+                  ),
+                ],
               ),
             ],
           ),
@@ -1095,7 +1139,14 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось выполнить синхронизацию.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {

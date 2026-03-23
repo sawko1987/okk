@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/bootstrap/bootstrap_data.dart';
 import '../../../core/config/app_constants.dart';
 import '../../../core/platform/app_platform.dart';
+import '../../../core/utils/user_message.dart';
 import '../../../data/storage/app_paths_provider.dart';
 import '../../../data/sync/sync_service.dart';
 import '../../../ui/android_app_bar_actions.dart';
@@ -115,7 +116,10 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
             error: (error, _) => [
               _DiagnosticTile(
                 title: 'Диагностика проверок',
-                value: 'Ошибка: $error',
+                value: userMessageFromError(
+                  error,
+                  fallback: 'Не удалось загрузить диагностику проверок.',
+                ),
               ),
             ],
           ),
@@ -188,7 +192,10 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
             error: (error, _) => [
               _DiagnosticTile(
                 title: 'Диагностика синхронизации',
-                value: 'Ошибка: $error',
+                value: userMessageFromError(
+                  error,
+                  fallback: 'Не удалось загрузить диагностику синхронизации.',
+                ),
               ),
             ],
           ),

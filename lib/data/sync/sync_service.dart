@@ -76,13 +76,13 @@ class SyncRunReport {
   });
 
   const SyncRunReport.empty()
-      : status = SyncRunStatus.success,
-        referencePublishedCount = 0,
-        referencePulledCount = 0,
-        resultPushedCount = 0,
-        resultImportedCount = 0,
-        conflictCount = 0,
-        failureCount = 0;
+    : status = SyncRunStatus.success,
+      referencePublishedCount = 0,
+      referencePulledCount = 0,
+      resultPushedCount = 0,
+      resultImportedCount = 0,
+      conflictCount = 0,
+      failureCount = 0;
 
   final SyncRunStatus status;
   final int referencePublishedCount;
@@ -179,13 +179,13 @@ class SyncService {
     required PackageArchive packageArchive,
     required ReferencePackageRepository referencePackageRepository,
     required InspectionsRepository inspectionsRepository,
-  })  : _db = db,
-        _paths = paths,
-        _logger = logger,
-        _transport = transport,
-        _packageArchive = packageArchive,
-        _referencePackageRepository = referencePackageRepository,
-        _inspectionsRepository = inspectionsRepository;
+  }) : _db = db,
+       _paths = paths,
+       _logger = logger,
+       _transport = transport,
+       _packageArchive = packageArchive,
+       _referencePackageRepository = referencePackageRepository,
+       _inspectionsRepository = inspectionsRepository;
 
   final AppDatabase _db;
   final AppPaths _paths;
@@ -248,8 +248,8 @@ class SyncService {
         resultStatus: report.hasIssues
             ? 'partial'
             : report.hasActivity || retryEligibleCount > 0
-                ? 'success'
-                : 'noop',
+            ? 'success'
+            : 'noop',
         userId: actorUserId,
         entityType: 'device',
         entityId: (await _db.select(_db.deviceInfo).getSingleOrNull())?.id,
@@ -292,7 +292,7 @@ class SyncService {
       userId: actorUserId,
       entityType: 'device',
       entityId: (await _db.select(_db.deviceInfo).getSingleOrNull())?.id,
-      message: 'Sync run started',
+      message: 'Запуск синхронизации',
       payload: {'platform': platform.name},
     );
 
@@ -393,7 +393,8 @@ class SyncService {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageSync,
-      deniedMessage: 'Только администратор может публиковать пакеты справочников.',
+      deniedMessage:
+          'Только администратор может публиковать пакеты справочников.',
     );
     await _ensureConfiguredTransport();
     final result = await _referencePackageRepository.exportPackage(
@@ -449,9 +450,9 @@ class SyncService {
       inspectionId: inspectionId,
       actorUserId: actorUserId,
     );
-    final inspection = await (_db.select(_db.inspections)
-          ..where((tbl) => tbl.id.equals(inspectionId)))
-        .getSingle();
+    final inspection = await (_db.select(
+      _db.inspections,
+    )..where((tbl) => tbl.id.equals(inspectionId))).getSingle();
     await _releaseRemoteLockBestEffort(
       productObjectId: inspection.productObjectId,
       actorUserId: actorUserId,
@@ -465,51 +466,58 @@ class SyncService {
     final syncState = await _loadSyncState();
     final transportConfigured = await _transport.isConfigured();
     final pendingOutgoingExpression = _db.syncQueue.id.count();
-    final pendingOutgoing = await (_db.selectOnly(_db.syncQueue)
-          ..addColumns([pendingOutgoingExpression])
-          ..where(
-            _db.syncQueue.direction.equals('outgoing') &
-                (_db.syncQueue.status.equals('pending') |
-                    _db.syncQueue.status.equals('processing')),
-          ))
-        .getSingle();
+    final pendingOutgoing =
+        await (_db.selectOnly(_db.syncQueue)
+              ..addColumns([pendingOutgoingExpression])
+              ..where(
+                _db.syncQueue.direction.equals('outgoing') &
+                    (_db.syncQueue.status.equals('pending') |
+                        _db.syncQueue.status.equals('processing')),
+              ))
+            .getSingle();
     final pendingIncomingExpression = _db.syncQueue.id.count();
-    final pendingIncoming = await (_db.selectOnly(_db.syncQueue)
-          ..addColumns([pendingIncomingExpression])
-          ..where(
-            _db.syncQueue.direction.equals('incoming') &
-                (_db.syncQueue.status.equals('pending') |
-                    _db.syncQueue.status.equals('processing')),
-          ))
-        .getSingle();
+    final pendingIncoming =
+        await (_db.selectOnly(_db.syncQueue)
+              ..addColumns([pendingIncomingExpression])
+              ..where(
+                _db.syncQueue.direction.equals('incoming') &
+                    (_db.syncQueue.status.equals('pending') |
+                        _db.syncQueue.status.equals('processing')),
+              ))
+            .getSingle();
     final failedExpression = _db.syncQueue.id.count();
-    final failed = await (_db.selectOnly(_db.syncQueue)
-          ..addColumns([failedExpression])
-          ..where(_db.syncQueue.status.equals('failed')))
-        .getSingle();
+    final failed =
+        await (_db.selectOnly(_db.syncQueue)
+              ..addColumns([failedExpression])
+              ..where(_db.syncQueue.status.equals('failed')))
+            .getSingle();
     final retryEligibleExpression = _db.syncQueue.id.count();
-    final retryEligible = await (_db.selectOnly(_db.syncQueue)
-          ..addColumns([retryEligibleExpression])
-          ..where(_retryEligibleQueueExpression(_db.syncQueue, nowIso())))
-        .getSingle();
+    final retryEligible =
+        await (_db.selectOnly(_db.syncQueue)
+              ..addColumns([retryEligibleExpression])
+              ..where(_retryEligibleQueueExpression(_db.syncQueue, nowIso())))
+            .getSingle();
     final conflictExpression = _db.inspections.id.count();
-    final conflicts = await (_db.selectOnly(_db.inspections)
-          ..addColumns([conflictExpression])
-          ..where(
-            _db.inspections.status.equals('conflict') |
-                _db.inspections.syncStatus.equals('conflict'),
-          ))
-        .getSingle();
-    final lastConflict = await (_db.select(_db.auditLog)
-          ..where((tbl) => tbl.actionType.equals('sync.result.conflict'))
-          ..orderBy([(tbl) => OrderingTerm.desc(tbl.happenedAt)])
-          ..limit(1))
-        .getSingleOrNull();
-    final lastRetry = await (_db.select(_db.auditLog)
-          ..where((tbl) => tbl.actionType.equals(_retryActionType))
-          ..orderBy([(tbl) => OrderingTerm.desc(tbl.happenedAt)])
-          ..limit(1))
-        .getSingleOrNull();
+    final conflicts =
+        await (_db.selectOnly(_db.inspections)
+              ..addColumns([conflictExpression])
+              ..where(
+                _db.inspections.status.equals('conflict') |
+                    _db.inspections.syncStatus.equals('conflict'),
+              ))
+            .getSingle();
+    final lastConflict =
+        await (_db.select(_db.auditLog)
+              ..where((tbl) => tbl.actionType.equals('sync.result.conflict'))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.happenedAt)])
+              ..limit(1))
+            .getSingleOrNull();
+    final lastRetry =
+        await (_db.select(_db.auditLog)
+              ..where((tbl) => tbl.actionType.equals(_retryActionType))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.happenedAt)])
+              ..limit(1))
+            .getSingleOrNull();
 
     return SyncDiagnosticsSnapshot(
       deviceId: device?.id,
@@ -554,9 +562,12 @@ class SyncService {
         final packageDirectory = Directory(
           _paths.resolveRelativePath(queueEntry.localPath),
         );
-        final manifestFile = File(p.join(packageDirectory.path, 'manifest.json'));
+        final manifestFile = File(
+          p.join(packageDirectory.path, 'manifest.json'),
+        );
         final manifest = await _readJsonFile(manifestFile);
-        final packageId = manifest['package_id']?.toString() ?? queueEntry.packageId;
+        final packageId =
+            manifest['package_id']?.toString() ?? queueEntry.packageId;
         final zipFile = await _packageArchive.zipDirectory(
           sourceDirectory: packageDirectory,
           destinationFile: File(
@@ -590,7 +601,7 @@ class SyncService {
           userId: actorUserId,
           entityType: 'reference_package',
           entityId: packageId,
-          message: 'Reference package uploaded to Yandex Disk',
+          message: 'Пакет справочников опубликован в Яндекс.Диске',
         );
         successCount += 1;
       } catch (error, stackTrace) {
@@ -645,9 +656,9 @@ class SyncService {
         );
         final pushedAt = nowIso();
         await _markQueueDone(queueEntry.id);
-        await (_db.update(_db.inspections)
-              ..where((tbl) => tbl.id.equals(packageId)))
-            .write(
+        await (_db.update(
+          _db.inspections,
+        )..where((tbl) => tbl.id.equals(packageId))).write(
           InspectionsCompanion(
             syncStatus: const Value('uploaded'),
             updatedAt: Value(pushedAt),
@@ -665,7 +676,7 @@ class SyncService {
           userId: actorUserId,
           entityType: 'inspection',
           entityId: packageId,
-          message: 'Inspection result uploaded to Yandex Disk',
+          message: 'Результат проверки отправлен в Яндекс.Диск',
         );
         successCount += 1;
       } catch (error, stackTrace) {
@@ -689,15 +700,18 @@ class SyncService {
   Future<_SyncBatchResult> _pullLatestReferencePackage({
     String? actorUserId,
   }) async {
-    final globalManifestRaw =
-        await _transport.downloadString('manifest/global_manifest.json');
+    final globalManifestRaw = await _transport.downloadString(
+      'manifest/global_manifest.json',
+    );
     if (globalManifestRaw == null) {
       return const _SyncBatchResult();
     }
 
-    final globalManifest = jsonDecode(globalManifestRaw) as Map<String, dynamic>;
-    final packageId =
-        nullableField(globalManifest['current_reference_package_id']?.toString());
+    final globalManifest =
+        jsonDecode(globalManifestRaw) as Map<String, dynamic>;
+    final packageId = nullableField(
+      globalManifest['current_reference_package_id']?.toString(),
+    );
     if (packageId == null) {
       return const _SyncBatchResult();
     }
@@ -724,8 +738,9 @@ class SyncService {
         destinationDirectory: extractDir,
       );
 
-      final manifest =
-          await _readJsonFile(File(p.join(extractDir.path, 'manifest.json')));
+      final manifest = await _readJsonFile(
+        File(p.join(extractDir.path, 'manifest.json')),
+      );
       await _importReferenceSnapshot(extractDir);
       await _downloadReferenceMedia(manifest);
 
@@ -743,7 +758,7 @@ class SyncService {
         userId: actorUserId,
         entityType: 'reference_package',
         entityId: packageId,
-        message: 'Reference package imported from Yandex Disk',
+        message: 'Пакет справочников импортирован из Яндекс.Диска',
       );
       return const _SyncBatchResult(successCount: 1);
     } catch (error, stackTrace) {
@@ -782,16 +797,17 @@ class SyncService {
           .replaceFirst(RegExp(r'\.zip$'), '');
       final localZip = File(p.join(_paths.syncIncomingDir.path, fileName));
       final extractDir = Directory(p.join(_paths.syncTempDir.path, packageId));
-      final existingQueue = await (_db.select(_db.syncQueue)
-            ..where(
-              (tbl) =>
-                  tbl.direction.equals('incoming') &
-                  tbl.packageType.equals('inspection_result') &
-                  tbl.packageId.equals(packageId),
-            )
-            ..limit(1))
-          .getSingleOrNull();
-      if (!_shouldProcessQueueEntry(
+      final existingQueue =
+          await (_db.select(_db.syncQueue)
+                ..where(
+                  (tbl) =>
+                      tbl.direction.equals('incoming') &
+                      tbl.packageType.equals('inspection_result') &
+                      tbl.packageId.equals(packageId),
+                )
+                ..limit(1))
+              .getSingleOrNull();
+      if (!_shouldProcessIncomingQueueEntry(
         existingQueue,
         respectRetrySchedule: respectRetrySchedule,
       )) {
@@ -829,7 +845,9 @@ class SyncService {
         );
         await _transport.deletePath('results/incoming/$fileName');
 
-        final localProcessedFile = File(p.join(_paths.syncProcessedDir.path, fileName));
+        final localProcessedFile = File(
+          p.join(_paths.syncProcessedDir.path, fileName),
+        );
         if (await localProcessedFile.exists()) {
           await localProcessedFile.delete();
         }
@@ -881,8 +899,9 @@ class SyncService {
     required String packageId,
     String? actorUserId,
   }) async {
-    final manifest =
-        await _readJsonFile(File(p.join(extractDir.path, 'manifest.json')));
+    final manifest = await _readJsonFile(
+      File(p.join(extractDir.path, 'manifest.json')),
+    );
     final inspectionPayload = await _readJsonFile(
       File(p.join(extractDir.path, 'data', 'inspection.json')),
     );
@@ -897,20 +916,22 @@ class SyncService {
     );
 
     final inspectionId = _readRequiredString(inspectionPayload, 'id');
-    final sourceReferencePackageId =
-        nullableField(inspectionPayload['source_reference_package_id']?.toString());
+    final sourceReferencePackageId = nullableField(
+      inspectionPayload['source_reference_package_id']?.toString(),
+    );
     final syncState = await _loadSyncState();
-    final existingInspection = await (_db.select(_db.inspections)
-          ..where((tbl) => tbl.id.equals(inspectionId)))
-        .getSingleOrNull();
+    final existingInspection = await (_db.select(
+      _db.inspections,
+    )..where((tbl) => tbl.id.equals(inspectionId))).getSingleOrNull();
 
     String? conflictReason;
     if (existingInspection != null) {
-      conflictReason = 'Duplicate inspection package import.';
+      conflictReason = 'Повторный импорт пакета результата проверки.';
     } else if (syncState?.lastReferencePackageId != null &&
         sourceReferencePackageId != null &&
         sourceReferencePackageId != syncState!.lastReferencePackageId) {
-      conflictReason = 'Inspection result references an outdated reference package.';
+      conflictReason =
+          'Результат проверки ссылается на устаревший пакет справочников.';
     }
 
     if (conflictReason != null) {
@@ -926,10 +947,7 @@ class SyncService {
         entityType: 'inspection',
         entityId: inspectionId,
         message: conflictReason,
-        payload: {
-          'package_id': packageId,
-          'manifest': manifest,
-        },
+        payload: {'package_id': packageId, 'manifest': manifest},
       );
       return 'conflict';
     }
@@ -947,7 +965,9 @@ class SyncService {
 
     final now = nowIso();
     await _db.transaction(() async {
-      await _db.into(_db.inspections).insert(
+      await _db
+          .into(_db.inspections)
+          .insert(
             InspectionsCompanion.insert(
               id: inspectionId,
               deviceId: _readRequiredString(inspectionPayload, 'device_id'),
@@ -988,12 +1008,22 @@ class SyncService {
                 (row) => InspectionItemsCompanion.insert(
                   id: _readRequiredString(row, 'answer_id'),
                   inspectionId: inspectionId,
-                  checklistItemId: _readRequiredString(row, 'checklist_item_id'),
-                  componentId: driftValue(nullableField(row['component_id']?.toString())),
-                  resultStatus: Value(_readRequiredString(row, 'result_status')),
-                  comment: driftValue(nullableField(row['comment']?.toString())),
-                  measuredValue:
-                      driftValue(nullableField(row['measured_value']?.toString())),
+                  checklistItemId: _readRequiredString(
+                    row,
+                    'checklist_item_id',
+                  ),
+                  componentId: driftValue(
+                    nullableField(row['component_id']?.toString()),
+                  ),
+                  resultStatus: Value(
+                    _readRequiredString(row, 'result_status'),
+                  ),
+                  comment: driftValue(
+                    nullableField(row['comment']?.toString()),
+                  ),
+                  measuredValue: driftValue(
+                    nullableField(row['measured_value']?.toString()),
+                  ),
                   sortOrder: Value(_readInt(row['sort_order'])),
                   createdAt: now,
                   updatedAt: now,
@@ -1029,13 +1059,15 @@ class SyncService {
       userId: actorUserId,
       entityType: 'inspection',
       entityId: inspectionId,
-      message: 'Inspection result imported from Yandex Disk',
+      message: 'Результат проверки импортирован из Яндекс.Диска',
     );
     return 'done';
   }
 
   Future<void> _importReferenceSnapshot(Directory extractDir) async {
-    final users = await _readJsonList(File(p.join(extractDir.path, 'data', 'users.json')));
+    final users = await _readJsonList(
+      File(p.join(extractDir.path, 'data', 'users.json')),
+    );
     final orgStructure = await _readJsonFile(
       File(p.join(extractDir.path, 'data', 'org_structure.json')),
     );
@@ -1061,9 +1093,12 @@ class SyncService {
       File(p.join(extractDir.path, 'data', 'checklist_bindings.json')),
     );
 
-    final departments =
-        _mapList(orgStructure['departments']).toList(growable: false);
-    final workshops = _mapList(orgStructure['workshops']).toList(growable: false);
+    final departments = _mapList(
+      orgStructure['departments'],
+    ).toList(growable: false);
+    final workshops = _mapList(
+      orgStructure['workshops'],
+    ).toList(growable: false);
     final sections = _mapList(orgStructure['sections']).toList(growable: false);
 
     await _db.transaction(() async {
@@ -1088,7 +1123,9 @@ class SyncService {
                   (row) => UsersCompanion.insert(
                     id: _readRequiredString(row, 'id'),
                     fullName: _readRequiredString(row, 'full_name'),
-                    shortName: driftValue(nullableField(row['short_name']?.toString())),
+                    shortName: driftValue(
+                      nullableField(row['short_name']?.toString()),
+                    ),
                     roleId: _readRequiredString(row, 'role_id'),
                     isActive: Value(_readBool(row['is_active'])),
                     createdAt: _readRequiredString(row, 'created_at'),
@@ -1163,14 +1200,21 @@ class SyncService {
                   (row) => CatalogObjectsCompanion.insert(
                     id: _readRequiredString(row, 'id'),
                     type: _readRequiredString(row, 'type'),
-                    sectionId: driftValue(nullableField(row['section_id']?.toString())),
-                    parentId: driftValue(nullableField(row['parent_id']?.toString())),
+                    sectionId: driftValue(
+                      nullableField(row['section_id']?.toString()),
+                    ),
+                    parentId: driftValue(
+                      nullableField(row['parent_id']?.toString()),
+                    ),
                     name: _readRequiredString(row, 'name'),
                     code: driftValue(nullableField(row['code']?.toString())),
-                    description:
-                        driftValue(nullableField(row['description']?.toString())),
+                    description: driftValue(
+                      nullableField(row['description']?.toString()),
+                    ),
                     sortOrder: Value(_readInt(row['sort_order'])),
-                    isActive: Value(_readBool(row['is_active'], defaultValue: true)),
+                    isActive: Value(
+                      _readBool(row['is_active'], defaultValue: true),
+                    ),
                     createdAt: _readRequiredString(row, 'created_at'),
                     updatedAt: _readRequiredString(row, 'updated_at'),
                     version: Value(_readInt(row['version'], defaultValue: 1)),
@@ -1186,9 +1230,14 @@ class SyncService {
                 .map(
                   (row) => ObjectRelationsCompanion.insert(
                     id: _readRequiredString(row, 'id'),
-                    parentObjectId: _readRequiredString(row, 'parent_object_id'),
+                    parentObjectId: _readRequiredString(
+                      row,
+                      'parent_object_id',
+                    ),
                     childObjectId: _readRequiredString(row, 'child_object_id'),
-                    relationType: Value(_readRequiredString(row, 'relation_type')),
+                    relationType: Value(
+                      _readRequiredString(row, 'relation_type'),
+                    ),
                     sortOrder: Value(_readInt(row['sort_order'])),
                     createdAt: _readRequiredString(row, 'created_at'),
                     updatedAt: _readRequiredString(row, 'updated_at'),
@@ -1208,8 +1257,9 @@ class SyncService {
                     objectId: _readRequiredString(row, 'object_id'),
                     name: _readRequiredString(row, 'name'),
                     code: driftValue(nullableField(row['code']?.toString())),
-                    description:
-                        driftValue(nullableField(row['description']?.toString())),
+                    description: driftValue(
+                      nullableField(row['description']?.toString()),
+                    ),
                     sortOrder: Value(_readInt(row['sort_order'])),
                     isRequired: Value(_readBool(row['is_required'])),
                     createdAt: _readRequiredString(row, 'created_at'),
@@ -1230,7 +1280,9 @@ class SyncService {
                     componentId: _readRequiredString(row, 'component_id'),
                     fileName: _readRequiredString(row, 'file_name'),
                     mediaKey: _readRequiredString(row, 'media_key'),
-                    localPath: driftValue(nullableField(row['local_path']?.toString())),
+                    localPath: driftValue(
+                      nullableField(row['local_path']?.toString()),
+                    ),
                     checksum: _readRequiredString(row, 'checksum'),
                     mimeType: _readRequiredString(row, 'mime_type'),
                     sortOrder: Value(_readInt(row['sort_order'])),
@@ -1250,9 +1302,12 @@ class SyncService {
                   (row) => ChecklistsCompanion.insert(
                     id: _readRequiredString(row, 'id'),
                     name: _readRequiredString(row, 'name'),
-                    description:
-                        driftValue(nullableField(row['description']?.toString())),
-                    isActive: Value(_readBool(row['is_active'], defaultValue: true)),
+                    description: driftValue(
+                      nullableField(row['description']?.toString()),
+                    ),
+                    isActive: Value(
+                      _readBool(row['is_active'], defaultValue: true),
+                    ),
                     createdAt: _readRequiredString(row, 'created_at'),
                     updatedAt: _readRequiredString(row, 'updated_at'),
                     version: Value(_readInt(row['version'], defaultValue: 1)),
@@ -1269,12 +1324,16 @@ class SyncService {
                   (row) => ChecklistItemsCompanion.insert(
                     id: _readRequiredString(row, 'id'),
                     checklistId: _readRequiredString(row, 'checklist_id'),
-                    componentId: driftValue(nullableField(row['component_id']?.toString())),
+                    componentId: driftValue(
+                      nullableField(row['component_id']?.toString()),
+                    ),
                     title: _readRequiredString(row, 'title'),
-                    description:
-                        driftValue(nullableField(row['description']?.toString())),
-                    expectedResult:
-                        driftValue(nullableField(row['expected_result']?.toString())),
+                    description: driftValue(
+                      nullableField(row['description']?.toString()),
+                    ),
+                    expectedResult: driftValue(
+                      nullableField(row['expected_result']?.toString()),
+                    ),
                     resultType: Value(_readRequiredString(row, 'result_type')),
                     isRequired: Value(_readBool(row['is_required'])),
                     sortOrder: Value(_readInt(row['sort_order'])),
@@ -1295,9 +1354,12 @@ class SyncService {
                     id: _readRequiredString(row, 'id'),
                     checklistId: _readRequiredString(row, 'checklist_id'),
                     targetType: _readRequiredString(row, 'target_type'),
-                    targetId: driftValue(nullableField(row['target_id']?.toString())),
-                    targetObjectType:
-                        driftValue(nullableField(row['target_object_type']?.toString())),
+                    targetId: driftValue(
+                      nullableField(row['target_id']?.toString()),
+                    ),
+                    targetObjectType: driftValue(
+                      nullableField(row['target_object_type']?.toString()),
+                    ),
                     priority: Value(_readInt(row['priority'])),
                     isRequired: Value(_readBool(row['is_required'])),
                     createdAt: _readRequiredString(row, 'created_at'),
@@ -1313,7 +1375,9 @@ class SyncService {
   }
 
   Future<void> _uploadReferenceMedia(Map<String, dynamic> manifest) async {
-    final requiredMedia = _mapList(manifest['required_media']).toList(growable: false);
+    final requiredMedia = _mapList(
+      manifest['required_media'],
+    ).toList(growable: false);
     for (final media in requiredMedia) {
       final relativePath = nullableField(media['local_path']?.toString());
       if (relativePath == null) {
@@ -1331,7 +1395,9 @@ class SyncService {
   }
 
   Future<void> _downloadReferenceMedia(Map<String, dynamic> manifest) async {
-    final requiredMedia = _mapList(manifest['required_media']).toList(growable: false);
+    final requiredMedia = _mapList(
+      manifest['required_media'],
+    ).toList(growable: false);
     for (final media in requiredMedia) {
       final relativePath = nullableField(media['local_path']?.toString());
       if (relativePath == null) {
@@ -1346,7 +1412,9 @@ class SyncService {
       if (expectedChecksum != null) {
         final actualChecksum = await checksumFile(destination);
         if (actualChecksum != expectedChecksum) {
-          throw StateError('Checksum mismatch for downloaded media $relativePath.');
+          throw StateError(
+            'Checksum mismatch for downloaded media $relativePath.',
+          );
         }
       }
     }
@@ -1453,37 +1521,44 @@ class SyncService {
     required String productObjectId,
     String? actorUserId,
   }) async {
-    final activeLock = await (_db.select(_db.locks)
-          ..where(
-            (tbl) =>
-                tbl.productObjectId.equals(productObjectId) &
-                tbl.status.equals('active'),
-          )
-          ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)])
-          ..limit(1))
-        .getSingleOrNull();
+    final activeLock =
+        await (_db.select(_db.locks)
+              ..where(
+                (tbl) =>
+                    tbl.productObjectId.equals(productObjectId) &
+                    tbl.status.equals('active'),
+              )
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)])
+              ..limit(1))
+            .getSingleOrNull();
     if (activeLock == null) {
       return;
     }
 
     try {
       if (await _transport.isConfigured()) {
-        final existingRaw = await _transport.downloadString(activeLock.remoteLockKey);
+        final existingRaw = await _transport.downloadString(
+          activeLock.remoteLockKey,
+        );
         if (existingRaw != null) {
           final existing = jsonDecode(existingRaw) as Map<String, dynamic>;
           final sameOwner =
               existing['device_id']?.toString() == activeLock.deviceId &&
-                  existing['user_id']?.toString() == activeLock.userId;
+              existing['user_id']?.toString() == activeLock.userId;
           if (sameOwner) {
             await _transport.deletePath(activeLock.remoteLockKey);
           }
         }
       }
     } catch (error) {
-      _logger.warning('Remote lock release failed for $productObjectId: $error');
+      _logger.warning(
+        'Remote lock release failed for $productObjectId: $error',
+      );
     } finally {
       final releasedAt = nowIso();
-      await (_db.update(_db.locks)..where((tbl) => tbl.id.equals(activeLock.id))).write(
+      await (_db.update(
+        _db.locks,
+      )..where((tbl) => tbl.id.equals(activeLock.id))).write(
         LocksCompanion(
           status: const Value('released'),
           releasedAt: Value(releasedAt),
@@ -1497,7 +1572,7 @@ class SyncService {
         userId: actorUserId,
         entityType: 'lock',
         entityId: activeLock.id,
-        message: 'Product lock released',
+        message: 'Блокировка изделия снята',
       );
     }
   }
@@ -1510,16 +1585,19 @@ class SyncService {
     required String acquiredAt,
     required String expiresAt,
   }) async {
-    final existing = await (_db.select(_db.locks)
-          ..where(
-            (tbl) =>
-                tbl.productObjectId.equals(productObjectId) &
-                tbl.status.equals('active'),
-          )
-          ..limit(1))
-        .getSingleOrNull();
+    final existing =
+        await (_db.select(_db.locks)
+              ..where(
+                (tbl) =>
+                    tbl.productObjectId.equals(productObjectId) &
+                    tbl.status.equals('active'),
+              )
+              ..limit(1))
+            .getSingleOrNull();
     if (existing == null) {
-      await _db.into(_db.locks).insert(
+      await _db
+          .into(_db.locks)
+          .insert(
             LocksCompanion.insert(
               id: generateId('lock'),
               productObjectId: productObjectId,
@@ -1536,7 +1614,9 @@ class SyncService {
       return;
     }
 
-    await (_db.update(_db.locks)..where((tbl) => tbl.id.equals(existing.id))).write(
+    await (_db.update(
+      _db.locks,
+    )..where((tbl) => tbl.id.equals(existing.id))).write(
       LocksCompanion(
         remoteLockKey: Value(remoteLockKey),
         deviceId: Value(deviceId),
@@ -1555,19 +1635,22 @@ class SyncService {
     required String localPath,
     required String status,
   }) async {
-    final existing = await (_db.select(_db.syncQueue)
-          ..where(
-            (tbl) =>
-                tbl.direction.equals('incoming') &
-                tbl.packageType.equals('inspection_result') &
-                tbl.packageId.equals(packageId),
-          )
-          ..limit(1))
-        .getSingleOrNull();
+    final existing =
+        await (_db.select(_db.syncQueue)
+              ..where(
+                (tbl) =>
+                    tbl.direction.equals('incoming') &
+                    tbl.packageType.equals('inspection_result') &
+                    tbl.packageId.equals(packageId),
+              )
+              ..limit(1))
+            .getSingleOrNull();
     final now = nowIso();
     if (existing == null) {
       final id = generateId('queue');
-      await _db.into(_db.syncQueue).insert(
+      await _db
+          .into(_db.syncQueue)
+          .insert(
             SyncQueueCompanion.insert(
               id: id,
               direction: 'incoming',
@@ -1582,7 +1665,9 @@ class SyncService {
       return id;
     }
 
-    await (_db.update(_db.syncQueue)..where((tbl) => tbl.id.equals(existing.id))).write(
+    await (_db.update(
+      _db.syncQueue,
+    )..where((tbl) => tbl.id.equals(existing.id))).write(
       SyncQueueCompanion(
         localPath: Value(localPath),
         status: Value(status),
@@ -1598,7 +1683,9 @@ class SyncService {
     String? lastError,
     String? localPath,
   }) async {
-    await (_db.update(_db.syncQueue)..where((tbl) => tbl.id.equals(queueId))).write(
+    await (_db.update(
+      _db.syncQueue,
+    )..where((tbl) => tbl.id.equals(queueId))).write(
       SyncQueueCompanion(
         status: Value(status),
         localPath: localPath == null ? const Value.absent() : Value(localPath),
@@ -1610,7 +1697,9 @@ class SyncService {
   }
 
   Future<void> _markQueueProcessing(String queueId) async {
-    await (_db.update(_db.syncQueue)..where((tbl) => tbl.id.equals(queueId))).write(
+    await (_db.update(
+      _db.syncQueue,
+    )..where((tbl) => tbl.id.equals(queueId))).write(
       SyncQueueCompanion(
         status: const Value('processing'),
         nextAttemptAt: const Value(null),
@@ -1620,7 +1709,9 @@ class SyncService {
   }
 
   Future<void> _markQueueDone(String queueId) async {
-    await (_db.update(_db.syncQueue)..where((tbl) => tbl.id.equals(queueId))).write(
+    await (_db.update(
+      _db.syncQueue,
+    )..where((tbl) => tbl.id.equals(queueId))).write(
       SyncQueueCompanion(
         status: const Value('done'),
         lastError: const Value(null),
@@ -1635,15 +1726,17 @@ class SyncService {
     String error, {
     String? localPath,
   }) async {
-    final existing = await (_db.select(_db.syncQueue)
-          ..where((tbl) => tbl.id.equals(queueId)))
-        .getSingle();
+    final existing = await (_db.select(
+      _db.syncQueue,
+    )..where((tbl) => tbl.id.equals(queueId))).getSingle();
     final nextAttemptCount = existing.attemptCount + 1;
     final nextAttemptAt = DateTime.now()
         .toUtc()
         .add(_retryDelayForAttempt(nextAttemptCount))
         .toIso8601String();
-    await (_db.update(_db.syncQueue)..where((tbl) => tbl.id.equals(queueId))).write(
+    await (_db.update(
+      _db.syncQueue,
+    )..where((tbl) => tbl.id.equals(queueId))).write(
       SyncQueueCompanion(
         status: const Value('failed'),
         localPath: localPath == null ? const Value.absent() : Value(localPath),
@@ -1660,14 +1753,16 @@ class SyncService {
     required String conflictReason,
   }) async {
     final inspectionId = _readRequiredString(inspectionPayload, 'id');
-    final existing = await (_db.select(_db.inspections)
-          ..where((tbl) => tbl.id.equals(inspectionId)))
-        .getSingleOrNull();
+    final existing = await (_db.select(
+      _db.inspections,
+    )..where((tbl) => tbl.id.equals(inspectionId))).getSingleOrNull();
     if (existing != null) {
       return;
     }
 
-    await _db.into(_db.inspections).insert(
+    await _db
+        .into(_db.inspections)
+        .insert(
           InspectionsCompanion.insert(
             id: inspectionId,
             deviceId: _readRequiredString(inspectionPayload, 'device_id'),
@@ -1687,10 +1782,14 @@ class SyncService {
             status: 'conflict',
             syncStatus: 'conflict',
             sourceReferencePackageId: driftValue(
-              nullableField(inspectionPayload['source_reference_package_id']?.toString()),
+              nullableField(
+                inspectionPayload['source_reference_package_id']?.toString(),
+              ),
             ),
             sourceReferenceVersion: driftValue(
-              nullableField(inspectionPayload['source_reference_version']?.toString()),
+              nullableField(
+                inspectionPayload['source_reference_version']?.toString(),
+              ),
             ),
             conflictReason: Value(conflictReason),
             createdAt: _readRequiredString(inspectionPayload, 'created_at'),
@@ -1723,7 +1822,9 @@ class SyncService {
         InspectionSignaturesCompanion.insert(
           id: _readRequiredString(row, 'id'),
           inspectionId: inspectionId,
-          signerUserId: driftValue(nullableField(row['signer_user_id']?.toString())),
+          signerUserId: driftValue(
+            nullableField(row['signer_user_id']?.toString()),
+          ),
           signerName: _readRequiredString(row, 'signer_name'),
           signerRole: _readRequiredString(row, 'signer_role'),
           imageLocalPath: _paths.relativeToRoot(destination.path),
@@ -1762,7 +1863,9 @@ class SyncService {
     }
 
     final fileName = p.basename(source.path);
-    final destination = File(p.join(_paths.reportsDir.path, inspectionId, fileName));
+    final destination = File(
+      p.join(_paths.reportsDir.path, inspectionId, fileName),
+    );
     await destination.parent.create(recursive: true);
     await source.copy(destination.path);
 
@@ -1781,10 +1884,7 @@ class SyncService {
     String? entityId,
   }) async {
     _logger.error(operation, error, stackTrace);
-    await _upsertSyncState(
-      lastError: error.toString(),
-      updatedAt: nowIso(),
-    );
+    await _upsertSyncState(lastError: error.toString(), updatedAt: nowIso());
     await _markConnectivity(false);
     await recordAudit(
       _db,
@@ -1799,10 +1899,7 @@ class SyncService {
 
   Future<void> _markSyncSuccess() async {
     await _markConnectivity(true);
-    await _upsertSyncState(
-      lastSuccessAt: nowIso(),
-      lastError: null,
-    );
+    await _upsertSyncState(lastSuccessAt: nowIso(), lastError: null);
   }
 
   Future<void> _markSyncPartial(String message) async {
@@ -1815,9 +1912,7 @@ class SyncService {
     );
   }
 
-  Future<void> _runBestEffortAndroidSync({
-    required String actorUserId,
-  }) async {
+  Future<void> _runBestEffortAndroidSync({required String actorUserId}) async {
     if (!await _transport.isConfigured()) {
       return;
     }
@@ -1838,7 +1933,9 @@ class SyncService {
       return;
     }
     final now = nowIso();
-    await (_db.update(_db.deviceInfo)..where((tbl) => tbl.id.equals(device.id))).write(
+    await (_db.update(
+      _db.deviceInfo,
+    )..where((tbl) => tbl.id.equals(device.id))).write(
       DeviceInfoCompanion(
         lastSyncAt: Value(now),
         yandexDiskConnected: Value(isConnected),
@@ -1868,7 +1965,9 @@ class SyncService {
     final existing = await _loadSyncState();
     final now = updatedAt ?? nowIso();
 
-    await _db.into(_db.syncState).insertOnConflictUpdate(
+    await _db
+        .into(_db.syncState)
+        .insertOnConflictUpdate(
           SyncStateCompanion(
             id: Value(existing?.id ?? '$deviceId-sync-state'),
             deviceId: Value(deviceId),
@@ -1888,7 +1987,9 @@ class SyncService {
                 ? Value(existing?.lastSuccessAt)
                 : Value(lastSuccessAt),
             lastError: Value(lastError),
-            schemaVersion: Value(existing?.schemaVersion ?? AppConstants.syncSchemaVersion),
+            schemaVersion: Value(
+              existing?.schemaVersion ?? AppConstants.syncSchemaVersion,
+            ),
             updatedAt: Value(now),
           ),
         );
@@ -1896,7 +1997,7 @@ class SyncService {
 
   Future<void> _ensureConfiguredTransport() async {
     if (!await _transport.isConfigured()) {
-      throw const SyncTransportException('Yandex Disk token is not configured.');
+      throw const SyncTransportException('Токен Яндекс.Диска не настроен.');
     }
   }
 
@@ -1910,9 +2011,12 @@ class SyncService {
       AppPlatform.unsupported => AppCapability.runSync,
     };
     final deniedMessage = switch (platform) {
-      AppPlatform.windows => 'Только администратор может запускать синхронизацию Windows.',
-      AppPlatform.android => 'Эта роль не может запускать синхронизацию Android.',
-      AppPlatform.unsupported => 'Синхронизация не поддерживается на этой платформе.',
+      AppPlatform.windows =>
+        'Только администратор может запускать синхронизацию Windows.',
+      AppPlatform.android =>
+        'Эта роль не может запускать синхронизацию Android.',
+      AppPlatform.unsupported =>
+        'Синхронизация не поддерживается на этой платформе.',
     };
     await requireUserCapability(
       _db,
@@ -1939,15 +2043,17 @@ class SyncService {
     required String packageType,
     required bool respectRetrySchedule,
   }) async {
-    final candidates = await (_db.select(_db.syncQueue)
-          ..where(
-            (tbl) =>
-                tbl.direction.equals('outgoing') &
-                tbl.packageType.equals(packageType) &
-                (tbl.status.equals('pending') | tbl.status.equals('failed')),
-          )
-          ..orderBy([(tbl) => OrderingTerm.asc(tbl.createdAt)]))
-        .get();
+    final candidates =
+        await (_db.select(_db.syncQueue)
+              ..where(
+                (tbl) =>
+                    tbl.direction.equals('outgoing') &
+                    tbl.packageType.equals(packageType) &
+                    (tbl.status.equals('pending') |
+                        tbl.status.equals('failed')),
+              )
+              ..orderBy([(tbl) => OrderingTerm.asc(tbl.createdAt)]))
+            .get();
     return candidates
         .where(
           (entry) => _shouldProcessQueueEntry(
@@ -1982,10 +2088,32 @@ class SyncService {
     return retryAt == null || !retryAt.isAfter(DateTime.now().toUtc());
   }
 
-  Expression<bool> _retryEligibleQueueExpression(
-    SyncQueue table,
-    String now,
-  ) {
+  bool _shouldProcessIncomingQueueEntry(
+    SyncQueueData? entry, {
+    required bool respectRetrySchedule,
+  }) {
+    if (entry == null) {
+      return true;
+    }
+    if (entry.direction != 'incoming') {
+      return _shouldProcessQueueEntry(
+        entry,
+        respectRetrySchedule: respectRetrySchedule,
+      );
+    }
+    if (entry.status == 'failed') {
+      return _shouldProcessQueueEntry(
+        entry,
+        respectRetrySchedule: respectRetrySchedule,
+      );
+    }
+
+    // If the same incoming package reappears after it was already imported or
+    // marked as conflict, process it again so the duplicate can be diagnosed.
+    return true;
+  }
+
+  Expression<bool> _retryEligibleQueueExpression(SyncQueue table, String now) {
     return table.status.equals('failed') &
         (table.nextAttemptAt.isNull() |
             table.nextAttemptAt.isSmallerOrEqualValue(now));
@@ -1993,10 +2121,11 @@ class SyncService {
 
   Future<int> _countRetryEligibleEntries() async {
     final expression = _db.syncQueue.id.count();
-    final result = await (_db.selectOnly(_db.syncQueue)
-          ..addColumns([expression])
-          ..where(_retryEligibleQueueExpression(_db.syncQueue, nowIso())))
-        .getSingle();
+    final result =
+        await (_db.selectOnly(_db.syncQueue)
+              ..addColumns([expression])
+              ..where(_retryEligibleQueueExpression(_db.syncQueue, nowIso())))
+            .getSingle();
     return result.read(expression) ?? 0;
   }
 
@@ -2017,7 +2146,7 @@ class SyncService {
     final raw = await file.readAsString();
     final payload = jsonDecode(raw);
     if (payload is! Map<String, dynamic>) {
-      throw StateError('Expected JSON object in ${file.path}.');
+      throw StateError('Ожидался JSON-объект в файле ${file.path}.');
     }
     return payload;
   }
@@ -2044,7 +2173,7 @@ class SyncService {
   String _readRequiredString(Map<String, dynamic> row, String key) {
     final value = nullableField(row[key]?.toString());
     if (value == null) {
-      throw StateError('Missing required field "$key".');
+      throw StateError('В данных отсутствует обязательное поле "$key".');
     }
     return value;
   }

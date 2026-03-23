@@ -19,6 +19,8 @@ import '../../../data/sync/package_archive.dart';
 
 const _backupManifestName = 'backup_manifest.json';
 
+String _normalizeManifestPath(String path) => path.replaceAll('\\', '/');
+
 class BackupArchiveSummary {
   const BackupArchiveSummary({
     required this.archivePath,
@@ -84,19 +86,17 @@ class BackupRepository {
     required AppPaths paths,
     required PackageArchive archive,
     required AppLogger logger,
-  })  : _db = database,
-        _paths = paths,
-        _archive = archive,
-        _logger = logger;
+  }) : _db = database,
+       _paths = paths,
+       _archive = archive,
+       _logger = logger;
 
   final AppDatabase _db;
   final AppPaths _paths;
   final PackageArchive _archive;
   final AppLogger _logger;
 
-  Future<BackupArchiveSummary> createBackup({
-    String? actorUserId,
-  }) async {
+  Future<BackupArchiveSummary> createBackup({String? actorUserId}) async {
     await requireUserCapability(
       _db,
       actorUserId: actorUserId,
@@ -192,10 +192,7 @@ class BackupRepository {
         entityType: 'backup',
         entityId: backupId,
         message: 'Резервная копия создана',
-        payload: {
-          'archive_path': archiveFile.path,
-          'file_count': files.length,
-        },
+        payload: {'archive_path': archiveFile.path, 'file_count': files.length},
       );
       _logger.info('Backup archive created at ${archiveFile.path}');
       return summary;
@@ -226,11 +223,12 @@ class BackupRepository {
   Future<List<BackupArchiveSummary>> listBackups() async {
     await _paths.backupDir.create(recursive: true);
     final entities = await _paths.backupDir.list().toList();
-    final files = entities
-        .whereType<File>()
-        .where((file) => file.path.toLowerCase().endsWith('.zip'))
-        .toList(growable: false)
-      ..sort((a, b) => b.path.compareTo(a.path));
+    final files =
+        entities
+            .whereType<File>()
+            .where((file) => file.path.toLowerCase().endsWith('.zip'))
+            .toList(growable: false)
+          ..sort((a, b) => b.path.compareTo(a.path));
 
     final results = <BackupArchiveSummary>[];
     for (final file in files) {
@@ -251,12 +249,14 @@ class BackupRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageSync,
-      deniedMessage: 'Только администратор может восстанавливать резервные копии.',
+      deniedMessage:
+          'Только администратор может восстанавливать резервные копии.',
     );
 
     final candidate = await inspectRestoreCandidate(archiveFile);
     if (!candidate.isRestorable) {
-      final issueText = candidate.inspectionError ??
+      final issueText =
+          candidate.inspectionError ??
           (candidate.restoreIssues.isEmpty
               ? 'Архив не готов к восстановлению.'
               : candidate.restoreIssues.join(' '));
@@ -349,16 +349,17 @@ class BackupRepository {
         final archive = ZipDecoder().decodeBuffer(input);
         final manifestEntry = archive.files.firstWhere(
           (entry) => entry.name == _backupManifestName,
-          orElse: () => throw StateError(
-            'Архив не содержит $_backupManifestName.',
-          ),
+          orElse: () =>
+              throw StateError('Архив не содержит $_backupManifestName.'),
         );
         final rawManifest = utf8.decode(manifestEntry.content as List<int>);
         final manifest = jsonDecode(rawManifest) as Map<String, Object?>;
         final device = manifest['device'] as Map<String, Object?>? ?? const {};
-        final includedRoots = (manifest['included_roots'] as List<Object?>? ?? const [])
-            .whereType<String>()
-            .toList(growable: false);
+        final includedRoots =
+            (manifest['included_roots'] as List<Object?>? ?? const [])
+                .whereType<String>()
+                .map(_normalizeManifestPath)
+                .toList(growable: false);
         final fileEntries = (manifest['files'] as List<Object?>? ?? const [])
             .map<Map<String, Object?>?>((entry) {
               if (entry is! Map) {
@@ -375,7 +376,11 @@ class BackupRepository {
             ? manifest['file_count'] as int
             : fileEntries.length;
         final hasDatabaseSnapshot = fileEntries.any(
-          (entry) => entry['relative_path'] == p.join('db', 'main.db'),
+          (entry) =>
+              _normalizeManifestPath(
+                entry['relative_path']?.toString() ?? '',
+              ) ==
+              'db/main.db',
         );
         final restoreIssues = <String>[
           if (!hasDatabaseSnapshot)
@@ -393,7 +398,8 @@ class BackupRepository {
         return BackupArchiveSummary(
           archivePath: archiveFile.path,
           archiveSizeBytes: archiveSizeBytes,
-          backupId: (manifest['backup_id'] as String?) ??
+          backupId:
+              (manifest['backup_id'] as String?) ??
               p.basenameWithoutExtension(archiveFile.path),
           createdAt: manifest['created_at'] as String?,
           appVersion: manifest['app_version'] as String?,
@@ -435,7 +441,7 @@ class BackupRepository {
     required List<Map<String, Object?>> fileEntries,
     required List<String> includedRoots,
   }) async {
-    final relativePath = p.join('db', 'main.db');
+    final relativePath = 'db/main.db';
     final destinationFile = File(p.join(snapshotDir.path, relativePath));
     await destinationFile.parent.create(recursive: true);
     if (await destinationFile.exists()) {
@@ -462,14 +468,16 @@ class BackupRepository {
     }
 
     var copiedAnyFile = false;
-    await for (final entity in source.list(recursive: true, followLinks: false)) {
+    await for (final entity in source.list(
+      recursive: true,
+      followLinks: false,
+    )) {
       if (entity is! File) {
         continue;
       }
       copiedAnyFile = true;
-      final relativePath = p.join(
-        relativeRoot,
-        p.relative(entity.path, from: source.path),
+      final relativePath = _normalizeManifestPath(
+        p.join(relativeRoot, p.relative(entity.path, from: source.path)),
       );
       final destination = File(p.join(snapshotDir.path, relativePath));
       await destination.parent.create(recursive: true);
@@ -478,7 +486,7 @@ class BackupRepository {
     }
 
     if (copiedAnyFile) {
-      includedRoots.add(relativeRoot);
+      includedRoots.add(_normalizeManifestPath(relativeRoot));
     }
   }
 
@@ -500,7 +508,9 @@ class BackupRepository {
     final databaseFile = File(p.join(extractedDir.path, 'db', 'main.db'));
 
     if (!await manifestFile.exists()) {
-      throw StateError('В распакованном архиве отсутствует $_backupManifestName.');
+      throw StateError(
+        'В распакованном архиве отсутствует $_backupManifestName.',
+      );
     }
     if (!await databaseFile.exists()) {
       throw StateError('В распакованном архиве отсутствует db/main.db.');

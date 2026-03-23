@@ -20,16 +20,18 @@ void main() {
     usersRepository = UsersRepository(database);
 
     final now = DateTime.now().toUtc().toIso8601String();
-    await database.into(database.users).insert(
-      UsersCompanion.insert(
-        id: 'user-worker',
-        fullName: 'Worker User',
-        shortName: const Value('Worker'),
-        roleId: 'role-worker',
-        createdAt: now,
-        updatedAt: now,
-      ),
-    );
+    await database
+        .into(database.users)
+        .insert(
+          UsersCompanion.insert(
+            id: 'user-worker',
+            fullName: 'Worker User',
+            shortName: const Value('Worker'),
+            roleId: 'role-worker',
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
   });
 
   tearDown(() async {
@@ -48,7 +50,7 @@ void main() {
         isA<StateError>().having(
           (error) => error.message,
           'message',
-          'Only administrators can manage users.',
+          'Только администратор может управлять пользователями.',
         ),
       ),
     );
@@ -63,9 +65,6 @@ void main() {
     );
 
     final users = await usersRepository.listUsers();
-    expect(
-      users.map((entry) => entry.user.fullName),
-      contains('Viewer User'),
-    );
+    expect(users.map((entry) => entry.user.fullName), contains('Viewer User'));
   });
 }

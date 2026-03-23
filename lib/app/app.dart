@@ -14,7 +14,7 @@ class OkkQcApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      title: 'OKK QC',
+      title: 'Контроль качества ОКК',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       routerConfig: router,

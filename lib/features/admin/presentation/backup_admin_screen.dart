@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/config/app_constants.dart';
+import '../../../core/utils/user_message.dart';
 import '../../../data/storage/app_paths_provider.dart';
 import '../../auth/data/auth_service.dart';
 import '../data/backup_repository.dart';
@@ -140,7 +141,7 @@ class _BackupAdminScreenState extends ConsumerState<BackupAdminScreen> {
           },
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => Text(
-            'Не удалось загрузить список резервных копий: $error',
+            'Не удалось загрузить список резервных копий. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
           ),
         ),
       ],
@@ -169,7 +170,14 @@ class _BackupAdminScreenState extends ConsumerState<BackupAdminScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось создать резервную копию.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -244,7 +252,14 @@ class _BackupAdminScreenState extends ConsumerState<BackupAdminScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось восстановить данные из архива.',
+            ),
+          ),
+        ),
       );
     }
   }

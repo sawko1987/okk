@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/auth/app_permissions.dart';
 import '../../../core/config/app_constants.dart';
 import '../../../core/platform/app_platform.dart';
+import '../../../core/utils/user_message.dart';
 import '../../../data/storage/app_paths_provider.dart';
 import '../../../data/storage/secure_settings_provider.dart';
 import '../../../data/sync/sync_service.dart';
@@ -106,7 +107,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           const SizedBox(height: 16),
           _SettingsCard(
-            title: 'Yandex Disk',
+            title: 'Яндекс.Диск',
             children: [
               if (!canEditSyncSettings)
                 const Padding(
@@ -184,8 +185,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   padding: EdgeInsets.symmetric(vertical: 12),
                   child: LinearProgressIndicator(),
                 ),
-                error: (error, _) =>
-                    Text('Не удалось загрузить настройки синхронизации: $error'),
+                error: (error, _) => Text(
+                  'Не удалось загрузить настройки синхронизации. ${userMessageFromError(error, fallback: 'Проверьте локальные настройки и повторите попытку.')}',
+                ),
               ),
             ],
           ),
@@ -207,6 +209,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Токен сохранен в защищенном хранилище.')),
       );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось сохранить токен.',
+            ),
+          ),
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -225,6 +241,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Токен удален из защищенного хранилища.')),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось удалить токен.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {

@@ -176,8 +176,8 @@
 ## 12. Тестирование
 - [ ] Подготовить тест-план по основным сценариям
 - [ ] Протестировать офлайн-режим Android
-- [ ] Протестировать поврежденные пакеты синхронизации
-- [ ] Протестировать повторную синхронизацию
+- [x] Протестировать поврежденные пакеты синхронизации
+- [x] Протестировать повторную синхронизацию
 - [ ] Протестировать синхронизацию изображений
 - [x] Протестировать генерацию PDF
 - [ ] Протестировать lock-механизм
@@ -272,7 +272,7 @@
 - [x] Added automatic retry-oriented sync entrypoints for startup and app resume
 - [x] Added diagnostics fields for `last retry run` and retry-eligible queue entries
 - [x] Added focused retry-policy coverage in `test/sync_retry_policy_test.dart`
-- [ ] Full environment-stable verification for all inspection/sync tests still needs follow-up because `flutter test` hangs in this environment for some modules
+- [x] Full environment-stable verification for inspection/sync tests was re-run outside the sandbox; `flutter test -r expanded` now passes end to end
 
 ## 20. Update 2026-03-19: Android UX Completion
 - [x] Android route-based flow is now centered on the workspace/mode screen
@@ -280,7 +280,7 @@
 - [x] Added Android empty states for drafts/results with guided next actions
 - [x] Added Android-specific quick access from sync/settings/diagnostics back to the workspace
 - [x] Added clearer Android callouts for missing reference data, pending sync work, and missing Yandex token
-- [ ] Widget verification for Android inspection/sync screens was added in `test/android_workflow_screens_test.dart`, but execution still needs follow-up because inspection-module tests hang in this environment
+- [x] Widget verification for Android inspection/sync screens was stabilized for lazy `ListView` screens and now passes in `test/android_workflow_screens_test.dart`
 
 ## 21. Update 2026-03-19: Windows Launch Readiness
 - [x] Role capability matrix is now exposed in the Windows roles screen
@@ -294,4 +294,15 @@
 - [x] Translated active Windows admin screens and Android workflow screens toward the Russian-only UI requirement
 - [x] Reduced raw English labels in inspection history, sync, settings, users, roles, objects, structure, and Android route-based workflow screens
 - [ ] Finish the remaining localization sweep in legacy/secondary screens and user-visible status labels that still leak technical codes
-- [ ] Re-run environment-stable verification for analyzer and inspection/sync widget tests after the localization sweep
+- [x] Re-run environment-stable verification for analyzer and inspection/sync widget tests after the localization sweep
+
+## 23. Update 2026-03-20: Windows Sync Readiness
+- [x] Normalized backup manifest roots to slash-based paths so Windows backup inspection no longer depends on platform separators
+- [x] Windows duplicate incoming result packages are processed again and recorded as conflicts instead of being skipped after a previous `done` queue record
+- [x] Localized user-facing Yandex.Disk sync errors and conflict reasons in sync service and transport layers
+- [x] Reworked Windows sync admin screen labels for recent issues and queue states to reduce raw technical codes in operator-facing UI
+- [x] Verified `flutter analyze` passes
+- [x] Verified focused tests for users permissions, backup repository, Android workflow screens, and sync service pass
+- [x] Verified full suite `flutter test -r expanded` passes outside the sandbox
+- [x] Verified `flutter build windows` produces `build\\windows\\x64\\runner\\Release\\okk_qc_app.exe`
+- [ ] `flutter build apk --release` is still blocked by invalid `JAVA_HOME` and remains outside the completed scope of this update
