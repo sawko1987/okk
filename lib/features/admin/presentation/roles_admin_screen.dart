@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/app_permissions.dart';
+import '../../../core/utils/user_message.dart';
 import '../../../data/sqlite/app_database.dart';
 import '../data/admin_repositories.dart';
 
@@ -19,17 +20,18 @@ class RolesAdminScreen extends ConsumerWidget {
           final counts = <String, int>{};
           final usersByRole = <String, List<ManagedUser>>{};
           for (final user in users) {
-            counts.update(user.role.id, (value) => value + 1, ifAbsent: () => 1);
+            counts.update(
+              user.role.id,
+              (value) => value + 1,
+              ifAbsent: () => 1,
+            );
             usersByRole.putIfAbsent(user.role.id, () => []).add(user);
           }
 
           return ListView(
             padding: const EdgeInsets.all(24),
             children: [
-              Text(
-                'Роли',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
+              Text('Роли', style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 16),
               Card(
                 child: Padding(
@@ -65,11 +67,18 @@ class RolesAdminScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text('Не удалось загрузить пользователей: $error')),
+        error: (error, _) => Center(
+          child: Text(
+            'Не удалось загрузить пользователей. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+          ),
+        ),
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Не удалось загрузить роли: $error')),
+      error: (error, _) => Center(
+        child: Text(
+          'Не удалось загрузить роли. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+        ),
+      ),
     );
   }
 }
@@ -99,7 +108,10 @@ class _RoleCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(role.name, style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    role.name,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   const SizedBox(height: 4),
                   Text(role.description ?? role.code),
                 ],
@@ -122,14 +134,15 @@ class _RoleCard extends StatelessWidget {
               for (final capability in capabilities)
                 Tooltip(
                   message: capabilityDescription(capability),
-                  child: Chip(
-                    label: Text(capabilityLabel(capability)),
-                  ),
+                  child: Chip(label: Text(capabilityLabel(capability))),
                 ),
             ],
           ),
         const SizedBox(height: 16),
-        Text('Назначенные пользователи', style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          'Назначенные пользователи',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: 8),
         if (assignedUsers.isEmpty)
           const Text('Пользователи для этой роли пока не назначены.')

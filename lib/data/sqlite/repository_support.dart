@@ -25,8 +25,8 @@ final Random _random = Random();
 
 String generateId(String prefix) {
   final timestamp = DateTime.now().toUtc().microsecondsSinceEpoch.toRadixString(
-        36,
-      );
+    36,
+  );
   final suffix = _random.nextInt(1 << 32).toRadixString(36);
   return '$prefix-$timestamp-$suffix';
 }
@@ -42,7 +42,9 @@ Future<void> recordAudit(
   String? message,
   Object? payload,
 }) {
-  return db.into(db.auditLog).insert(
+  return db
+      .into(db.auditLog)
+      .insert(
         AuditLogCompanion.insert(
           id: generateId('audit'),
           happenedAt: nowIso(),
@@ -73,7 +75,9 @@ Future<void> addTrashEntry(
   String? deletedByUserId,
   String? deletedAt,
 }) {
-  return db.into(db.trashBin).insert(
+  return db
+      .into(db.trashBin)
+      .insert(
         TrashBinCompanion.insert(
           id: generateId('trash'),
           entityType: entityType,
@@ -109,20 +113,21 @@ String pinHash(String pin) {
 }
 
 Future<String?> loadUserRoleCode(AppDatabase db, String userId) async {
-  final user = await (db.select(db.users)
-        ..where(
-          (tbl) =>
-              tbl.id.equals(userId) &
-              tbl.isDeleted.equals(false) &
-              tbl.isActive.equals(true),
-        ))
-      .getSingleOrNull();
+  final user =
+      await (db.select(db.users)..where(
+            (tbl) =>
+                tbl.id.equals(userId) &
+                tbl.isDeleted.equals(false) &
+                tbl.isActive.equals(true),
+          ))
+          .getSingleOrNull();
   if (user == null) {
     return null;
   }
 
-  final role = await (db.select(db.roles)..where((tbl) => tbl.id.equals(user.roleId)))
-      .getSingleOrNull();
+  final role = await (db.select(
+    db.roles,
+  )..where((tbl) => tbl.id.equals(user.roleId))).getSingleOrNull();
   return role?.code;
 }
 

@@ -20,7 +20,8 @@ class AndroidInspectionShell extends ConsumerStatefulWidget {
       _AndroidInspectionShellState();
 }
 
-class _AndroidInspectionShellState extends ConsumerState<AndroidInspectionShell> {
+class _AndroidInspectionShellState
+    extends ConsumerState<AndroidInspectionShell> {
   int _tabIndex = 0;
   bool _startupSyncTriggered = false;
 
@@ -33,7 +34,9 @@ class _AndroidInspectionShellState extends ConsumerState<AndroidInspectionShell>
     if (!_startupSyncTriggered) {
       _startupSyncTriggered = true;
       Future<void>.microtask(
-        () => ref.read(syncServiceProvider).syncOnStartup(
+        () => ref
+            .read(syncServiceProvider)
+            .syncOnStartup(
               platform: AppPlatform.android,
               actorUserId: session.userId,
             ),
@@ -76,18 +79,18 @@ class _AndroidInspectionShellState extends ConsumerState<AndroidInspectionShell>
       ),
       body: switch (_tabIndex) {
         0 => _AndroidInspectionHomeTab(
-            session: session,
-            onOpenInspection: _openInspection,
-          ),
+          session: session,
+          onOpenInspection: _openInspection,
+        ),
         1 => _AndroidDraftsTab(
-            userId: session.userId,
-            canEdit: session.roleCode != 'viewer',
-            onOpenInspection: _openInspection,
-          ),
+          userId: session.userId,
+          canEdit: session.roleCode != 'viewer',
+          onOpenInspection: _openInspection,
+        ),
         _ => _AndroidResultsTab(
-            userId: session.userId,
-            onOpenInspection: _openInspection,
-          ),
+          userId: session.userId,
+          onOpenInspection: _openInspection,
+        ),
       },
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _tabIndex,
@@ -113,7 +116,8 @@ class _AndroidInspectionShellState extends ConsumerState<AndroidInspectionShell>
   Future<void> _openInspection(String inspectionId) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => AndroidInspectionDetailScreen(inspectionId: inspectionId),
+        builder: (_) =>
+            AndroidInspectionDetailScreen(inspectionId: inspectionId),
       ),
     );
     if (!mounted) {
@@ -153,8 +157,12 @@ class _AndroidInspectionHomeTabState
   @override
   Widget build(BuildContext context) {
     final diagnosticsAsync = ref.watch(androidInspectionDiagnosticsProvider);
-    final draftsAsync = ref.watch(inspectionDraftsProvider(widget.session.userId));
-    final resultsAsync = ref.watch(inspectionResultsProvider(widget.session.userId));
+    final draftsAsync = ref.watch(
+      inspectionDraftsProvider(widget.session.userId),
+    );
+    final resultsAsync = ref.watch(
+      inspectionResultsProvider(widget.session.userId),
+    );
     final productsAsync = ref.watch(inspectionProductsProvider);
 
     return ListView(
@@ -173,19 +181,29 @@ class _AndroidInspectionHomeTabState
                   ),
                   const SizedBox(height: 8),
                   Text('Локальные черновики: ${diagnostics.localDraftCount}'),
-                  Text('Результаты в очереди: ${diagnostics.queuedResultCount}'),
-                  Text('Ошибки очереди синхронизации: ${diagnostics.failedQueueCount}'),
+                  Text(
+                    'Результаты в очереди: ${diagnostics.queuedResultCount}',
+                  ),
+                  Text(
+                    'Ошибки очереди синхронизации: ${diagnostics.failedQueueCount}',
+                  ),
                   Text('Конфликты: ${diagnostics.conflictCount}'),
-                  Text('Доступно для повтора: ${diagnostics.retryEligibleCount}'),
+                  Text(
+                    'Доступно для повтора: ${diagnostics.retryEligibleCount}',
+                  ),
                   Text(
                     diagnostics.lastReferencePackageId == null
                         ? 'Пакет справочников: ещё не синхронизирован'
                         : 'Пакет справочников: ${diagnostics.lastReferencePackageId}',
                   ),
                   if (diagnostics.lastReferenceSyncAt != null)
-                    Text('Справочники синхронизированы: ${diagnostics.lastReferenceSyncAt}'),
+                    Text(
+                      'Справочники синхронизированы: ${diagnostics.lastReferenceSyncAt}',
+                    ),
                   if (diagnostics.lastSyncAttemptAt != null)
-                    Text('Последняя попытка синхронизации: ${diagnostics.lastSyncAttemptAt}'),
+                    Text(
+                      'Последняя попытка синхронизации: ${diagnostics.lastSyncAttemptAt}',
+                    ),
                   if (diagnostics.lastRetryAt != null)
                     Text('Последний повтор: ${diagnostics.lastRetryAt}'),
                   if (diagnostics.lastCompletedInspectionAt != null)
@@ -193,7 +211,9 @@ class _AndroidInspectionHomeTabState
                       'Последняя завершённая проверка: ${diagnostics.lastCompletedInspectionAt}',
                     ),
                   if (diagnostics.hasPendingSyncWork)
-                    const Text('Ожидающие задачи синхронизации ждут повторной обработки.'),
+                    const Text(
+                      'Ожидающие задачи синхронизации ждут повторной обработки.',
+                    ),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 12,
@@ -205,7 +225,9 @@ class _AndroidInspectionHomeTabState
                             ? const SizedBox(
                                 width: 16,
                                 height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Icon(Icons.sync),
                         label: const Text('Синхронизировать'),
@@ -218,7 +240,9 @@ class _AndroidInspectionHomeTabState
                 height: 96,
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (error, _) => Text('Не удалось загрузить диагностику: $error'),
+              error: (error, _) => Text(
+                'Не удалось загрузить диагностику. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+              ),
             ),
           ),
         ),
@@ -239,11 +263,16 @@ class _AndroidInspectionHomeTabState
               padding: const EdgeInsets.all(16),
               child: productsAsync.when(
                 data: (products) {
-                  final effectiveProductId = _selectedProductId ??
-                      (products.isNotEmpty ? products.first.productObjectId : null);
+                  final effectiveProductId =
+                      _selectedProductId ??
+                      (products.isNotEmpty
+                          ? products.first.productObjectId
+                          : null);
                   final targetsAsync = effectiveProductId == null
                       ? const AsyncValue<List<InspectionTargetOption>>.data([])
-                      : ref.watch(inspectionTargetsProvider(effectiveProductId));
+                      : ref.watch(
+                          inspectionTargetsProvider(effectiveProductId),
+                        );
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,11 +283,15 @@ class _AndroidInspectionHomeTabState
                       ),
                       const SizedBox(height: 12),
                       if (products.isEmpty)
-                        const Text('Синхронизированные изделия пока недоступны.')
+                        const Text(
+                          'Синхронизированные изделия пока недоступны.',
+                        )
                       else ...[
                         DropdownButtonFormField<String>(
                           initialValue: effectiveProductId,
-                          decoration: const InputDecoration(labelText: 'Изделие'),
+                          decoration: const InputDecoration(
+                            labelText: 'Изделие',
+                          ),
                           items: [
                             for (final product in products)
                               DropdownMenuItem(
@@ -276,8 +309,11 @@ class _AndroidInspectionHomeTabState
                         const SizedBox(height: 12),
                         targetsAsync.when(
                           data: (targets) {
-                            final effectiveTargetId = _selectedTargetId ??
-                                (targets.isNotEmpty ? targets.first.targetObjectId : null);
+                            final effectiveTargetId =
+                                _selectedTargetId ??
+                                (targets.isNotEmpty
+                                    ? targets.first.targetObjectId
+                                    : null);
 
                             return DropdownButtonFormField<String>(
                               initialValue: effectiveTargetId,
@@ -300,24 +336,29 @@ class _AndroidInspectionHomeTabState
                             padding: EdgeInsets.symmetric(vertical: 12),
                             child: LinearProgressIndicator(),
                           ),
-                          error: (error, _) =>
-                              Text('Не удалось загрузить объекты проверки: $error'),
+                          error: (error, _) => Text(
+                            'Не удалось загрузить объекты проверки. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+                          ),
                         ),
                         const SizedBox(height: 12),
                         FilledButton.icon(
                           onPressed: _isStarting || effectiveProductId == null
                               ? null
                               : () => _startDraft(
-                                    productId: effectiveProductId,
-                                    targetId: _selectedTargetId,
-                                  ),
+                                  productId: effectiveProductId,
+                                  targetId: _selectedTargetId,
+                                ),
                           icon: _isStarting
                               ? const SizedBox(
                                   width: 16,
                                   height: 16,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
-                              : const Icon(Icons.playlist_add_check_circle_outlined),
+                              : const Icon(
+                                  Icons.playlist_add_check_circle_outlined,
+                                ),
                           label: const Text('Открыть черновик'),
                         ),
                       ],
@@ -328,7 +369,9 @@ class _AndroidInspectionHomeTabState
                   height: 120,
                   child: Center(child: CircularProgressIndicator()),
                 ),
-                error: (error, _) => Text('Не удалось загрузить изделия: $error'),
+                error: (error, _) => Text(
+                  'Не удалось загрузить изделия. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+                ),
               ),
             ),
           ),
@@ -356,7 +399,8 @@ class _AndroidInspectionHomeTabState
                           '${draft.productName} - отвечено ${draft.answeredItems}/${draft.totalItems}',
                         ),
                         trailing: TextButton(
-                          onPressed: () => widget.onOpenInspection(draft.inspectionId),
+                          onPressed: () =>
+                              widget.onOpenInspection(draft.inspectionId),
                           child: const Text('Открыть'),
                         ),
                       ),
@@ -366,7 +410,9 @@ class _AndroidInspectionHomeTabState
                 height: 96,
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (error, _) => Text('Не удалось загрузить черновики: $error'),
+              error: (error, _) => Text(
+                'Не удалось загрузить черновики. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+              ),
             ),
           ),
         ),
@@ -394,7 +440,8 @@ class _AndroidInspectionHomeTabState
                           '${result.productName} - ${result.status} - ${result.completedAt}',
                         ),
                         trailing: TextButton(
-                          onPressed: () => widget.onOpenInspection(result.inspectionId),
+                          onPressed: () =>
+                              widget.onOpenInspection(result.inspectionId),
                           child: const Text('Просмотр'),
                         ),
                       ),
@@ -404,7 +451,9 @@ class _AndroidInspectionHomeTabState
                 height: 96,
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (error, _) => Text('Не удалось загрузить результаты: $error'),
+              error: (error, _) => Text(
+                'Не удалось загрузить результаты. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+              ),
             ),
           ),
         ),
@@ -423,9 +472,11 @@ class _AndroidInspectionHomeTabState
       return;
     }
 
-      setState(() => _isStarting = true);
-      try {
-      final detail = await ref.read(syncServiceProvider).startInspectionDraft(
+    setState(() => _isStarting = true);
+    try {
+      final detail = await ref
+          .read(syncServiceProvider)
+          .startInspectionDraft(
             request: InspectionStartRequest(
               userId: widget.session.userId,
               productObjectId: productId,
@@ -447,7 +498,14 @@ class _AndroidInspectionHomeTabState
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось начать проверку.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -459,7 +517,9 @@ class _AndroidInspectionHomeTabState
   Future<void> _runSync() async {
     setState(() => _isSyncing = true);
     try {
-      final report = await ref.read(syncServiceProvider).runManualSync(
+      final report = await ref
+          .read(syncServiceProvider)
+          .runManualSync(
             platform: AppPlatform.android,
             actorUserId: widget.session.userId,
           );
@@ -471,9 +531,9 @@ class _AndroidInspectionHomeTabState
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(report.summaryLabel())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(report.summaryLabel())));
     } catch (error) {
       if (!mounted) {
         return;
@@ -542,7 +602,9 @@ class _AndroidDraftsTab extends ConsumerWidget {
                   ),
                   isThreeLine: true,
                   trailing: TextButton(
-                    onPressed: canEdit ? () => onOpenInspection(draft.inspectionId) : null,
+                    onPressed: canEdit
+                        ? () => onOpenInspection(draft.inspectionId)
+                        : null,
                     child: Text(canEdit ? 'Открыть' : 'Заблокировано'),
                   ),
                 ),
@@ -551,7 +613,11 @@ class _AndroidDraftsTab extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Не удалось загрузить черновики: $error')),
+        error: (error, _) => Center(
+          child: Text(
+            'Не удалось загрузить черновики. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+          ),
+        ),
       ),
     );
   }
@@ -605,17 +671,18 @@ class _AndroidResultsTab extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Не удалось загрузить результаты: $error')),
+        error: (error, _) => Center(
+          child: Text(
+            'Не удалось загрузить результаты. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+          ),
+        ),
       ),
     );
   }
 }
 
 class AndroidInspectionDetailScreen extends ConsumerStatefulWidget {
-  const AndroidInspectionDetailScreen({
-    super.key,
-    required this.inspectionId,
-  });
+  const AndroidInspectionDetailScreen({super.key, required this.inspectionId});
 
   final String inspectionId;
 
@@ -632,7 +699,9 @@ class _AndroidInspectionDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    final detailAsync = ref.watch(inspectionDetailProvider(widget.inspectionId));
+    final detailAsync = ref.watch(
+      inspectionDetailProvider(widget.inspectionId),
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Детали проверки')),
@@ -661,8 +730,12 @@ class _AndroidInspectionDetailScreenState
                       ),
                       const SizedBox(height: 8),
                       Text(detail.productName),
-                      Text('Статус: ${_inspectionStatusLabel(detail.inspection.status)}'),
-                      Text('Статус синхронизации: ${_syncStatusLabel(detail.inspection.syncStatus)}'),
+                      Text(
+                        'Статус: ${_inspectionStatusLabel(detail.inspection.status)}',
+                      ),
+                      Text(
+                        'Статус синхронизации: ${_syncStatusLabel(detail.inspection.syncStatus)}',
+                      ),
                       Text('Отвечено: $answeredCount/${detail.items.length}'),
                       if (detail.inspection.completedAt != null)
                         Text('Завершена: ${detail.inspection.completedAt}'),
@@ -688,9 +761,13 @@ class _AndroidInspectionDetailScreenState
                 isGeneratingPdf: _isGeneratingPdf,
                 isCompleting: _isCompleting,
                 isSavingSignature: _isSavingSignature,
-                onAddSignature: detail.isEditable ? () => _addSignature(detail) : null,
+                onAddSignature: detail.isEditable
+                    ? () => _addSignature(detail)
+                    : null,
                 onPreviewPdf: () => _openPreview(detail),
-                onComplete: detail.isEditable ? () => _completeInspection(detail) : null,
+                onComplete: detail.isEditable
+                    ? () => _completeInspection(detail)
+                    : null,
               ),
               const SizedBox(height: 16),
               _SignatureSection(
@@ -711,7 +788,11 @@ class _AndroidInspectionDetailScreenState
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Не удалось загрузить проверку: $error')),
+        error: (error, _) => Center(
+          child: Text(
+            'Не удалось загрузить проверку. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+          ),
+        ),
       ),
     );
   }
@@ -736,7 +817,9 @@ class _AndroidInspectionDetailScreenState
 
     setState(() => _isSavingSignature = true);
     try {
-      await ref.read(inspectionsRepositoryProvider).saveSignature(
+      await ref
+          .read(inspectionsRepositoryProvider)
+          .saveSignature(
             inspectionId: detail.inspection.id,
             input: InspectionSignatureInput(
               signerUserId: session.userId,
@@ -751,7 +834,14 @@ class _AndroidInspectionDetailScreenState
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось сохранить подпись.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -761,13 +851,17 @@ class _AndroidInspectionDetailScreenState
   }
 
   Future<void> _deleteSignature(String signatureId) async {
-    final detail = ref.read(inspectionDetailProvider(widget.inspectionId)).valueOrNull;
+    final detail = ref
+        .read(inspectionDetailProvider(widget.inspectionId))
+        .valueOrNull;
     if (detail == null) {
       return;
     }
 
     try {
-      await ref.read(inspectionsRepositoryProvider).deleteSignature(
+      await ref
+          .read(inspectionsRepositoryProvider)
+          .deleteSignature(
             inspectionId: detail.inspection.id,
             signatureId: signatureId,
           );
@@ -777,7 +871,14 @@ class _AndroidInspectionDetailScreenState
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось удалить подпись.',
+            ),
+          ),
+        ),
       );
     }
   }
@@ -785,7 +886,9 @@ class _AndroidInspectionDetailScreenState
   Future<void> _openPreview(InspectionDraftDetail detail) async {
     setState(() => _isGeneratingPdf = true);
     try {
-      await ref.read(inspectionsRepositoryProvider).generatePdf(detail.inspection.id);
+      await ref
+          .read(inspectionsRepositoryProvider)
+          .generatePdf(detail.inspection.id);
       await _refreshInspection(detail.inspection.id);
       if (!mounted) {
         return;
@@ -802,7 +905,14 @@ class _AndroidInspectionDetailScreenState
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось сформировать PDF-отчёт.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -819,7 +929,9 @@ class _AndroidInspectionDetailScreenState
 
     setState(() => _isCompleting = true);
     try {
-      await ref.read(syncServiceProvider).completeInspection(
+      await ref
+          .read(syncServiceProvider)
+          .completeInspection(
             inspectionId: detail.inspection.id,
             actorUserId: session.userId,
           );
@@ -828,14 +940,25 @@ class _AndroidInspectionDetailScreenState
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Проверка завершена и поставлена в очередь на синхронизацию.')),
+        const SnackBar(
+          content: Text(
+            'Проверка завершена и поставлена в очередь на синхронизацию.',
+          ),
+        ),
       );
     } on StateError catch (error) {
       if (!mounted) {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось завершить проверку.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -884,10 +1007,7 @@ class _ActionSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Действия',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('Действия', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
             Wrap(
               spacing: 12,
@@ -903,7 +1023,9 @@ class _ActionSection extends StatelessWidget {
                         )
                       : const Icon(Icons.picture_as_pdf_outlined),
                   label: Text(
-                    detail.pdfInfo == null ? 'Сформировать предпросмотр PDF' : 'Обновить предпросмотр PDF',
+                    detail.pdfInfo == null
+                        ? 'Сформировать предпросмотр PDF'
+                        : 'Обновить предпросмотр PDF',
                   ),
                 ),
                 OutlinedButton.icon(
@@ -961,10 +1083,7 @@ class _SignatureSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Подписи',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('Подписи', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
             if (detail.signatures.isEmpty)
               const Text('Подписи пока не сохранены.')
@@ -977,7 +1096,9 @@ class _SignatureSection extends StatelessWidget {
                     height: 48,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Theme.of(context).dividerColor),
+                        border: Border.all(
+                          color: Theme.of(context).dividerColor,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: ClipRRect(
@@ -1053,8 +1174,12 @@ class AndroidInspectionPdfPreviewScreen extends ConsumerWidget {
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
-                      Text('Путь: ${detail.pdfInfo?.absolutePath ?? 'не сформирован'}'),
-                      Text('Контрольная сумма: ${detail.pdfInfo?.checksum ?? 'н/д'}'),
+                      Text(
+                        'Путь: ${detail.pdfInfo?.absolutePath ?? 'не сформирован'}',
+                      ),
+                      Text(
+                        'Контрольная сумма: ${detail.pdfInfo?.checksum ?? 'н/д'}',
+                      ),
                     ],
                   ),
                 ),
@@ -1065,9 +1190,9 @@ class AndroidInspectionPdfPreviewScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   child: SelectableText(
                     previewText,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontFamily: 'monospace',
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(fontFamily: 'monospace'),
                   ),
                 ),
               ),
@@ -1075,7 +1200,11 @@ class AndroidInspectionPdfPreviewScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Не удалось загрузить предпросмотр PDF: $error')),
+        error: (error, _) => Center(
+          child: Text(
+            'Не удалось загрузить предпросмотр PDF. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+          ),
+        ),
       ),
     );
   }
@@ -1172,7 +1301,10 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
                         height: 92,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) =>
-                            const SizedBox(width: 120, child: Icon(Icons.broken_image)),
+                            const SizedBox(
+                              width: 120,
+                              child: Icon(Icons.broken_image),
+                            ),
                       ),
                     );
                   },
@@ -1181,25 +1313,30 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
             ],
             const SizedBox(height: 12),
             switch (widget.item.resultType) {
-              'pass_fail_na' => _buildStatusSelector(
-                  const ['not_checked', 'pass', 'fail', 'na'],
-                ),
-              'pass_fail' => _buildStatusSelector(
-                  const ['not_checked', 'pass', 'fail'],
-                ),
+              'pass_fail_na' => _buildStatusSelector(const [
+                'not_checked',
+                'pass',
+                'fail',
+                'na',
+              ]),
+              'pass_fail' => _buildStatusSelector(const [
+                'not_checked',
+                'pass',
+                'fail',
+              ]),
               'number' => _buildValueEditor(
-                  label: 'Измеренное значение',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                    signed: false,
-                  ),
-                  saveAsMeasuredValue: true,
+                label: 'Измеренное значение',
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                  signed: false,
                 ),
+                saveAsMeasuredValue: true,
+              ),
               _ => _buildValueEditor(
-                  label: 'Текстовый результат',
-                  keyboardType: TextInputType.text,
-                  saveAsMeasuredValue: false,
-                ),
+                label: 'Текстовый результат',
+                keyboardType: TextInputType.text,
+                saveAsMeasuredValue: false,
+              ),
             },
           ],
         ),
@@ -1235,7 +1372,10 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
                   if (value == null) {
                     return;
                   }
-                  _saveAnswer(resultStatus: value, comment: _commentController.text);
+                  _saveAnswer(
+                    resultStatus: value,
+                    comment: _commentController.text,
+                  );
                 },
         ),
         const SizedBox(height: 12),
@@ -1255,9 +1395,9 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
             onPressed: _isSaving
                 ? null
                 : () => _saveAnswer(
-                      resultStatus: widget.item.resultStatus,
-                      comment: _commentController.text,
-                    ),
+                    resultStatus: widget.item.resultStatus,
+                    comment: _commentController.text,
+                  ),
             child: _isSaving
                 ? const SizedBox(
                     width: 16,
@@ -1302,12 +1442,14 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
             onPressed: _isSaving
                 ? null
                 : () => _saveAnswer(
-                      resultStatus:
-                          _valueController.text.trim().isEmpty ? 'not_checked' : 'pass',
-                      comment: saveAsMeasuredValue ? null : _valueController.text,
-                      measuredValue:
-                          saveAsMeasuredValue ? _valueController.text : null,
-                    ),
+                    resultStatus: _valueController.text.trim().isEmpty
+                        ? 'not_checked'
+                        : 'pass',
+                    comment: saveAsMeasuredValue ? null : _valueController.text,
+                    measuredValue: saveAsMeasuredValue
+                        ? _valueController.text
+                        : null,
+                  ),
             child: _isSaving
                 ? const SizedBox(
                     width: 16,
@@ -1328,7 +1470,9 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
   }) async {
     setState(() => _isSaving = true);
     try {
-      await ref.read(inspectionsRepositoryProvider).saveItemAnswer(
+      await ref
+          .read(inspectionsRepositoryProvider)
+          .saveItemAnswer(
             inspectionId: widget.draftId,
             answerId: widget.item.answerId,
             resultStatus: resultStatus,
@@ -1348,7 +1492,14 @@ class _DraftItemCardState extends ConsumerState<_DraftItemCard> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось сохранить ответ.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -1408,7 +1559,8 @@ class SignatureCaptureSheet extends StatefulWidget {
 class _SignatureCaptureSheetState extends State<SignatureCaptureSheet> {
   final _nameController = TextEditingController();
   final _roleController = TextEditingController();
-  final GlobalKey<SignaturePadState> _signatureKey = GlobalKey<SignaturePadState>();
+  final GlobalKey<SignaturePadState> _signatureKey =
+      GlobalKey<SignaturePadState>();
 
   @override
   void initState() {
@@ -1451,10 +1603,7 @@ class _SignatureCaptureSheetState extends State<SignatureCaptureSheet> {
                 decoration: const InputDecoration(labelText: 'Роль подписанта'),
               ),
               const SizedBox(height: 12),
-              SizedBox(
-                height: 220,
-                child: SignaturePad(key: _signatureKey),
-              ),
+              SizedBox(height: 220, child: SignaturePad(key: _signatureKey)),
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -1582,7 +1731,11 @@ class _SignaturePainter extends CustomPainter {
     for (final stroke in strokes) {
       if (stroke.length < 2) {
         if (stroke.isNotEmpty) {
-          canvas.drawCircle(stroke.first, 1.5, paint..style = PaintingStyle.fill);
+          canvas.drawCircle(
+            stroke.first,
+            1.5,
+            paint..style = PaintingStyle.fill,
+          );
           paint.style = PaintingStyle.stroke;
         }
         continue;

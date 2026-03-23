@@ -85,31 +85,32 @@ void main() {
       );
 
       expect(find.text('Справочные данные не готовы'), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.text('Токен Яндекс.Диска не настроен'),
-        250,
+      final tokenMissingTitle = find.text(
+        'Токен Яндекс.Диска не настроен',
+        skipOffstage: false,
       );
-      expect(find.text('Токен Яндекс.Диска не настроен'), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.text('Эта роль не может создавать или редактировать проверки.'),
-        300,
-      );
-      expect(
-        find.text('Эта роль не может создавать или редактировать проверки.'),
-        findsOneWidget,
-      );
+      await tester.scrollUntilVisible(tokenMissingTitle, 250);
+      expect(tokenMissingTitle, findsOneWidget);
       await tester.scrollUntilVisible(
         find.text(
-          'Откройте завершенные, ожидающие, синхронизированные или конфликтные результаты.',
+          'Эта роль не может создавать или редактировать проверки.',
+          skipOffstage: false,
         ),
         300,
       );
       expect(
         find.text(
-          'Откройте завершенные, ожидающие, синхронизированные или конфликтные результаты.',
+          'Эта роль не может создавать или редактировать проверки.',
+          skipOffstage: false,
         ),
         findsOneWidget,
       );
+      final resultsSubtitle = find.text(
+        'Откройте завершенные, ожидающие, синхронизированные или конфликтные результаты.',
+        skipOffstage: false,
+      );
+      await tester.scrollUntilVisible(resultsSubtitle, 300);
+      expect(resultsSubtitle, findsOneWidget);
     },
   );
 
@@ -171,19 +172,18 @@ void main() {
       expect(find.text('Синхронизировать'), findsOneWidget);
       expect(find.text('Настройки'), findsOneWidget);
       expect(find.text('Диагностика'), findsOneWidget);
-      await tester.scrollUntilVisible(
-        find.text('Есть ожидающая локальная синхронизация'),
-        300,
+      final pendingSyncTitle = find.text(
+        'Есть ожидающая локальная синхронизация',
+        skipOffstage: false,
       );
-      expect(
-        find.text('Есть ожидающая локальная синхронизация'),
-        findsOneWidget,
+      await tester.scrollUntilVisible(pendingSyncTitle, 300);
+      expect(pendingSyncTitle, findsOneWidget);
+      final missingTokenTitle = find.text(
+        'Токен Яндекс.Диска отсутствует',
+        skipOffstage: false,
       );
-      await tester.scrollUntilVisible(
-        find.text('Токен Яндекс.Диска отсутствует'),
-        300,
-      );
-      expect(find.text('Токен Яндекс.Диска отсутствует'), findsOneWidget);
+      await tester.scrollUntilVisible(missingTokenTitle, 300);
+      expect(missingTokenTitle, findsOneWidget);
     },
   );
 

@@ -21,6 +21,6 @@ class ObjectRelations extends Table {
 
   @override
   List<Set<Column<Object>>> get uniqueKeys => [
-        {parentObjectId, childObjectId},
-      ];
+    {parentObjectId, childObjectId},
+  ];
 }

@@ -85,8 +85,9 @@ void main() {
         .get();
 
     expect(stateTables, hasLength(20));
-    final versionRow =
-        await database.customSelect('PRAGMA user_version;').getSingle();
+    final versionRow = await database
+        .customSelect('PRAGMA user_version;')
+        .getSingle();
     expect(versionRow.data['user_version'], AppConstants.appSchemaVersion);
   });
 
@@ -96,7 +97,9 @@ void main() {
 
     final now = DateTime.now().toUtc().toIso8601String();
 
-    await database.into(database.syncQueue).insert(
+    await database
+        .into(database.syncQueue)
+        .insert(
           SyncQueueCompanion.insert(
             id: 'queue-1',
             direction: 'outgoing',
@@ -109,7 +112,9 @@ void main() {
           ),
         );
 
-    await database.update(database.syncQueue).replace(
+    await database
+        .update(database.syncQueue)
+        .replace(
           SyncQueueData(
             id: 'queue-1',
             direction: 'outgoing',
@@ -125,9 +130,9 @@ void main() {
           ),
         );
 
-    final queueRecord = await (database.select(database.syncQueue)
-          ..where((tbl) => tbl.id.equals('queue-1')))
-        .getSingle();
+    final queueRecord = await (database.select(
+      database.syncQueue,
+    )..where((tbl) => tbl.id.equals('queue-1'))).getSingle();
 
     expect(queueRecord.status, 'failed');
     expect(queueRecord.attemptCount, 1);

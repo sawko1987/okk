@@ -101,8 +101,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 label: 'Версия схемы синхронизации',
                 value: AppConstants.syncSchemaVersion,
               ),
-              _SettingsRow(label: 'Корень хранилища', value: paths.rootDir.path),
-              _SettingsRow(label: 'Файл базы данных', value: paths.databaseFile.path),
+              _SettingsRow(
+                label: 'Корень хранилища',
+                value: paths.rootDir.path,
+              ),
+              _SettingsRow(
+                label: 'Файл базы данных',
+                value: paths.databaseFile.path,
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -134,7 +140,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onPressed: canEditSyncSettings && !_isSaving && !_isClearing
                         ? _saveToken
                         : null,
-                    child: Text(_isSaving ? 'Сохранение...' : 'Сохранить токен'),
+                    child: Text(
+                      _isSaving ? 'Сохранение...' : 'Сохранить токен',
+                    ),
                   ),
                   OutlinedButton(
                     onPressed: canEditSyncSettings && !_isSaving && !_isClearing
@@ -177,7 +185,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     _SettingsRow(
                       label: 'Последняя ошибка синхронизации',
-                      value: diagnostics.lastError ?? 'Недоступно',
+                      value: diagnostics.lastError == null
+                          ? 'Недоступно'
+                          : userMessageFromText(
+                              diagnostics.lastError,
+                              fallback: 'Ошибка синхронизации.',
+                            ),
                     ),
                   ],
                 ),
@@ -249,10 +262,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            userMessageFromError(
-              error,
-              fallback: 'Не удалось удалить токен.',
-            ),
+            userMessageFromError(error, fallback: 'Не удалось удалить токен.'),
           ),
         ),
       );
@@ -265,10 +275,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 }
 
 class _SettingsCard extends StatelessWidget {
-  const _SettingsCard({
-    required this.title,
-    required this.children,
-  });
+  const _SettingsCard({required this.title, required this.children});
 
   final String title;
   final List<Widget> children;
@@ -292,10 +299,7 @@ class _SettingsCard extends StatelessWidget {
 }
 
 class _SettingsRow extends StatelessWidget {
-  const _SettingsRow({
-    required this.label,
-    required this.value,
-  });
+  const _SettingsRow({required this.label, required this.value});
 
   final String label;
   final String value;

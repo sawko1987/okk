@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/user_message.dart';
 import '../../auth/data/auth_service.dart';
 import '../data/master_data_repositories.dart';
 
@@ -19,7 +20,8 @@ class ObjectsAdminScreen extends ConsumerWidget {
         final selectedId = ref.watch(_selectedObjectIdProvider);
         final selectedObject = data.allObjects.firstWhere(
           (object) => object.id == selectedId,
-          orElse: () => data.allObjects.isNotEmpty ? data.allObjects.first : _emptyObject,
+          orElse: () =>
+              data.allObjects.isNotEmpty ? data.allObjects.first : _emptyObject,
         );
 
         return Padding(
@@ -62,7 +64,9 @@ class ObjectsAdminScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                         if (data.allObjects.isEmpty)
                           const Expanded(
-                            child: Center(child: Text('Объекты пока не созданы.')),
+                            child: Center(
+                              child: Text('Объекты пока не созданы.'),
+                            ),
                           )
                         else
                           Expanded(
@@ -101,35 +105,43 @@ class ObjectsAdminScreen extends ConsumerWidget {
                                   Expanded(
                                     child: Text(
                                       selectedObject.name,
-                                      style: Theme.of(context).textTheme.titleLarge,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleLarge,
                                     ),
                                   ),
                                   IconButton(
                                     onPressed: canEdit
                                         ? () => _editObject(
-                                              context,
-                                              ref,
-                                              data: data,
-                                              object: selectedObject,
-                                            )
+                                            context,
+                                            ref,
+                                            data: data,
+                                            object: selectedObject,
+                                          )
                                         : null,
                                     icon: const Icon(Icons.edit_outlined),
                                   ),
                                   IconButton(
                                     onPressed: canEdit
                                         ? () => _deleteObject(
-                                              context,
-                                              ref,
-                                              selectedObject.id,
-                                            )
+                                            context,
+                                            ref,
+                                            selectedObject.id,
+                                          )
                                         : null,
                                     icon: const Icon(Icons.delete_outline),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              _DetailRow('Тип', _objectTypeLabel(selectedObject.type)),
-                              _DetailRow('Код', selectedObject.code ?? 'Без кода'),
+                              _DetailRow(
+                                'Тип',
+                                _objectTypeLabel(selectedObject.type),
+                              ),
+                              _DetailRow(
+                                'Код',
+                                selectedObject.code ?? 'Без кода',
+                              ),
                               _DetailRow(
                                 'Участок',
                                 _sectionName(data, selectedObject.sectionId),
@@ -140,10 +152,15 @@ class ObjectsAdminScreen extends ConsumerWidget {
                               ),
                               _DetailRow(
                                 'Статус',
-                                selectedObject.isActive ? 'Активен' : 'Неактивен',
+                                selectedObject.isActive
+                                    ? 'Активен'
+                                    : 'Неактивен',
                               ),
                               if ((selectedObject.description ?? '').isNotEmpty)
-                                _DetailRow('Описание', selectedObject.description!),
+                                _DetailRow(
+                                  'Описание',
+                                  selectedObject.description!,
+                                ),
                             ],
                           ),
                   ),
@@ -154,8 +171,11 @@ class ObjectsAdminScreen extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) =>
-          Center(child: Text('Не удалось загрузить объекты: $error')),
+      error: (error, _) => Center(
+        child: Text(
+          'Не удалось загрузить объекты. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+        ),
+      ),
     );
   }
 
@@ -174,7 +194,8 @@ class ObjectsAdminScreen extends ConsumerWidget {
             '${_objectTypeLabel(node.object.type)} • ${node.object.code ?? 'без кода'}',
           ),
           selected: node.object.id == selectedObjectId,
-          onTap: () => ref.read(_selectedObjectIdProvider.notifier).state = node.object.id,
+          onTap: () => ref.read(_selectedObjectIdProvider.notifier).state =
+              node.object.id,
         ),
       ),
       for (final child in node.children)
@@ -201,7 +222,9 @@ class ObjectsAdminScreen extends ConsumerWidget {
     }
 
     try {
-      await ref.read(objectsRepositoryProvider).saveObject(
+      await ref
+          .read(objectsRepositoryProvider)
+          .saveObject(
             id: object?.id,
             type: result.type,
             sectionId: result.sectionId,
@@ -228,7 +251,9 @@ class ObjectsAdminScreen extends ConsumerWidget {
     String objectId,
   ) async {
     try {
-      await ref.read(objectsRepositoryProvider).deleteObject(
+      await ref
+          .read(objectsRepositoryProvider)
+          .deleteObject(
             objectId,
             actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
           );
@@ -433,8 +458,7 @@ class _ObjectEditorDialogState extends State<_ObjectEditorDialog> {
                 TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(labelText: 'Название'),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty
+                  validator: (value) => value == null || value.trim().isEmpty
                       ? 'Введите название'
                       : null,
                 ),
@@ -518,9 +542,7 @@ class _ObjectFormResult {
 }
 
 void _showObjectsMessage(BuildContext context, String message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message)),
-  );
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
 }
 
 String _objectTypeLabel(String type) {

@@ -40,7 +40,9 @@ void main() {
       db: db,
       paths: paths,
       logger: AppLogger(),
-      transport: _RetryTestTransport(Directory(p.join(tempRoot.path, 'remote'))),
+      transport: _RetryTestTransport(
+        Directory(p.join(tempRoot.path, 'remote')),
+      ),
       packageArchive: PackageArchive(),
       referencePackageRepository: ReferencePackageRepository(db, paths),
       inspectionsRepository: InspectionsRepository(db, paths),
@@ -54,80 +56,94 @@ void main() {
     }
   });
 
-  test('automatic retry respects next_attempt_at while manual sync forces retry',
-      () async {
-    await db.into(db.syncQueue).insert(
-          SyncQueueCompanion.insert(
-            id: 'queue-reference-failed',
-            direction: 'outgoing',
-            packageType: 'reference',
-            packageId: 'reference_pkg',
-            localPath: 'sync/outgoing/missing_reference_pkg',
-            status: 'failed',
-            attemptCount: const Value(1),
-            nextAttemptAt: Value(
-              DateTime.now().toUtc().add(const Duration(minutes: 10)).toIso8601String(),
+  test(
+    'automatic retry respects next_attempt_at while manual sync forces retry',
+    () async {
+      await db
+          .into(db.syncQueue)
+          .insert(
+            SyncQueueCompanion.insert(
+              id: 'queue-reference-failed',
+              direction: 'outgoing',
+              packageType: 'reference',
+              packageId: 'reference_pkg',
+              localPath: 'sync/outgoing/missing_reference_pkg',
+              status: 'failed',
+              attemptCount: const Value(1),
+              nextAttemptAt: Value(
+                DateTime.now()
+                    .toUtc()
+                    .add(const Duration(minutes: 10))
+                    .toIso8601String(),
+              ),
+              createdAt: nowIso(),
+              updatedAt: nowIso(),
             ),
-            createdAt: nowIso(),
-            updatedAt: nowIso(),
-          ),
-        );
+          );
 
-    await syncService.runAutomaticRetrySync(
-      platform: AppPlatform.windows,
-      actorUserId: 'user-default-admin',
-      trigger: 'resume',
-    );
+      await syncService.runAutomaticRetrySync(
+        platform: AppPlatform.windows,
+        actorUserId: 'user-default-admin',
+        trigger: 'resume',
+      );
 
-    var queueEntry = await (db.select(db.syncQueue)
-          ..where((tbl) => tbl.id.equals('queue-reference-failed')))
-        .getSingle();
-    expect(queueEntry.attemptCount, 1);
+      var queueEntry = await (db.select(
+        db.syncQueue,
+      )..where((tbl) => tbl.id.equals('queue-reference-failed'))).getSingle();
+      expect(queueEntry.attemptCount, 1);
 
-    await syncService.runManualSync(
-      platform: AppPlatform.windows,
-      actorUserId: 'user-default-admin',
-    );
+      await syncService.runManualSync(
+        platform: AppPlatform.windows,
+        actorUserId: 'user-default-admin',
+      );
 
-    queueEntry = await (db.select(db.syncQueue)
-          ..where((tbl) => tbl.id.equals('queue-reference-failed')))
-        .getSingle();
-    expect(queueEntry.attemptCount, 2);
-    expect(queueEntry.status, 'failed');
-    expect(queueEntry.nextAttemptAt, isNotNull);
-  });
+      queueEntry = await (db.select(
+        db.syncQueue,
+      )..where((tbl) => tbl.id.equals('queue-reference-failed'))).getSingle();
+      expect(queueEntry.attemptCount, 2);
+      expect(queueEntry.status, 'failed');
+      expect(queueEntry.nextAttemptAt, isNotNull);
+    },
+  );
 
-  test('diagnostics expose retry-eligible queue entries and last retry timestamp',
-      () async {
-    await db.into(db.syncQueue).insert(
-          SyncQueueCompanion.insert(
-            id: 'queue-reference-due',
-            direction: 'outgoing',
-            packageType: 'reference',
-            packageId: 'reference_due_pkg',
-            localPath: 'sync/outgoing/missing_reference_due_pkg',
-            status: 'failed',
-            nextAttemptAt: Value(
-              DateTime.now().toUtc().subtract(const Duration(minutes: 1)).toIso8601String(),
+  test(
+    'diagnostics expose retry-eligible queue entries and last retry timestamp',
+    () async {
+      await db
+          .into(db.syncQueue)
+          .insert(
+            SyncQueueCompanion.insert(
+              id: 'queue-reference-due',
+              direction: 'outgoing',
+              packageType: 'reference',
+              packageId: 'reference_due_pkg',
+              localPath: 'sync/outgoing/missing_reference_due_pkg',
+              status: 'failed',
+              nextAttemptAt: Value(
+                DateTime.now()
+                    .toUtc()
+                    .subtract(const Duration(minutes: 1))
+                    .toIso8601String(),
+              ),
+              createdAt: nowIso(),
+              updatedAt: nowIso(),
             ),
-            createdAt: nowIso(),
-            updatedAt: nowIso(),
-          ),
-        );
+          );
 
-    var diagnostics = await syncService.loadDiagnostics();
-    expect(diagnostics.retryEligibleCount, 1);
-    expect(diagnostics.lastRetryAt, isNull);
+      var diagnostics = await syncService.loadDiagnostics();
+      expect(diagnostics.retryEligibleCount, 1);
+      expect(diagnostics.lastRetryAt, isNull);
 
-    await syncService.runAutomaticRetrySync(
-      platform: AppPlatform.windows,
-      actorUserId: 'user-default-admin',
-      trigger: 'resume',
-    );
+      await syncService.runAutomaticRetrySync(
+        platform: AppPlatform.windows,
+        actorUserId: 'user-default-admin',
+        trigger: 'resume',
+      );
 
-    diagnostics = await syncService.loadDiagnostics();
-    expect(diagnostics.lastRetryAt, isNotNull);
-  });
+      diagnostics = await syncService.loadDiagnostics();
+      expect(diagnostics.lastRetryAt, isNotNull);
+    },
+  );
 }
 
 class _RetryTestTransport implements SyncTransport {

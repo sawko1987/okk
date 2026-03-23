@@ -112,11 +112,7 @@ List<int> buildInspectionPdfBytes(InspectionReportDocumentInput input) {
         ]
       : sourceLines;
 
-  final operations = <String>[
-    'BT',
-    '/F1 11 Tf',
-    '50 792 Td',
-  ];
+  final operations = <String>['BT', '/F1 11 Tf', '50 792 Td'];
   for (var index = 0; index < lines.length; index++) {
     final escaped = _escapePdfText(_asciiSafe(lines[index]));
     if (index == 0) {

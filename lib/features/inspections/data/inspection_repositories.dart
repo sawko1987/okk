@@ -1313,7 +1313,9 @@ class InspectionsRepository {
               ..where(
                 _db.syncQueue.status.equals('failed') &
                     (_db.syncQueue.nextAttemptAt.isNull() |
-                        _db.syncQueue.nextAttemptAt.isSmallerOrEqualValue(nowIso())),
+                        _db.syncQueue.nextAttemptAt.isSmallerOrEqualValue(
+                          nowIso(),
+                        )),
               ))
             .getSingle();
     final conflictExpression = _db.inspections.id.count();
@@ -1656,7 +1658,9 @@ class InspectionsRepository {
       );
     }
     if (detail.signatures.isEmpty) {
-      throw StateError('Перед завершением проверки нужна хотя бы одна подпись.');
+      throw StateError(
+        'Перед завершением проверки нужна хотя бы одна подпись.',
+      );
     }
   }
 

@@ -32,10 +32,7 @@ List<AppCapability> capabilitiesForRole(String? roleCode) {
         AppCapability.viewResults,
       ];
     case 'viewer':
-      return const [
-        AppCapability.runSync,
-        AppCapability.viewResults,
-      ];
+      return const [AppCapability.runSync, AppCapability.viewResults];
     default:
       return const [];
   }

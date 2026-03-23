@@ -22,50 +22,53 @@ void main() {
     await database.close();
   });
 
-  test('creates and deletes enterprise structure in dependency order', () async {
-    await structureRepository.saveDepartment(
-      name: 'Механообработка',
-      code: 'DEP-1',
-      sortOrder: 10,
-    );
+  test(
+    'creates and deletes enterprise structure in dependency order',
+    () async {
+      await structureRepository.saveDepartment(
+        name: 'Механообработка',
+        code: 'DEP-1',
+        sortOrder: 10,
+      );
 
-    final treeAfterDepartment = await structureRepository.loadTree();
-    final departmentId = treeAfterDepartment.single.department.id;
+      final treeAfterDepartment = await structureRepository.loadTree();
+      final departmentId = treeAfterDepartment.single.department.id;
 
-    await structureRepository.saveWorkshop(
-      departmentId: departmentId,
-      name: 'Цех 1',
-      code: 'WS-1',
-      sortOrder: 20,
-    );
+      await structureRepository.saveWorkshop(
+        departmentId: departmentId,
+        name: 'Цех 1',
+        code: 'WS-1',
+        sortOrder: 20,
+      );
 
-    final treeAfterWorkshop = await structureRepository.loadTree();
-    final workshopId = treeAfterWorkshop.single.workshops.single.workshop.id;
+      final treeAfterWorkshop = await structureRepository.loadTree();
+      final workshopId = treeAfterWorkshop.single.workshops.single.workshop.id;
 
-    await structureRepository.saveSection(
-      workshopId: workshopId,
-      name: 'Участок А',
-      code: 'SEC-A',
-      sortOrder: 30,
-    );
+      await structureRepository.saveSection(
+        workshopId: workshopId,
+        name: 'Участок А',
+        code: 'SEC-A',
+        sortOrder: 30,
+      );
 
-    final fullTree = await structureRepository.loadTree();
-    expect(fullTree, hasLength(1));
-    expect(fullTree.single.workshops, hasLength(1));
-    expect(fullTree.single.workshops.single.sections, hasLength(1));
+      final fullTree = await structureRepository.loadTree();
+      expect(fullTree, hasLength(1));
+      expect(fullTree.single.workshops, hasLength(1));
+      expect(fullTree.single.workshops.single.sections, hasLength(1));
 
-    await expectLater(
-      () => structureRepository.deleteDepartment(departmentId),
-      throwsA(isA<StateError>()),
-    );
+      await expectLater(
+        () => structureRepository.deleteDepartment(departmentId),
+        throwsA(isA<StateError>()),
+      );
 
-    final sectionId = fullTree.single.workshops.single.sections.single.id;
-    await structureRepository.deleteSection(sectionId);
-    await structureRepository.deleteWorkshop(workshopId);
-    await structureRepository.deleteDepartment(departmentId);
+      final sectionId = fullTree.single.workshops.single.sections.single.id;
+      await structureRepository.deleteSection(sectionId);
+      await structureRepository.deleteWorkshop(workshopId);
+      await structureRepository.deleteDepartment(departmentId);
 
-    expect(await structureRepository.loadTree(), isEmpty);
-  });
+      expect(await structureRepository.loadTree(), isEmpty);
+    },
+  );
 
   test('prevents cycles in object tree', () async {
     await objectsRepository.saveObject(
@@ -102,53 +105,58 @@ void main() {
     );
   });
 
-  test('persists checklist items and blocks component deletion while referenced', () async {
-    await objectsRepository.saveObject(
-      type: 'product',
-      name: 'Изделие 2',
-      sortOrder: 1,
-      isActive: true,
-    );
-    final objectId = (await objectsRepository.listActiveObjects()).single.id;
+  test(
+    'persists checklist items and blocks component deletion while referenced',
+    () async {
+      await objectsRepository.saveObject(
+        type: 'product',
+        name: 'Изделие 2',
+        sortOrder: 1,
+        isActive: true,
+      );
+      final objectId = (await objectsRepository.listActiveObjects()).single.id;
 
-    await componentsRepository.saveComponent(
-      objectId: objectId,
-      name: 'Подшипник',
-      sortOrder: 1,
-      isRequired: true,
-    );
-    final componentId = (await componentsRepository.listByObject(objectId)).single.id;
+      await componentsRepository.saveComponent(
+        objectId: objectId,
+        name: 'Подшипник',
+        sortOrder: 1,
+        isRequired: true,
+      );
+      final componentId = (await componentsRepository.listByObject(
+        objectId,
+      )).single.id;
 
-    final checklistId = await checklistsRepository.saveChecklist(
-      name: 'Приемка',
-      description: 'Базовый чек-лист',
-      isActive: true,
-    );
+      final checklistId = await checklistsRepository.saveChecklist(
+        name: 'Приемка',
+        description: 'Базовый чек-лист',
+        isActive: true,
+      );
 
-    await checklistsRepository.saveChecklistItem(
-      checklistId: checklistId,
-      componentId: componentId,
-      title: 'Проверить подшипник',
-      resultType: 'pass_fail_na',
-      isRequired: true,
-      sortOrder: 1,
-    );
-    await checklistsRepository.saveChecklistBinding(
-      checklistId: checklistId,
-      targetType: 'object',
-      targetId: objectId,
-      priority: 10,
-      isRequired: true,
-    );
+      await checklistsRepository.saveChecklistItem(
+        checklistId: checklistId,
+        componentId: componentId,
+        title: 'Проверить подшипник',
+        resultType: 'pass_fail_na',
+        isRequired: true,
+        sortOrder: 1,
+      );
+      await checklistsRepository.saveChecklistBinding(
+        checklistId: checklistId,
+        targetType: 'object',
+        targetId: objectId,
+        priority: 10,
+        isRequired: true,
+      );
 
-    final detail = await checklistsRepository.getChecklistDetail(checklistId);
-    expect(detail, isNotNull);
-    expect(detail!.items, hasLength(1));
-    expect(detail.bindings, hasLength(1));
+      final detail = await checklistsRepository.getChecklistDetail(checklistId);
+      expect(detail, isNotNull);
+      expect(detail!.items, hasLength(1));
+      expect(detail.bindings, hasLength(1));
 
-    await expectLater(
-      () => componentsRepository.deleteComponent(componentId),
-      throwsA(isA<StateError>()),
-    );
-  });
+      await expectLater(
+        () => componentsRepository.deleteComponent(componentId),
+        throwsA(isA<StateError>()),
+      );
+    },
+  );
 }

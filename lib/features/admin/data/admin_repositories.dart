@@ -14,30 +14,21 @@ import '../../../data/sqlite/repository_support.dart';
 import '../../../data/storage/app_paths_provider.dart';
 
 class ManagedUser {
-  const ManagedUser({
-    required this.user,
-    required this.role,
-  });
+  const ManagedUser({required this.user, required this.role});
 
   final User user;
   final Role role;
 }
 
 class AuditEntryView {
-  const AuditEntryView({
-    required this.entry,
-    required this.userName,
-  });
+  const AuditEntryView({required this.entry, required this.userName});
 
   final AuditLogData entry;
   final String? userName;
 }
 
 class TrashEntryView {
-  const TrashEntryView({
-    required this.entry,
-    required this.deletedByUserName,
-  });
+  const TrashEntryView({required this.entry, required this.deletedByUserName});
 
   final TrashBinData entry;
   final String? deletedByUserName;
@@ -99,8 +90,10 @@ final trashEntriesProvider = FutureProvider<List<TrashEntryView>>(
 
 final componentImagesProvider =
     FutureProvider.family<List<ComponentImage>, String>((ref, componentId) {
-  return ref.watch(componentImagesRepositoryProvider).listByComponent(componentId);
-});
+      return ref
+          .watch(componentImagesRepositoryProvider)
+          .listByComponent(componentId);
+    });
 
 final syncQueueEntriesProvider = FutureProvider<List<SyncQueueData>>(
   (ref) => ref.watch(referencePackageRepositoryProvider).listQueueEntries(),
@@ -116,12 +109,11 @@ class UsersRepository {
   final AppDatabase _db;
 
   Future<List<ManagedUser>> listUsers() async {
-    final users = await (_db.select(_db.users)
-          ..where((tbl) => tbl.isDeleted.equals(false))
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.fullName),
-          ]))
-        .get();
+    final users =
+        await (_db.select(_db.users)
+              ..where((tbl) => tbl.isDeleted.equals(false))
+              ..orderBy([(tbl) => OrderingTerm.asc(tbl.fullName)]))
+            .get();
     final roles = await _db.select(_db.roles).get();
     final rolesById = {for (final role in roles) role.id: role};
 
@@ -129,7 +121,8 @@ class UsersRepository {
         .map(
           (user) => ManagedUser(
             user: user,
-            role: rolesById[user.roleId] ??
+            role:
+                rolesById[user.roleId] ??
                 Role(
                   id: 'missing',
                   code: 'viewer',
@@ -144,11 +137,9 @@ class UsersRepository {
   }
 
   Future<List<Role>> listRoles() {
-    return (_db.select(_db.roles)
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.name),
-          ]))
-        .get();
+    return (_db.select(
+      _db.roles,
+    )..orderBy([(tbl) => OrderingTerm.asc(tbl.name)])).get();
   }
 
   Future<void> saveUser({
@@ -173,13 +164,17 @@ class UsersRepository {
 
     if (id == null) {
       final newId = generateId('user');
-      await _db.into(_db.users).insert(
+      await _db
+          .into(_db.users)
+          .insert(
             UsersCompanion.insert(
               id: newId,
               fullName: fullName.trim(),
               shortName: Value(cleanedShortName),
               roleId: roleId,
-              pinHash: hashedPin == null ? const Value.absent() : Value(hashedPin),
+              pinHash: hashedPin == null
+                  ? const Value.absent()
+                  : Value(hashedPin),
               isActive: Value(isActive),
               createdAt: now,
               updatedAt: now,
@@ -192,7 +187,7 @@ class UsersRepository {
         userId: actorUserId,
         entityType: 'user',
         entityId: newId,
-        message: 'User created',
+        message: 'Пользователь создан.',
         payload: {
           'full_name': fullName.trim(),
           'role_id': roleId,
@@ -202,8 +197,9 @@ class UsersRepository {
       return;
     }
 
-    final existing = await (_db.select(_db.users)..where((tbl) => tbl.id.equals(id)))
-        .getSingle();
+    final existing = await (_db.select(
+      _db.users,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
     await (_db.update(_db.users)..where((tbl) => tbl.id.equals(id))).write(
       UsersCompanion(
         fullName: Value(fullName.trim()),
@@ -222,7 +218,7 @@ class UsersRepository {
       userId: actorUserId,
       entityType: 'user',
       entityId: id,
-      message: 'User updated',
+      message: 'Пользователь обновлен.',
       payload: {
         'full_name': fullName.trim(),
         'role_id': roleId,
@@ -231,18 +227,16 @@ class UsersRepository {
     );
   }
 
-  Future<void> deleteUser(
-    String id, {
-    String? actorUserId,
-  }) async {
+  Future<void> deleteUser(String id, {String? actorUserId}) async {
     await requireUserCapability(
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageUsers,
       deniedMessage: 'Только администратор может управлять пользователями.',
     );
-    final existing = await (_db.select(_db.users)..where((tbl) => tbl.id.equals(id)))
-        .getSingle();
+    final existing = await (_db.select(
+      _db.users,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
     final now = nowIso();
 
     await (_db.update(_db.users)..where((tbl) => tbl.id.equals(id))).write(
@@ -274,7 +268,7 @@ class UsersRepository {
       userId: actorUserId,
       entityType: 'user',
       entityId: id,
-      message: 'User moved to trash',
+      message: 'Пользователь перемещен в корзину.',
     );
   }
 }
@@ -289,7 +283,8 @@ class ComponentImagesRepository {
     return (_db.select(_db.componentImages)
           ..where(
             (tbl) =>
-                tbl.componentId.equals(componentId) & tbl.isDeleted.equals(false),
+                tbl.componentId.equals(componentId) &
+                tbl.isDeleted.equals(false),
           )
           ..orderBy([
             (tbl) => OrderingTerm.asc(tbl.sortOrder),
@@ -307,7 +302,8 @@ class ComponentImagesRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Только администратор может изменять медиафайлы компонентов.',
+      deniedMessage:
+          'Только администратор может изменять медиафайлы компонентов.',
     );
     final sanitizedPaths = sourcePaths
         .map((path) => path.trim())
@@ -317,7 +313,9 @@ class ComponentImagesRepository {
       return;
     }
 
-    final targetDir = Directory(_paths.resolveRelativePath('media/components/$componentId'));
+    final targetDir = Directory(
+      _paths.resolveRelativePath('media/components/$componentId'),
+    );
     await targetDir.create(recursive: true);
     final existing = await listByComponent(componentId);
     var sortOrder = existing.length;
@@ -328,14 +326,22 @@ class ComponentImagesRepository {
         throw StateError('Source file does not exist: $sourcePath');
       }
 
-      final fileName = await _nextAvailableFileName(targetDir, p.basename(sourcePath));
+      final fileName = await _nextAvailableFileName(
+        targetDir,
+        p.basename(sourcePath),
+      );
       final destinationFile = File(p.join(targetDir.path, fileName));
       await sourceFile.copy(destinationFile.path);
 
       final checksum = await checksumFile(destinationFile);
-      final relativePath = _paths.componentImageRelativePath(componentId, fileName);
+      final relativePath = _paths.componentImageRelativePath(
+        componentId,
+        fileName,
+      );
 
-      await _db.into(_db.componentImages).insert(
+      await _db
+          .into(_db.componentImages)
+          .insert(
             ComponentImagesCompanion.insert(
               id: generateId('component-image'),
               componentId: componentId,
@@ -358,28 +364,26 @@ class ComponentImagesRepository {
       userId: actorUserId,
       entityType: 'component',
       entityId: componentId,
-      message: 'Component images imported',
+      message: 'Изображения компонента импортированы.',
       payload: {'count': sanitizedPaths.length},
     );
   }
 
-  Future<void> deleteImage(
-    String imageId, {
-    String? actorUserId,
-  }) async {
+  Future<void> deleteImage(String imageId, {String? actorUserId}) async {
     await requireUserCapability(
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Только администратор может изменять медиафайлы компонентов.',
+      deniedMessage:
+          'Только администратор может изменять медиафайлы компонентов.',
     );
-    final existing = await (_db.select(_db.componentImages)
-          ..where((tbl) => tbl.id.equals(imageId)))
-        .getSingle();
+    final existing = await (_db.select(
+      _db.componentImages,
+    )..where((tbl) => tbl.id.equals(imageId))).getSingle();
     final now = nowIso();
-    await (_db.update(_db.componentImages)
-          ..where((tbl) => tbl.id.equals(imageId)))
-        .write(
+    await (_db.update(
+      _db.componentImages,
+    )..where((tbl) => tbl.id.equals(imageId))).write(
       ComponentImagesCompanion(
         isDeleted: const Value(true),
         deletedAt: Value(now),
@@ -408,11 +412,14 @@ class ComponentImagesRepository {
       userId: actorUserId,
       entityType: 'component_image',
       entityId: imageId,
-      message: 'Component image moved to trash',
+      message: 'Изображение компонента перемещено в корзину.',
     );
   }
 
-  Future<String> _nextAvailableFileName(Directory dir, String originalName) async {
+  Future<String> _nextAvailableFileName(
+    Directory dir,
+    String originalName,
+  ) async {
     final extension = p.extension(originalName);
     final baseName = p.basenameWithoutExtension(originalName);
     var candidate = originalName;
@@ -449,21 +456,18 @@ class AuditRepository {
   final AppDatabase _db;
 
   Future<List<AuditEntryView>> listRecent({int limit = 200}) async {
-    final entries = await (_db.select(_db.auditLog)
-          ..orderBy([
-            (tbl) => OrderingTerm.desc(tbl.happenedAt),
-          ])
-          ..limit(limit))
-        .get();
+    final entries =
+        await (_db.select(_db.auditLog)
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.happenedAt)])
+              ..limit(limit))
+            .get();
     final users = await _db.select(_db.users).get();
     final namesById = {for (final user in users) user.id: user.fullName};
 
     return entries
         .map(
-          (entry) => AuditEntryView(
-            entry: entry,
-            userName: namesById[entry.userId],
-          ),
+          (entry) =>
+              AuditEntryView(entry: entry, userName: namesById[entry.userId]),
         )
         .toList(growable: false);
   }
@@ -475,12 +479,14 @@ class TrashRepository {
   final AppDatabase _db;
 
   Future<List<TrashEntryView>> listEntries() async {
-    final entries = await (_db.select(_db.trashBin)
-          ..where((tbl) => tbl.restoredAt.isNull() & tbl.permanentlyDeletedAt.isNull())
-          ..orderBy([
-            (tbl) => OrderingTerm.desc(tbl.deletedAt),
-          ]))
-        .get();
+    final entries =
+        await (_db.select(_db.trashBin)
+              ..where(
+                (tbl) =>
+                    tbl.restoredAt.isNull() & tbl.permanentlyDeletedAt.isNull(),
+              )
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.deletedAt)]))
+            .get();
     final users = await _db.select(_db.users).get();
     final namesById = {for (final user in users) user.id: user.fullName};
 
@@ -494,19 +500,17 @@ class TrashRepository {
         .toList(growable: false);
   }
 
-  Future<void> restoreEntry(
-    String trashId, {
-    String? actorUserId,
-  }) async {
+  Future<void> restoreEntry(String trashId, {String? actorUserId}) async {
     await requireUserCapability(
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageTrash,
-      deniedMessage: 'Только администратор может восстанавливать элементы из корзины.',
+      deniedMessage:
+          'Только администратор может восстанавливать элементы из корзины.',
     );
-    final trashEntry = await (_db.select(_db.trashBin)
-          ..where((tbl) => tbl.id.equals(trashId)))
-        .getSingle();
+    final trashEntry = await (_db.select(
+      _db.trashBin,
+    )..where((tbl) => tbl.id.equals(trashId))).getSingle();
     final now = nowIso();
 
     await _db.transaction(() async {
@@ -521,33 +525,50 @@ class TrashRepository {
           await _restoreSoftDeleted(_db.sections, trashEntry.entityId, now);
           break;
         case 'object':
-          await _restoreSoftDeleted(_db.catalogObjects, trashEntry.entityId, now);
+          await _restoreSoftDeleted(
+            _db.catalogObjects,
+            trashEntry.entityId,
+            now,
+          );
           break;
         case 'component':
           await _restoreSoftDeleted(_db.components, trashEntry.entityId, now);
           break;
         case 'component_image':
-          await _restoreSoftDeleted(_db.componentImages, trashEntry.entityId, now);
+          await _restoreSoftDeleted(
+            _db.componentImages,
+            trashEntry.entityId,
+            now,
+          );
           break;
         case 'checklist':
           await _restoreSoftDeleted(_db.checklists, trashEntry.entityId, now);
           break;
         case 'checklist_item':
-          await _restoreSoftDeleted(_db.checklistItems, trashEntry.entityId, now);
+          await _restoreSoftDeleted(
+            _db.checklistItems,
+            trashEntry.entityId,
+            now,
+          );
           break;
         case 'checklist_binding':
-          await _restoreSoftDeleted(_db.checklistBindings, trashEntry.entityId, now);
+          await _restoreSoftDeleted(
+            _db.checklistBindings,
+            trashEntry.entityId,
+            now,
+          );
           break;
         case 'user':
           await _restoreSoftDeleted(_db.users, trashEntry.entityId, now);
           break;
         default:
-          throw StateError('Restore is not supported for ${trashEntry.entityType}.');
+          throw StateError(
+            'Restore is not supported for ${trashEntry.entityType}.',
+          );
       }
 
-      await (_db.update(_db.trashBin)..where((tbl) => tbl.id.equals(trashId))).write(
-        TrashBinCompanion(restoredAt: Value(now)),
-      );
+      await (_db.update(_db.trashBin)..where((tbl) => tbl.id.equals(trashId)))
+          .write(TrashBinCompanion(restoredAt: Value(now)));
     });
 
     await recordAudit(
@@ -557,7 +578,7 @@ class TrashRepository {
       userId: actorUserId,
       entityType: trashEntry.entityType,
       entityId: trashEntry.entityId,
-      message: 'Entity restored from trash',
+      message: 'Запись восстановлена из корзины.',
     );
   }
 
@@ -582,25 +603,22 @@ class ReferencePackageRepository {
   final AppPaths _paths;
 
   Future<List<SyncQueueData>> listQueueEntries() {
-    return (_db.select(_db.syncQueue)
-          ..orderBy([
-            (tbl) => OrderingTerm.desc(tbl.createdAt),
-          ]))
-        .get();
+    return (_db.select(
+      _db.syncQueue,
+    )..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)])).get();
   }
 
   Future<DeviceInfoData?> loadDeviceInfo() {
     return _db.select(_db.deviceInfo).getSingleOrNull();
   }
 
-  Future<ReferencePackageResult> exportPackage({
-    String? actorUserId,
-  }) async {
+  Future<ReferencePackageResult> exportPackage({String? actorUserId}) async {
     await requireUserCapability(
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageSync,
-      deniedMessage: 'Только администратор может публиковать пакеты справочников.',
+      deniedMessage:
+          'Только администратор может публиковать пакеты справочников.',
     );
     final packageId = generateId('reference');
     final exportDir = Directory(
@@ -609,58 +627,68 @@ class ReferencePackageRepository {
     final dataDir = Directory(p.join(exportDir.path, 'data'));
     await dataDir.create(recursive: true);
 
-    final users = await (_db.select(_db.users)
-          ..where((tbl) => tbl.isDeleted.equals(false)))
-        .get();
-    final departments = await (_db.select(_db.departments)
-          ..where((tbl) => tbl.isDeleted.equals(false)))
-        .get();
-    final workshops = await (_db.select(_db.workshops)
-          ..where((tbl) => tbl.isDeleted.equals(false)))
-        .get();
-    final sections = await (_db.select(_db.sections)
-          ..where((tbl) => tbl.isDeleted.equals(false)))
-        .get();
-    final objects = await (_db.select(_db.catalogObjects)
-          ..where((tbl) => tbl.isDeleted.equals(false)))
-        .get();
-    final relations = await (_db.select(_db.objectRelations)
-          ..where((tbl) => tbl.isDeleted.equals(false)))
-        .get();
-    final components = await (_db.select(_db.components)
-          ..where((tbl) => tbl.isDeleted.equals(false)))
-        .get();
-    final componentImages = await (_db.select(_db.componentImages)
-          ..where((tbl) => tbl.isDeleted.equals(false)))
-        .get();
-    final checklists = await (_db.select(_db.checklists)
-          ..where((tbl) => tbl.isDeleted.equals(false)))
-        .get();
-    final checklistItems = await (_db.select(_db.checklistItems)
-          ..where((tbl) => tbl.isDeleted.equals(false)))
-        .get();
-    final checklistBindings = await (_db.select(_db.checklistBindings)
-          ..where((tbl) => tbl.isDeleted.equals(false)))
-        .get();
+    final users = await (_db.select(
+      _db.users,
+    )..where((tbl) => tbl.isDeleted.equals(false))).get();
+    final departments = await (_db.select(
+      _db.departments,
+    )..where((tbl) => tbl.isDeleted.equals(false))).get();
+    final workshops = await (_db.select(
+      _db.workshops,
+    )..where((tbl) => tbl.isDeleted.equals(false))).get();
+    final sections = await (_db.select(
+      _db.sections,
+    )..where((tbl) => tbl.isDeleted.equals(false))).get();
+    final objects = await (_db.select(
+      _db.catalogObjects,
+    )..where((tbl) => tbl.isDeleted.equals(false))).get();
+    final relations = await (_db.select(
+      _db.objectRelations,
+    )..where((tbl) => tbl.isDeleted.equals(false))).get();
+    final components = await (_db.select(
+      _db.components,
+    )..where((tbl) => tbl.isDeleted.equals(false))).get();
+    final componentImages = await (_db.select(
+      _db.componentImages,
+    )..where((tbl) => tbl.isDeleted.equals(false))).get();
+    final checklists = await (_db.select(
+      _db.checklists,
+    )..where((tbl) => tbl.isDeleted.equals(false))).get();
+    final checklistItems = await (_db.select(
+      _db.checklistItems,
+    )..where((tbl) => tbl.isDeleted.equals(false))).get();
+    final checklistBindings = await (_db.select(
+      _db.checklistBindings,
+    )..where((tbl) => tbl.isDeleted.equals(false))).get();
 
     final payloads = <String, Object>{
       'users.json': users.map(_userToJson).toList(growable: false),
       'org_structure.json': {
-        'departments': departments.map(_departmentToJson).toList(growable: false),
+        'departments': departments
+            .map(_departmentToJson)
+            .toList(growable: false),
         'workshops': workshops.map(_workshopToJson).toList(growable: false),
         'sections': sections.map(_sectionToJson).toList(growable: false),
       },
       'objects.json': objects.map(_objectToJson).toList(growable: false),
-      'object_relations.json':
-          relations.map(_relationToJson).toList(growable: false),
-      'components.json': components.map(_componentToJson).toList(growable: false),
-      'component_images.json':
-          componentImages.map(_componentImageToJson).toList(growable: false),
-      'checklists.json': checklists.map(_checklistToJson).toList(growable: false),
-      'checklist_items.json':
-          checklistItems.map(_checklistItemToJson).toList(growable: false),
-      'checklist_bindings.json':
-          checklistBindings.map(_checklistBindingToJson).toList(growable: false),
+      'object_relations.json': relations
+          .map(_relationToJson)
+          .toList(growable: false),
+      'components.json': components
+          .map(_componentToJson)
+          .toList(growable: false),
+      'component_images.json': componentImages
+          .map(_componentImageToJson)
+          .toList(growable: false),
+      'checklists.json': checklists
+          .map(_checklistToJson)
+          .toList(growable: false),
+      'checklist_items.json': checklistItems
+          .map(_checklistItemToJson)
+          .toList(growable: false),
+      'checklist_bindings.json': checklistBindings
+          .map(_checklistBindingToJson)
+          .toList(growable: false),
       'versions.json': {
         'db_schema_version': _db.schemaVersion,
         'sync_schema_version': '1',
@@ -720,7 +748,9 @@ class ReferencePackageRepository {
     );
 
     final queueRecordId = generateId('queue');
-    await _db.into(_db.syncQueue).insert(
+    await _db
+        .into(_db.syncQueue)
+        .insert(
           SyncQueueCompanion.insert(
             id: queueRecordId,
             direction: 'outgoing',
@@ -740,7 +770,8 @@ class ReferencePackageRepository {
       userId: actorUserId,
       entityType: 'reference_package',
       entityId: packageId,
-      message: 'Reference package exported to local sync/outgoing',
+      message:
+          'Пакет справочников экспортирован в локальную очередь синхронизации.',
     );
 
     return ReferencePackageResult(
@@ -751,136 +782,136 @@ class ReferencePackageRepository {
   }
 
   Map<String, Object?> _userToJson(User user) => {
-        'id': user.id,
-        'full_name': user.fullName,
-        'short_name': user.shortName,
-        'role_id': user.roleId,
-        'is_active': user.isActive,
-        'version': user.version,
-        'created_at': user.createdAt,
-        'updated_at': user.updatedAt,
-      };
+    'id': user.id,
+    'full_name': user.fullName,
+    'short_name': user.shortName,
+    'role_id': user.roleId,
+    'is_active': user.isActive,
+    'version': user.version,
+    'created_at': user.createdAt,
+    'updated_at': user.updatedAt,
+  };
 
   Map<String, Object?> _departmentToJson(Department row) => {
-        'id': row.id,
-        'name': row.name,
-        'code': row.code,
-        'sort_order': row.sortOrder,
-        'version': row.version,
-        'created_at': row.createdAt,
-        'updated_at': row.updatedAt,
-      };
+    'id': row.id,
+    'name': row.name,
+    'code': row.code,
+    'sort_order': row.sortOrder,
+    'version': row.version,
+    'created_at': row.createdAt,
+    'updated_at': row.updatedAt,
+  };
 
   Map<String, Object?> _workshopToJson(Workshop row) => {
-        'id': row.id,
-        'department_id': row.departmentId,
-        'name': row.name,
-        'code': row.code,
-        'sort_order': row.sortOrder,
-        'version': row.version,
-        'created_at': row.createdAt,
-        'updated_at': row.updatedAt,
-      };
+    'id': row.id,
+    'department_id': row.departmentId,
+    'name': row.name,
+    'code': row.code,
+    'sort_order': row.sortOrder,
+    'version': row.version,
+    'created_at': row.createdAt,
+    'updated_at': row.updatedAt,
+  };
 
   Map<String, Object?> _sectionToJson(Section row) => {
-        'id': row.id,
-        'workshop_id': row.workshopId,
-        'name': row.name,
-        'code': row.code,
-        'sort_order': row.sortOrder,
-        'version': row.version,
-        'created_at': row.createdAt,
-        'updated_at': row.updatedAt,
-      };
+    'id': row.id,
+    'workshop_id': row.workshopId,
+    'name': row.name,
+    'code': row.code,
+    'sort_order': row.sortOrder,
+    'version': row.version,
+    'created_at': row.createdAt,
+    'updated_at': row.updatedAt,
+  };
 
   Map<String, Object?> _objectToJson(CatalogObject row) => {
-        'id': row.id,
-        'type': row.type,
-        'section_id': row.sectionId,
-        'parent_id': row.parentId,
-        'name': row.name,
-        'code': row.code,
-        'description': row.description,
-        'sort_order': row.sortOrder,
-        'is_active': row.isActive,
-        'version': row.version,
-        'created_at': row.createdAt,
-        'updated_at': row.updatedAt,
-      };
+    'id': row.id,
+    'type': row.type,
+    'section_id': row.sectionId,
+    'parent_id': row.parentId,
+    'name': row.name,
+    'code': row.code,
+    'description': row.description,
+    'sort_order': row.sortOrder,
+    'is_active': row.isActive,
+    'version': row.version,
+    'created_at': row.createdAt,
+    'updated_at': row.updatedAt,
+  };
 
   Map<String, Object?> _relationToJson(ObjectRelation row) => {
-        'id': row.id,
-        'parent_object_id': row.parentObjectId,
-        'child_object_id': row.childObjectId,
-        'relation_type': row.relationType,
-        'sort_order': row.sortOrder,
-        'version': row.version,
-        'created_at': row.createdAt,
-        'updated_at': row.updatedAt,
-      };
+    'id': row.id,
+    'parent_object_id': row.parentObjectId,
+    'child_object_id': row.childObjectId,
+    'relation_type': row.relationType,
+    'sort_order': row.sortOrder,
+    'version': row.version,
+    'created_at': row.createdAt,
+    'updated_at': row.updatedAt,
+  };
 
   Map<String, Object?> _componentToJson(Component row) => {
-        'id': row.id,
-        'object_id': row.objectId,
-        'name': row.name,
-        'code': row.code,
-        'description': row.description,
-        'sort_order': row.sortOrder,
-        'is_required': row.isRequired,
-        'version': row.version,
-        'created_at': row.createdAt,
-        'updated_at': row.updatedAt,
-      };
+    'id': row.id,
+    'object_id': row.objectId,
+    'name': row.name,
+    'code': row.code,
+    'description': row.description,
+    'sort_order': row.sortOrder,
+    'is_required': row.isRequired,
+    'version': row.version,
+    'created_at': row.createdAt,
+    'updated_at': row.updatedAt,
+  };
 
   Map<String, Object?> _componentImageToJson(ComponentImage row) => {
-        'id': row.id,
-        'component_id': row.componentId,
-        'file_name': row.fileName,
-        'media_key': row.mediaKey,
-        'local_path': row.localPath,
-        'checksum': row.checksum,
-        'mime_type': row.mimeType,
-        'sort_order': row.sortOrder,
-        'version': row.version,
-        'created_at': row.createdAt,
-        'updated_at': row.updatedAt,
-      };
+    'id': row.id,
+    'component_id': row.componentId,
+    'file_name': row.fileName,
+    'media_key': row.mediaKey,
+    'local_path': row.localPath,
+    'checksum': row.checksum,
+    'mime_type': row.mimeType,
+    'sort_order': row.sortOrder,
+    'version': row.version,
+    'created_at': row.createdAt,
+    'updated_at': row.updatedAt,
+  };
 
   Map<String, Object?> _checklistToJson(Checklist row) => {
-        'id': row.id,
-        'name': row.name,
-        'description': row.description,
-        'is_active': row.isActive,
-        'version': row.version,
-        'created_at': row.createdAt,
-        'updated_at': row.updatedAt,
-      };
+    'id': row.id,
+    'name': row.name,
+    'description': row.description,
+    'is_active': row.isActive,
+    'version': row.version,
+    'created_at': row.createdAt,
+    'updated_at': row.updatedAt,
+  };
 
   Map<String, Object?> _checklistItemToJson(ChecklistItem row) => {
-        'id': row.id,
-        'checklist_id': row.checklistId,
-        'component_id': row.componentId,
-        'title': row.title,
-        'description': row.description,
-        'expected_result': row.expectedResult,
-        'result_type': row.resultType,
-        'is_required': row.isRequired,
-        'sort_order': row.sortOrder,
-        'version': row.version,
-        'created_at': row.createdAt,
-        'updated_at': row.updatedAt,
-      };
+    'id': row.id,
+    'checklist_id': row.checklistId,
+    'component_id': row.componentId,
+    'title': row.title,
+    'description': row.description,
+    'expected_result': row.expectedResult,
+    'result_type': row.resultType,
+    'is_required': row.isRequired,
+    'sort_order': row.sortOrder,
+    'version': row.version,
+    'created_at': row.createdAt,
+    'updated_at': row.updatedAt,
+  };
 
   Map<String, Object?> _checklistBindingToJson(ChecklistBinding row) => {
-        'id': row.id,
-        'checklist_id': row.checklistId,
-        'target_type': row.targetType,
-        'target_id': row.targetId,
-        'target_object_type': row.targetObjectType,
-        'priority': row.priority,
-        'is_required': row.isRequired,
-        'version': row.version,
-        'created_at': row.createdAt,
-        'updated_at': row.updatedAt,
-      };
+    'id': row.id,
+    'checklist_id': row.checklistId,
+    'target_type': row.targetType,
+    'target_id': row.targetId,
+    'target_object_type': row.targetObjectType,
+    'priority': row.priority,
+    'is_required': row.isRequired,
+    'version': row.version,
+    'created_at': row.createdAt,
+    'updated_at': row.updatedAt,
+  };
 }

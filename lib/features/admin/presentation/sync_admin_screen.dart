@@ -130,7 +130,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                 'Последний повтор: ${diagnostics.lastRetryAt ?? 'н/д'}\n'
                 'Последний успех: ${diagnostics.lastSuccessAt ?? 'н/д'}\n'
                 'Последний конфликт: ${diagnostics.lastConflictAt ?? 'н/д'}\n'
-                'Последняя ошибка: ${diagnostics.lastError ?? 'н/д'}\n'
+                'Последняя ошибка: ${diagnostics.lastError == null ? 'н/д' : userMessageFromText(diagnostics.lastError, fallback: 'Ошибка синхронизации.')}\n'
                 'Токен настроен: ${diagnostics.transportConfigured ? 'да' : 'нет'}\n'
                 'Подключение: ${diagnostics.yandexDiskConnected ? 'да' : 'нет'}\n'
                 'Ожидает отправки: ${diagnostics.pendingOutgoingCount}\n'
@@ -230,7 +230,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
                             'Попыток: ${entry.attemptCount}\n'
                             'Следующий повтор: ${entry.nextAttemptAt ?? 'н/д'}\n'
                             '${entry.localPath}'
-                            '${entry.lastError == null ? '' : '\n${entry.lastError}'}',
+                            '${entry.lastError == null ? '' : '\n${userMessageFromText(entry.lastError, fallback: 'Ошибка обработки пакета.')}'}',
                           ),
                           isThreeLine: true,
                         ),
@@ -258,7 +258,7 @@ class _SyncAdminScreenState extends ConsumerState<SyncAdminScreen> {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Токен сохранен в защищенном хранилище.')),
+      const SnackBar(content: Text('Токен сохранён в защищенном хранилище.')),
     );
   }
 

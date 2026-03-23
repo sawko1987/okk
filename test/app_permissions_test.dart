@@ -15,7 +15,10 @@ void main() {
 
   test('worker can inspect and sync but cannot manage catalog', () {
     expect(roleHasCapability('worker', AppCapability.startInspection), isTrue);
-    expect(roleHasCapability('worker', AppCapability.completeInspection), isTrue);
+    expect(
+      roleHasCapability('worker', AppCapability.completeInspection),
+      isTrue,
+    );
     expect(roleHasCapability('worker', AppCapability.runSync), isTrue);
     expect(roleHasCapability('worker', AppCapability.manageCatalog), isFalse);
   });
@@ -28,19 +31,25 @@ void main() {
   });
 
   test('commission role adds signing capability on top of inspection flow', () {
-    expect(roleHasCapability('commission', AppCapability.startInspection), isTrue);
-    expect(roleHasCapability('commission', AppCapability.completeInspection), isTrue);
-    expect(roleHasCapability('commission', AppCapability.signInspection), isTrue);
+    expect(
+      roleHasCapability('commission', AppCapability.startInspection),
+      isTrue,
+    );
+    expect(
+      roleHasCapability('commission', AppCapability.completeInspection),
+      isTrue,
+    );
+    expect(
+      roleHasCapability('commission', AppCapability.signInspection),
+      isTrue,
+    );
     expect(roleHasCapability('commission', AppCapability.manageUsers), isFalse);
   });
 
   test('role capability listing matches static access matrix', () {
     expect(
       capabilitiesForRole('viewer'),
-      equals([
-        AppCapability.runSync,
-        AppCapability.viewResults,
-      ]),
+      equals([AppCapability.runSync, AppCapability.viewResults]),
     );
     expect(
       capabilitiesForRole('administrator'),

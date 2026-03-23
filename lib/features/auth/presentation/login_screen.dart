@@ -35,9 +35,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           final selectedUserId =
               _selectedUserId ?? (users.isNotEmpty ? users.first.userId : null);
           final selectedUser = users.cast<LoginUserOption?>().firstWhere(
-                (user) => user?.userId == selectedUserId,
-                orElse: () => null,
-              );
+            (user) => user?.userId == selectedUserId,
+            orElse: () => null,
+          );
 
           return Center(
             child: ConstrainedBox(
@@ -65,10 +65,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           for (final user in users)
                             DropdownMenuItem(
                               value: user.userId,
-                              child: Text('${user.fullName} (${user.roleName})'),
+                              child: Text(
+                                '${user.fullName} (${user.roleName})',
+                              ),
                             ),
                         ],
-                        onChanged: (value) => setState(() => _selectedUserId = value),
+                        onChanged: (value) =>
+                            setState(() => _selectedUserId = value),
                       ),
                       const SizedBox(height: 12),
                       TextField(
@@ -106,16 +109,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _login(BuildContext context, String userId) async {
     try {
-      await ref.read(authServiceProvider).login(
-            userId: userId,
-            pin: _pinController.text,
-          );
+      await ref
+          .read(authServiceProvider)
+          .login(userId: userId, pin: _pinController.text);
       refreshAuthProviders(ref);
       if (!context.mounted) {
         return;
       }
       context.go(
-        getAppPlatform() == AppPlatform.windows ? '/windows' : AndroidRoutes.home,
+        getAppPlatform() == AppPlatform.windows
+            ? '/windows'
+            : AndroidRoutes.home,
       );
     } on StateError catch (error) {
       if (!context.mounted) {

@@ -45,7 +45,10 @@ class _BackupAdminScreenState extends ConsumerState<BackupAdminScreen> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 12),
-                _InfoRow(label: 'Каталог резервных копий', value: paths.backupDir.path),
+                _InfoRow(
+                  label: 'Каталог резервных копий',
+                  value: paths.backupDir.path,
+                ),
                 _InfoRow(
                   label: 'Версия схемы БД',
                   value: '${AppConstants.appSchemaVersion}',
@@ -109,10 +112,7 @@ class _BackupAdminScreenState extends ConsumerState<BackupAdminScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        Text(
-          'Локальные архивы',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
+        Text('Локальные архивы', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         backupsAsync.when(
           data: (backups) {
@@ -129,9 +129,9 @@ class _BackupAdminScreenState extends ConsumerState<BackupAdminScreen> {
                     backup: backup,
                     onRestore: backup.isRestorable
                         ? () => _confirmRestore(
-                              backup: backup,
-                              actorUserId: session?.userId,
-                            )
+                            backup: backup,
+                            actorUserId: session?.userId,
+                          )
                         : null,
                   ),
                   const SizedBox(height: 12),
@@ -151,9 +151,9 @@ class _BackupAdminScreenState extends ConsumerState<BackupAdminScreen> {
   Future<void> _createBackup({required String? actorUserId}) async {
     setState(() => _isCreating = true);
     try {
-      final backup = await ref.read(backupRepositoryProvider).createBackup(
-            actorUserId: actorUserId,
-          );
+      final backup = await ref
+          .read(backupRepositoryProvider)
+          .createBackup(actorUserId: actorUserId);
       ref.invalidate(backupsProvider);
       if (!mounted) {
         return;
@@ -190,7 +190,8 @@ class _BackupAdminScreenState extends ConsumerState<BackupAdminScreen> {
     required BackupArchiveSummary backup,
     required String? actorUserId,
   }) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed =
+        await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
             title: const Text('Подтвердите восстановление'),
@@ -217,7 +218,9 @@ class _BackupAdminScreenState extends ConsumerState<BackupAdminScreen> {
     }
 
     try {
-      final result = await ref.read(backupRepositoryProvider).restoreBackup(
+      final result = await ref
+          .read(backupRepositoryProvider)
+          .restoreBackup(
             archiveFile: File(backup.archivePath),
             actorUserId: actorUserId,
           );
@@ -266,10 +269,7 @@ class _BackupAdminScreenState extends ConsumerState<BackupAdminScreen> {
 }
 
 class _BackupCard extends StatelessWidget {
-  const _BackupCard({
-    required this.backup,
-    required this.onRestore,
-  });
+  const _BackupCard({required this.backup, required this.onRestore});
 
   final BackupArchiveSummary backup;
   final VoidCallback? onRestore;
@@ -279,8 +279,8 @@ class _BackupCard extends StatelessWidget {
     final compatibility = !backup.isInspectable
         ? 'Архив не прошел проверку'
         : backup.isSchemaCompatible
-            ? 'Совместим по версиям'
-            : 'Требует ручной проверки совместимости';
+        ? 'Совместим по версиям'
+        : 'Требует ручной проверки совместимости';
 
     return Card(
       child: Padding(
@@ -288,7 +288,10 @@ class _BackupCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(backup.archiveName, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              backup.archiveName,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 12),
             _InfoRow(label: 'Статус', value: compatibility),
             if (backup.restoreIssues.isNotEmpty)
@@ -296,18 +299,9 @@ class _BackupCard extends StatelessWidget {
                 label: 'Причины ограничений',
                 value: backup.restoreIssues.join('\n'),
               ),
-            _InfoRow(
-              label: 'Создан',
-              value: backup.createdAt ?? 'Недоступно',
-            ),
-            _InfoRow(
-              label: 'Устройство',
-              value: _deviceLabel(backup),
-            ),
-            _InfoRow(
-              label: 'Файлов в архиве',
-              value: '${backup.fileCount}',
-            ),
+            _InfoRow(label: 'Создан', value: backup.createdAt ?? 'Недоступно'),
+            _InfoRow(label: 'Устройство', value: _deviceLabel(backup)),
+            _InfoRow(label: 'Файлов в архиве', value: '${backup.fileCount}'),
             _InfoRow(
               label: 'Размер архива',
               value: _formatBytes(backup.archiveSizeBytes),
@@ -330,7 +324,10 @@ class _BackupCard extends StatelessWidget {
             if (backup.inspectionError != null)
               _InfoRow(
                 label: 'Ошибка проверки',
-                value: backup.inspectionError!,
+                value: userMessageFromText(
+                  backup.inspectionError,
+                  fallback: 'Не удалось проверить архив.',
+                ),
               ),
             const SizedBox(height: 8),
             Align(
@@ -349,10 +346,7 @@ class _BackupCard extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.label,
-    required this.value,
-  });
+  const _InfoRow({required this.label, required this.value});
 
   final String label;
   final String value;

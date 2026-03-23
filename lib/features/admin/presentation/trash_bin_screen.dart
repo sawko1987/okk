@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/user_message.dart';
 import '../../auth/data/auth_service.dart';
 import '../../catalog/data/master_data_repositories.dart';
 import '../data/admin_repositories.dart';
@@ -18,10 +19,7 @@ class TrashBinScreen extends ConsumerWidget {
       data: (entries) => ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          Text(
-            'Корзина',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+          Text('Корзина', style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 16),
           if (entries.isEmpty)
             const Text('Корзина пуста.')
@@ -37,11 +35,11 @@ class TrashBinScreen extends ConsumerWidget {
                   trailing: OutlinedButton(
                     onPressed: canEdit
                         ? () => _restoreEntry(
-                              context,
-                              ref,
-                              entry.entry.id,
-                              actorUserId,
-                            )
+                            context,
+                            ref,
+                            entry.entry.id,
+                            actorUserId,
+                          )
                         : null,
                     child: const Text('Восстановить'),
                   ),
@@ -50,8 +48,11 @@ class TrashBinScreen extends ConsumerWidget {
         ],
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) =>
-          Center(child: Text('Не удалось загрузить корзину: $error')),
+      error: (error, _) => Center(
+        child: Text(
+          'Не удалось загрузить корзину. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+        ),
+      ),
     );
   }
 
@@ -62,10 +63,9 @@ class TrashBinScreen extends ConsumerWidget {
     String? actorUserId,
   ) async {
     try {
-      await ref.read(trashRepositoryProvider).restoreEntry(
-            trashId,
-            actorUserId: actorUserId,
-          );
+      await ref
+          .read(trashRepositoryProvider)
+          .restoreEntry(trashId, actorUserId: actorUserId);
       ref.invalidate(trashEntriesProvider);
       ref.invalidate(auditEntriesProvider);
       ref.invalidate(structureTreeProvider);
@@ -79,7 +79,14 @@ class TrashBinScreen extends ConsumerWidget {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message.toString())),
+        SnackBar(
+          content: Text(
+            userMessageFromError(
+              error,
+              fallback: 'Не удалось восстановить запись из корзины.',
+            ),
+          ),
+        ),
       );
     }
   }

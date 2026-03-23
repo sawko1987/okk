@@ -35,8 +35,12 @@ void main() {
     remoteRoot = Directory(p.join(tempRoot.path, 'remote'));
     await remoteRoot.create(recursive: true);
 
-    windowsPaths = AppPaths.forTesting(p.join(tempRoot.path, 'windows_app_data'));
-    androidPaths = AppPaths.forTesting(p.join(tempRoot.path, 'android_app_data'));
+    windowsPaths = AppPaths.forTesting(
+      p.join(tempRoot.path, 'windows_app_data'),
+    );
+    androidPaths = AppPaths.forTesting(
+      p.join(tempRoot.path, 'android_app_data'),
+    );
     await windowsPaths.ensureCreated();
     await androidPaths.ensureCreated();
 
@@ -62,7 +66,10 @@ void main() {
     windowsObjectsRepository = ObjectsRepository(windowsDb);
     windowsComponentsRepository = ComponentsRepository(windowsDb);
     windowsChecklistsRepository = ChecklistsRepository(windowsDb);
-    androidInspectionsRepository = InspectionsRepository(androidDb, androidPaths);
+    androidInspectionsRepository = InspectionsRepository(
+      androidDb,
+      androidPaths,
+    );
 
     windowsSyncService = SyncService(
       db: windowsDb,
@@ -70,7 +77,10 @@ void main() {
       logger: AppLogger(),
       transport: transport,
       packageArchive: PackageArchive(),
-      referencePackageRepository: ReferencePackageRepository(windowsDb, windowsPaths),
+      referencePackageRepository: ReferencePackageRepository(
+        windowsDb,
+        windowsPaths,
+      ),
       inspectionsRepository: InspectionsRepository(windowsDb, windowsPaths),
     );
     androidSyncService = SyncService(
@@ -79,7 +89,10 @@ void main() {
       logger: AppLogger(),
       transport: transport,
       packageArchive: PackageArchive(),
-      referencePackageRepository: ReferencePackageRepository(androidDb, androidPaths),
+      referencePackageRepository: ReferencePackageRepository(
+        androidDb,
+        androidPaths,
+      ),
       inspectionsRepository: androidInspectionsRepository,
     );
   });
@@ -92,222 +105,230 @@ void main() {
     }
   });
 
-  test('publishes reference, syncs android, uploads result, and imports it on windows',
-      () async {
-    final fixture = await _seedInspectionFixture(
-      objectsRepository: windowsObjectsRepository,
-      componentsRepository: windowsComponentsRepository,
-      checklistsRepository: windowsChecklistsRepository,
-    );
-
-    final publishResult = await windowsSyncService.publishReferencePackage(
-      actorUserId: 'user-default-admin',
-    );
-    expect(publishResult.packageId, isNotEmpty);
-
-    await androidSyncService.runManualSync(
-      platform: AppPlatform.android,
-      actorUserId: 'user-default-admin',
-    );
-
-    final androidObjects = await androidDb.select(androidDb.catalogObjects).get();
-    expect(
-      androidObjects.any((object) => object.id == fixture.productId),
-      isTrue,
-    );
-
-    final draft = await androidSyncService.startInspectionDraft(
-      request: InspectionStartRequest(
-        userId: 'user-default-admin',
-        productObjectId: fixture.productId,
-        targetObjectId: fixture.machineId,
-      ),
-    );
-    expect(draft.items, isNotEmpty);
-
-    for (final item in draft.items) {
-      await androidInspectionsRepository.saveItemAnswer(
-        inspectionId: draft.inspection.id,
-        answerId: item.answerId,
-        resultStatus: item.resultType == 'number' ? 'pass' : 'pass',
-        comment: item.resultType == 'text' ? 'done' : null,
-        measuredValue: item.resultType == 'number' ? '0.15' : null,
+  test(
+    'publishes reference, syncs android, uploads result, and imports it on windows',
+    () async {
+      final fixture = await _seedInspectionFixture(
+        objectsRepository: windowsObjectsRepository,
+        componentsRepository: windowsComponentsRepository,
+        checklistsRepository: windowsChecklistsRepository,
       );
-    }
-    await androidInspectionsRepository.saveSignature(
-      inspectionId: draft.inspection.id,
-      input: const InspectionSignatureInput(
-        signerUserId: 'user-default-admin',
-        signerName: 'Default Administrator',
-        signerRole: 'Administrator',
-        imageBytes: <int>[137, 80, 78, 71, 13, 10, 26, 10],
-      ),
-    );
-    await androidSyncService.completeInspection(
-      inspectionId: draft.inspection.id,
-      actorUserId: 'user-default-admin',
-    );
 
-    await androidSyncService.runManualSync(
-      platform: AppPlatform.android,
-      actorUserId: 'user-default-admin',
-    );
-    await windowsSyncService.runManualSync(
-      platform: AppPlatform.windows,
-      actorUserId: 'user-default-admin',
-    );
-
-    final importedInspection = await (windowsDb.select(windowsDb.inspections)
-          ..where((tbl) => tbl.id.equals(draft.inspection.id)))
-        .getSingle();
-    expect(importedInspection.status, 'synced');
-    expect(importedInspection.syncStatus, 'imported');
-
-    final importedItems = await (windowsDb.select(windowsDb.inspectionItems)
-          ..where((tbl) => tbl.inspectionId.equals(draft.inspection.id)))
-        .get();
-    expect(importedItems, hasLength(draft.items.length));
-
-    final incomingQueue = await (windowsDb.select(windowsDb.syncQueue)
-          ..where((tbl) => tbl.direction.equals('incoming')))
-        .get();
-    expect(incomingQueue.single.status, 'done');
-  });
-
-  test('best-effort sync pushes queued result right after completion on android',
-      () async {
-    final fixture = await _seedInspectionFixture(
-      objectsRepository: windowsObjectsRepository,
-      componentsRepository: windowsComponentsRepository,
-      checklistsRepository: windowsChecklistsRepository,
-    );
-
-    await windowsSyncService.publishReferencePackage(
-      actorUserId: 'user-default-admin',
-    );
-    await androidSyncService.runManualSync(
-      platform: AppPlatform.android,
-      actorUserId: 'user-default-admin',
-    );
-
-    final draft = await androidSyncService.startInspectionDraft(
-      request: InspectionStartRequest(
-        userId: 'user-default-admin',
-        productObjectId: fixture.productId,
-        targetObjectId: fixture.machineId,
-      ),
-    );
-    for (final item in draft.items) {
-      await androidInspectionsRepository.saveItemAnswer(
-        inspectionId: draft.inspection.id,
-        answerId: item.answerId,
-        resultStatus: 'pass',
+      final publishResult = await windowsSyncService.publishReferencePackage(
+        actorUserId: 'user-default-admin',
       );
-    }
-    await androidInspectionsRepository.saveSignature(
-      inspectionId: draft.inspection.id,
-      input: const InspectionSignatureInput(
-        signerUserId: 'user-default-admin',
-        signerName: 'Default Administrator',
-        signerRole: 'Administrator',
-        imageBytes: <int>[137, 80, 78, 71, 13, 10, 26, 10],
-      ),
-    );
+      expect(publishResult.packageId, isNotEmpty);
 
-    await androidSyncService.completeInspection(
-      inspectionId: draft.inspection.id,
-      actorUserId: 'user-default-admin',
-    );
+      await androidSyncService.runManualSync(
+        platform: AppPlatform.android,
+        actorUserId: 'user-default-admin',
+      );
 
-    final queuedEntry = await (androidDb.select(androidDb.syncQueue)
-          ..where((tbl) => tbl.packageId.equals(draft.inspection.id)))
-        .getSingle();
-    final inspection = await (androidDb.select(androidDb.inspections)
-          ..where((tbl) => tbl.id.equals(draft.inspection.id)))
-        .getSingle();
+      final androidObjects = await androidDb
+          .select(androidDb.catalogObjects)
+          .get();
+      expect(
+        androidObjects.any((object) => object.id == fixture.productId),
+        isTrue,
+      );
 
-    expect(queuedEntry.status, 'done');
-    expect(inspection.syncStatus, 'uploaded');
-    expect(
-      File(
-        p.join(
-          remoteRoot.path,
-          'results',
-          'incoming',
-          'result_${draft.inspection.id}.zip',
+      final draft = await androidSyncService.startInspectionDraft(
+        request: InspectionStartRequest(
+          userId: 'user-default-admin',
+          productObjectId: fixture.productId,
+          targetObjectId: fixture.machineId,
         ),
-      ).existsSync(),
-      isTrue,
-    );
-  });
-
-  test('windows sync continues importing valid packages when one package is broken',
-      () async {
-    final fixture = await _seedInspectionFixture(
-      objectsRepository: windowsObjectsRepository,
-      componentsRepository: windowsComponentsRepository,
-      checklistsRepository: windowsChecklistsRepository,
-    );
-
-    await windowsSyncService.publishReferencePackage(
-      actorUserId: 'user-default-admin',
-    );
-    await androidSyncService.runManualSync(
-      platform: AppPlatform.android,
-      actorUserId: 'user-default-admin',
-    );
-
-    final draft = await androidSyncService.startInspectionDraft(
-      request: InspectionStartRequest(
-        userId: 'user-default-admin',
-        productObjectId: fixture.productId,
-        targetObjectId: fixture.machineId,
-      ),
-    );
-    for (final item in draft.items) {
-      await androidInspectionsRepository.saveItemAnswer(
-        inspectionId: draft.inspection.id,
-        answerId: item.answerId,
-        resultStatus: 'pass',
       );
-    }
-    await androidInspectionsRepository.saveSignature(
-      inspectionId: draft.inspection.id,
-      input: const InspectionSignatureInput(
-        signerUserId: 'user-default-admin',
-        signerName: 'Default Administrator',
-        signerRole: 'Administrator',
-        imageBytes: <int>[137, 80, 78, 71, 13, 10, 26, 10],
-      ),
-    );
-    await androidSyncService.completeInspection(
-      inspectionId: draft.inspection.id,
-      actorUserId: 'user-default-admin',
-    );
+      expect(draft.items, isNotEmpty);
 
-    final brokenPackage = File(
-      p.join(remoteRoot.path, 'results', 'incoming', 'result_broken_pkg.zip'),
-    );
-    await brokenPackage.parent.create(recursive: true);
-    await brokenPackage.writeAsString('not-a-zip');
+      for (final item in draft.items) {
+        await androidInspectionsRepository.saveItemAnswer(
+          inspectionId: draft.inspection.id,
+          answerId: item.answerId,
+          resultStatus: item.resultType == 'number' ? 'pass' : 'pass',
+          comment: item.resultType == 'text' ? 'done' : null,
+          measuredValue: item.resultType == 'number' ? '0.15' : null,
+        );
+      }
+      await androidInspectionsRepository.saveSignature(
+        inspectionId: draft.inspection.id,
+        input: const InspectionSignatureInput(
+          signerUserId: 'user-default-admin',
+          signerName: 'Default Administrator',
+          signerRole: 'Administrator',
+          imageBytes: <int>[137, 80, 78, 71, 13, 10, 26, 10],
+        ),
+      );
+      await androidSyncService.completeInspection(
+        inspectionId: draft.inspection.id,
+        actorUserId: 'user-default-admin',
+      );
 
-    final report = await windowsSyncService.runManualSync(
-      platform: AppPlatform.windows,
-      actorUserId: 'user-default-admin',
-    );
+      await androidSyncService.runManualSync(
+        platform: AppPlatform.android,
+        actorUserId: 'user-default-admin',
+      );
+      await windowsSyncService.runManualSync(
+        platform: AppPlatform.windows,
+        actorUserId: 'user-default-admin',
+      );
 
-    final importedInspection = await (windowsDb.select(windowsDb.inspections)
-          ..where((tbl) => tbl.id.equals(draft.inspection.id)))
-        .getSingle();
-    final failedIncomingQueue = await (windowsDb.select(windowsDb.syncQueue)
-          ..where((tbl) => tbl.packageId.equals('broken_pkg')))
-        .getSingle();
+      final importedInspection = await (windowsDb.select(
+        windowsDb.inspections,
+      )..where((tbl) => tbl.id.equals(draft.inspection.id))).getSingle();
+      expect(importedInspection.status, 'synced');
+      expect(importedInspection.syncStatus, 'imported');
 
-    expect(importedInspection.syncStatus, 'imported');
-    expect(report.failureCount, 1);
-    expect(report.resultImportedCount, 1);
-    expect(failedIncomingQueue.status, 'failed');
-  });
+      final importedItems = await (windowsDb.select(
+        windowsDb.inspectionItems,
+      )..where((tbl) => tbl.inspectionId.equals(draft.inspection.id))).get();
+      expect(importedItems, hasLength(draft.items.length));
+
+      final incomingQueue = await (windowsDb.select(
+        windowsDb.syncQueue,
+      )..where((tbl) => tbl.direction.equals('incoming'))).get();
+      expect(incomingQueue.single.status, 'done');
+    },
+  );
+
+  test(
+    'best-effort sync pushes queued result right after completion on android',
+    () async {
+      final fixture = await _seedInspectionFixture(
+        objectsRepository: windowsObjectsRepository,
+        componentsRepository: windowsComponentsRepository,
+        checklistsRepository: windowsChecklistsRepository,
+      );
+
+      await windowsSyncService.publishReferencePackage(
+        actorUserId: 'user-default-admin',
+      );
+      await androidSyncService.runManualSync(
+        platform: AppPlatform.android,
+        actorUserId: 'user-default-admin',
+      );
+
+      final draft = await androidSyncService.startInspectionDraft(
+        request: InspectionStartRequest(
+          userId: 'user-default-admin',
+          productObjectId: fixture.productId,
+          targetObjectId: fixture.machineId,
+        ),
+      );
+      for (final item in draft.items) {
+        await androidInspectionsRepository.saveItemAnswer(
+          inspectionId: draft.inspection.id,
+          answerId: item.answerId,
+          resultStatus: 'pass',
+        );
+      }
+      await androidInspectionsRepository.saveSignature(
+        inspectionId: draft.inspection.id,
+        input: const InspectionSignatureInput(
+          signerUserId: 'user-default-admin',
+          signerName: 'Default Administrator',
+          signerRole: 'Administrator',
+          imageBytes: <int>[137, 80, 78, 71, 13, 10, 26, 10],
+        ),
+      );
+
+      await androidSyncService.completeInspection(
+        inspectionId: draft.inspection.id,
+        actorUserId: 'user-default-admin',
+      );
+
+      final queuedEntry = await (androidDb.select(
+        androidDb.syncQueue,
+      )..where((tbl) => tbl.packageId.equals(draft.inspection.id))).getSingle();
+      final inspection = await (androidDb.select(
+        androidDb.inspections,
+      )..where((tbl) => tbl.id.equals(draft.inspection.id))).getSingle();
+
+      expect(queuedEntry.status, 'done');
+      expect(inspection.syncStatus, 'uploaded');
+      expect(
+        File(
+          p.join(
+            remoteRoot.path,
+            'results',
+            'incoming',
+            'result_${draft.inspection.id}.zip',
+          ),
+        ).existsSync(),
+        isTrue,
+      );
+    },
+  );
+
+  test(
+    'windows sync continues importing valid packages when one package is broken',
+    () async {
+      final fixture = await _seedInspectionFixture(
+        objectsRepository: windowsObjectsRepository,
+        componentsRepository: windowsComponentsRepository,
+        checklistsRepository: windowsChecklistsRepository,
+      );
+
+      await windowsSyncService.publishReferencePackage(
+        actorUserId: 'user-default-admin',
+      );
+      await androidSyncService.runManualSync(
+        platform: AppPlatform.android,
+        actorUserId: 'user-default-admin',
+      );
+
+      final draft = await androidSyncService.startInspectionDraft(
+        request: InspectionStartRequest(
+          userId: 'user-default-admin',
+          productObjectId: fixture.productId,
+          targetObjectId: fixture.machineId,
+        ),
+      );
+      for (final item in draft.items) {
+        await androidInspectionsRepository.saveItemAnswer(
+          inspectionId: draft.inspection.id,
+          answerId: item.answerId,
+          resultStatus: 'pass',
+        );
+      }
+      await androidInspectionsRepository.saveSignature(
+        inspectionId: draft.inspection.id,
+        input: const InspectionSignatureInput(
+          signerUserId: 'user-default-admin',
+          signerName: 'Default Administrator',
+          signerRole: 'Administrator',
+          imageBytes: <int>[137, 80, 78, 71, 13, 10, 26, 10],
+        ),
+      );
+      await androidSyncService.completeInspection(
+        inspectionId: draft.inspection.id,
+        actorUserId: 'user-default-admin',
+      );
+
+      final brokenPackage = File(
+        p.join(remoteRoot.path, 'results', 'incoming', 'result_broken_pkg.zip'),
+      );
+      await brokenPackage.parent.create(recursive: true);
+      await brokenPackage.writeAsString('not-a-zip');
+
+      final report = await windowsSyncService.runManualSync(
+        platform: AppPlatform.windows,
+        actorUserId: 'user-default-admin',
+      );
+
+      final importedInspection = await (windowsDb.select(
+        windowsDb.inspections,
+      )..where((tbl) => tbl.id.equals(draft.inspection.id))).getSingle();
+      final failedIncomingQueue = await (windowsDb.select(
+        windowsDb.syncQueue,
+      )..where((tbl) => tbl.packageId.equals('broken_pkg'))).getSingle();
+
+      expect(importedInspection.syncStatus, 'imported');
+      expect(report.failureCount, 1);
+      expect(report.resultImportedCount, 1);
+      expect(failedIncomingQueue.status, 'failed');
+    },
+  );
 
   test('windows marks duplicate result package import as conflict', () async {
     final fixture = await _seedInspectionFixture(
@@ -380,9 +401,9 @@ void main() {
       platform: AppPlatform.windows,
       actorUserId: 'user-default-admin',
     );
-    final conflictInspection = await (windowsDb.select(windowsDb.inspections)
-          ..where((tbl) => tbl.id.equals(draft.inspection.id)))
-        .getSingle();
+    final conflictInspection = await (windowsDb.select(
+      windowsDb.inspections,
+    )..where((tbl) => tbl.id.equals(draft.inspection.id))).getSingle();
 
     expect(report.conflictCount, 1);
     expect(
@@ -401,10 +422,7 @@ void main() {
 }
 
 class _InspectionFixture {
-  const _InspectionFixture({
-    required this.productId,
-    required this.machineId,
-  });
+  const _InspectionFixture({required this.productId, required this.machineId});
 
   final String productId;
   final String machineId;
@@ -430,8 +448,9 @@ Future<_InspectionFixture> _seedInspectionFixture({
     sortOrder: 2,
     isActive: true,
   );
-  final machine = (await objectsRepository.listActiveObjects())
-      .firstWhere((item) => item.parentId == product.id);
+  final machine = (await objectsRepository.listActiveObjects()).firstWhere(
+    (item) => item.parentId == product.id,
+  );
 
   await componentsRepository.saveComponent(
     objectId: machine.id,
@@ -439,7 +458,9 @@ Future<_InspectionFixture> _seedInspectionFixture({
     sortOrder: 1,
     isRequired: true,
   );
-  final component = (await componentsRepository.listByObject(machine.id)).single;
+  final component = (await componentsRepository.listByObject(
+    machine.id,
+  )).single;
 
   final productChecklistId = await checklistsRepository.saveChecklist(
     name: 'Product intake',
@@ -499,10 +520,7 @@ Future<_InspectionFixture> _seedInspectionFixture({
     isRequired: true,
   );
 
-  return _InspectionFixture(
-    productId: product.id,
-    machineId: machine.id,
-  );
+  return _InspectionFixture(productId: product.id, machineId: machine.id);
 }
 
 class _FakeSyncTransport implements SyncTransport {

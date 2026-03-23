@@ -30,7 +30,10 @@ void main() {
     final relativePath = paths.reportRelativePath('inspection-1', 'report.pdf');
     final absolutePath = paths.resolveRelativePath(relativePath);
 
-    expect(relativePath, p.join('media', 'reports', 'inspection-1', 'report.pdf'));
+    expect(
+      relativePath,
+      p.join('media', 'reports', 'inspection-1', 'report.pdf'),
+    );
     expect(absolutePath, p.join(paths.rootDir.path, relativePath));
     expect(paths.relativeToRoot(absolutePath), relativePath);
   });

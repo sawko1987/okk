@@ -44,10 +44,7 @@ class WindowsDashboardScreen extends StatelessWidget {
             ),
             SectionCard(
               title: 'Хранилище',
-              lines: [
-                componentsDir,
-                syncOutgoingDir,
-              ],
+              lines: [componentsDir, syncOutgoingDir],
             ),
             const SectionCard(
               title: 'Рабочие разделы',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/user_message.dart';
 import '../../inspections/data/inspection_repositories.dart';
 
 class InspectionHistoryScreen extends ConsumerStatefulWidget {
@@ -30,7 +31,8 @@ class _InspectionHistoryScreenState
           );
         }
 
-        final effectiveSelectedId = results.any(
+        final effectiveSelectedId =
+            results.any(
               (result) => result.inspectionId == _selectedInspectionId,
             )
             ? _selectedInspectionId!
@@ -57,7 +59,9 @@ class _InspectionHistoryScreenState
                             children: [
                               Text(
                                 'История проверок',
-                                style: Theme.of(context).textTheme.headlineSmall,
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.headlineSmall,
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -135,8 +139,11 @@ class _InspectionHistoryScreenState
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) =>
-          Center(child: Text('Не удалось загрузить историю проверок: $error')),
+      error: (error, _) => Center(
+        child: Text(
+          'Не удалось загрузить историю проверок. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+        ),
+      ),
     );
   }
 }
@@ -178,10 +185,7 @@ class _InspectionResultDetailPane extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _DetailRow(
-                    label: 'ID проверки',
-                    value: detail.inspection.id,
-                  ),
+                  _DetailRow(label: 'ID проверки', value: detail.inspection.id),
                   _DetailRow(
                     label: 'Инспектор',
                     value: summary.userName ?? summary.userId,
@@ -261,8 +265,11 @@ class _InspectionResultDetailPane extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) =>
-          Center(child: Text('Не удалось загрузить детали проверки: $error')),
+      error: (error, _) => Center(
+        child: Text(
+          'Не удалось загрузить детали проверки. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+        ),
+      ),
     );
   }
 }

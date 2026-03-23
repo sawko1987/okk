@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/user_message.dart';
 import '../data/admin_repositories.dart';
 
 class AuditLogScreen extends ConsumerWidget {
@@ -39,8 +40,11 @@ class AuditLogScreen extends ConsumerWidget {
         ],
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) =>
-          Center(child: Text('Не удалось загрузить журнал действий: $error')),
+      error: (error, _) => Center(
+        child: Text(
+          'Не удалось загрузить журнал действий. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+        ),
+      ),
     );
   }
 }

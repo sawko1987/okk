@@ -66,14 +66,14 @@ class AuthService {
   final AppDatabase _db;
 
   Future<List<LoginUserOption>> listLoginUsers() async {
-    final users = await (_db.select(_db.users)
-          ..where(
-            (tbl) => tbl.isDeleted.equals(false) & tbl.isActive.equals(true),
-          )
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.fullName),
-          ]))
-        .get();
+    final users =
+        await (_db.select(_db.users)
+              ..where(
+                (tbl) =>
+                    tbl.isDeleted.equals(false) & tbl.isActive.equals(true),
+              )
+              ..orderBy([(tbl) => OrderingTerm.asc(tbl.fullName)]))
+            .get();
     final roles = await _db.select(_db.roles).get();
     final rolesById = {for (final role in roles) role.id: role};
 
@@ -92,9 +92,9 @@ class AuthService {
   }
 
   Future<AuthSession?> currentSession() async {
-    final row = await (_db.select(_db.appSettings)
-          ..where((tbl) => tbl.key.equals('active_user_id')))
-        .getSingleOrNull();
+    final row = await (_db.select(
+      _db.appSettings,
+    )..where((tbl) => tbl.key.equals('active_user_id'))).getSingleOrNull();
     final userId = nullableField(row?.valueJson);
     if (userId == null) {
       return null;
@@ -103,17 +103,15 @@ class AuthService {
     return _loadSession(userId);
   }
 
-  Future<void> login({
-    required String userId,
-    String? pin,
-  }) async {
+  Future<void> login({required String userId, String? pin}) async {
     final session = await _loadSession(userId);
     if (session == null) {
       throw StateError('Выбранный пользователь недоступен.');
     }
 
-    final user = await (_db.select(_db.users)..where((tbl) => tbl.id.equals(userId)))
-        .getSingle();
+    final user = await (_db.select(
+      _db.users,
+    )..where((tbl) => tbl.id.equals(userId))).getSingle();
     final storedPinHash = nullableField(user.pinHash);
     if (storedPinHash != null && storedPinHash != pinHash(pin ?? '')) {
       await recordAudit(
@@ -130,12 +128,11 @@ class AuthService {
 
     final now = nowIso();
     await (_db.update(_db.users)..where((tbl) => tbl.id.equals(userId))).write(
-      UsersCompanion(
-        lastLoginAt: driftValue(now),
-        updatedAt: driftValue(now),
-      ),
+      UsersCompanion(lastLoginAt: driftValue(now), updatedAt: driftValue(now)),
     );
-    await _db.into(_db.appSettings).insertOnConflictUpdate(
+    await _db
+        .into(_db.appSettings)
+        .insertOnConflictUpdate(
           AppSettingsCompanion.insert(
             key: 'active_user_id',
             valueJson: userId,
@@ -156,9 +153,9 @@ class AuthService {
 
   Future<void> logout() async {
     final session = await currentSession();
-    await (_db.delete(_db.appSettings)
-          ..where((tbl) => tbl.key.equals('active_user_id')))
-        .go();
+    await (_db.delete(
+      _db.appSettings,
+    )..where((tbl) => tbl.key.equals('active_user_id'))).go();
 
     await recordAudit(
       _db,
@@ -172,20 +169,21 @@ class AuthService {
   }
 
   Future<AuthSession?> _loadSession(String userId) async {
-    final user = await (_db.select(_db.users)
-          ..where(
-            (tbl) =>
-                tbl.id.equals(userId) &
-                tbl.isDeleted.equals(false) &
-                tbl.isActive.equals(true),
-          ))
-        .getSingleOrNull();
+    final user =
+        await (_db.select(_db.users)..where(
+              (tbl) =>
+                  tbl.id.equals(userId) &
+                  tbl.isDeleted.equals(false) &
+                  tbl.isActive.equals(true),
+            ))
+            .getSingleOrNull();
     if (user == null) {
       return null;
     }
 
-    final role = await (_db.select(_db.roles)..where((tbl) => tbl.id.equals(user.roleId)))
-        .getSingleOrNull();
+    final role = await (_db.select(
+      _db.roles,
+    )..where((tbl) => tbl.id.equals(user.roleId))).getSingleOrNull();
     if (role == null) {
       return null;
     }

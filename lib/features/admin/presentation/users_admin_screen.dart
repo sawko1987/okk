@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/user_message.dart';
 import '../../../data/sqlite/app_database.dart';
 import '../../auth/data/auth_service.dart';
 import '../data/admin_repositories.dart';
@@ -20,7 +21,8 @@ class UsersAdminScreen extends ConsumerWidget {
     return usersAsync.when(
       data: (users) => rolesAsync.when(
         data: (roles) {
-          final selectedId = ref.watch(_selectedManagedUserIdProvider) ??
+          final selectedId =
+              ref.watch(_selectedManagedUserIdProvider) ??
               (users.isNotEmpty ? users.first.user.id : null);
           final selectedUser = users.firstWhere(
             (user) => user.user.id == selectedId,
@@ -50,7 +52,8 @@ class UsersAdminScreen extends ConsumerWidget {
                               ),
                               FilledButton.icon(
                                 onPressed: canEdit
-                                    ? () => _editUser(context, ref, roles: roles)
+                                    ? () =>
+                                          _editUser(context, ref, roles: roles)
                                     : null,
                                 icon: const Icon(Icons.add),
                                 label: const Text('Добавить'),
@@ -85,17 +88,21 @@ class UsersAdminScreen extends ConsumerWidget {
                                           '${managedUser.role.name} • ${managedUser.user.isActive ? 'Активен' : 'Неактивен'}',
                                         ),
                                         trailing:
-                                            managedUser.user.id == session?.userId
+                                            managedUser.user.id ==
+                                                session?.userId
                                             ? const Icon(
                                                 Icons.verified_user_outlined,
                                               )
                                             : null,
-                                        onTap: () => ref
-                                            .read(
-                                              _selectedManagedUserIdProvider
-                                                  .notifier,
-                                            )
-                                            .state = managedUser.user.id,
+                                        onTap: () =>
+                                            ref
+                                                .read(
+                                                  _selectedManagedUserIdProvider
+                                                      .notifier,
+                                                )
+                                                .state = managedUser
+                                                .user
+                                                .id,
                                       ),
                                     ),
                                 ],
@@ -132,22 +139,22 @@ class UsersAdminScreen extends ConsumerWidget {
                                     IconButton(
                                       onPressed: canEdit
                                           ? () => _editUser(
-                                                context,
-                                                ref,
-                                                roles: roles,
-                                                user: selectedUser,
-                                              )
+                                              context,
+                                              ref,
+                                              roles: roles,
+                                              user: selectedUser,
+                                            )
                                           : null,
                                       icon: const Icon(Icons.edit_outlined),
                                     ),
                                     IconButton(
                                       onPressed: canEdit
                                           ? () => _deleteUser(
-                                                context,
-                                                ref,
-                                                selectedUser,
-                                                session?.userId,
-                                              )
+                                              context,
+                                              ref,
+                                              selectedUser,
+                                              session?.userId,
+                                            )
                                           : null,
                                       icon: const Icon(Icons.delete_outline),
                                     ),
@@ -175,7 +182,8 @@ class UsersAdminScreen extends ConsumerWidget {
                                   'Последний вход',
                                   selectedUser.user.lastLoginAt ?? 'Никогда',
                                 ),
-                                if (selectedUser.user.id == session?.userId) ...[
+                                if (selectedUser.user.id ==
+                                    session?.userId) ...[
                                   const Divider(height: 32),
                                   const Text(
                                     'Этот пользователь сейчас активен в локальной сессии.',
@@ -191,12 +199,18 @@ class UsersAdminScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text('Не удалось загрузить роли: $error')),
+        error: (error, _) => Center(
+          child: Text(
+            'Не удалось загрузить роли. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+          ),
+        ),
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) =>
-          Center(child: Text('Не удалось загрузить пользователей: $error')),
+      error: (error, _) => Center(
+        child: Text(
+          'Не удалось загрузить пользователей. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+        ),
+      ),
     );
   }
 
@@ -208,17 +222,16 @@ class UsersAdminScreen extends ConsumerWidget {
   }) async {
     final result = await showDialog<_UserFormResult>(
       context: context,
-      builder: (context) => _UserEditorDialog(
-        roles: roles,
-        user: user,
-      ),
+      builder: (context) => _UserEditorDialog(roles: roles, user: user),
     );
     if (result == null) {
       return;
     }
 
     final actorUserId = ref.watch(activeSessionProvider).valueOrNull?.userId;
-    await ref.read(usersRepositoryProvider).saveUser(
+    await ref
+        .read(usersRepositoryProvider)
+        .saveUser(
           id: user?.user.id,
           fullName: result.fullName,
           shortName: result.shortName,
@@ -239,14 +252,16 @@ class UsersAdminScreen extends ConsumerWidget {
     String? actorUserId,
   ) async {
     if (actorUserId == user.user.id) {
-      _showUserMessage(context, 'Нельзя удалить пользователя из активной сессии.');
+      _showUserMessage(
+        context,
+        'Нельзя удалить пользователя из активной сессии.',
+      );
       return;
     }
 
-    await ref.read(usersRepositoryProvider).deleteUser(
-          user.user.id,
-          actorUserId: actorUserId,
-        );
+    await ref
+        .read(usersRepositoryProvider)
+        .deleteUser(user.user.id, actorUserId: actorUserId);
     ref.invalidate(usersProvider);
     ref.invalidate(rolesProvider);
     refreshAuthProviders(ref);
@@ -276,10 +291,7 @@ class _UserDetailRow extends StatelessWidget {
 }
 
 class _UserEditorDialog extends StatefulWidget {
-  const _UserEditorDialog({
-    required this.roles,
-    this.user,
-  });
+  const _UserEditorDialog({required this.roles, this.user});
 
   final List<Role> roles;
   final ManagedUser? user;
@@ -349,12 +361,10 @@ class _UserEditorDialogState extends State<_UserEditorDialog> {
                 decoration: const InputDecoration(labelText: 'Роль'),
                 items: [
                   for (final role in widget.roles)
-                    DropdownMenuItem(
-                      value: role.id,
-                      child: Text(role.name),
-                    ),
+                    DropdownMenuItem(value: role.id, child: Text(role.name)),
                 ],
-                onChanged: (value) => setState(() => _roleId = value ?? _roleId),
+                onChanged: (value) =>
+                    setState(() => _roleId = value ?? _roleId),
               ),
               TextFormField(
                 controller: _pinController,
@@ -445,7 +455,5 @@ final _fallbackManagedUser = ManagedUser(
 );
 
 void _showUserMessage(BuildContext context, String message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message)),
-  );
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
 }

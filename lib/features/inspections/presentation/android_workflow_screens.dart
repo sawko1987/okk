@@ -33,20 +33,31 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
     if (!_startupSyncTriggered) {
       _startupSyncTriggered = true;
       Future<void>.microtask(
-        () => ref.read(syncServiceProvider).syncOnStartup(
+        () => ref
+            .read(syncServiceProvider)
+            .syncOnStartup(
               platform: AppPlatform.android,
               actorUserId: session.userId,
             ),
       );
     }
 
-    final canStartInspection =
-        roleHasCapability(session.roleCode, AppCapability.startInspection);
-    final canViewResults =
-        roleHasCapability(session.roleCode, AppCapability.viewResults);
-    final canRunSync = roleHasCapability(session.roleCode, AppCapability.runSync);
+    final canStartInspection = roleHasCapability(
+      session.roleCode,
+      AppCapability.startInspection,
+    );
+    final canViewResults = roleHasCapability(
+      session.roleCode,
+      AppCapability.viewResults,
+    );
+    final canRunSync = roleHasCapability(
+      session.roleCode,
+      AppCapability.runSync,
+    );
     final workshopsAsync = ref.watch(inspectionWorkshopsProvider);
-    final inspectionDiagnostics = ref.watch(androidInspectionDiagnosticsProvider);
+    final inspectionDiagnostics = ref.watch(
+      androidInspectionDiagnosticsProvider,
+    );
     final syncDiagnostics = ref.watch(syncDiagnosticsProvider);
     final hasWorkshops = workshopsAsync.valueOrNull?.isNotEmpty == true;
     final inspectionFlowEnabled =
@@ -78,9 +89,10 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
     final syncSubtitle = canRunSync
         ? syncDiagnostics.when(
             data: (diagnostics) => diagnostics.transportConfigured
-                ? diagnostics.failedQueueCount > 0 || diagnostics.retryEligibleCount > 0
-                    ? 'Проверьте проблемы очереди и запустите синхронизацию вручную.'
-                    : 'Проверьте состояние очереди и запустите синхронизацию вручную.'
+                ? diagnostics.failedQueueCount > 0 ||
+                          diagnostics.retryEligibleCount > 0
+                      ? 'Проверьте проблемы очереди и запустите синхронизацию вручную.'
+                      : 'Проверьте состояние очереди и запустите синхронизацию вручную.'
                 : 'Настройте доступ к Яндекс.Диску в параметрах перед запуском синхронизации.',
             loading: () => 'Загружаем статус синхронизации...',
             error: (_, _) =>
@@ -134,7 +146,8 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
                   message:
                       'Запустите синхронизацию перед началом новой проверки. Пока справочные данные недоступны, сценарий проверки заблокирован.',
                 ),
-              if (diagnostics.hasPendingSyncWork || diagnostics.conflictCount > 0)
+              if (diagnostics.hasPendingSyncWork ||
+                  diagnostics.conflictCount > 0)
                 _CalloutCard(
                   icon: diagnostics.conflictCount > 0
                       ? Icons.warning_amber_outlined
@@ -150,7 +163,9 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
             loading: () => const [
               _StatusCard(
                 title: 'Состояние рабочего места',
-                lines: ['Загрузка состояния локального рабочего места Android...'],
+                lines: [
+                  'Загрузка состояния локального рабочего места Android...',
+                ],
               ),
               SizedBox(height: 12),
             ],
@@ -175,7 +190,7 @@ class _AndroidModeScreenState extends ConsumerState<AndroidModeScreen> {
                   if (diagnostics.lastSyncAttemptAt != null)
                     'Последняя попытка синхронизации: ${diagnostics.lastSyncAttemptAt}',
                   if (diagnostics.lastError != null)
-                    'Последняя ошибка синхронизации: ${diagnostics.lastError}',
+                    'Последняя ошибка синхронизации: ${userMessageFromText(diagnostics.lastError, fallback: 'Ошибка синхронизации.')}',
                 ],
               ),
               const SizedBox(height: 12),
@@ -255,8 +270,10 @@ class AndroidWorkshopSelectionScreen extends ConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final canStartInspection =
-        roleHasCapability(session.roleCode, AppCapability.startInspection);
+    final canStartInspection = roleHasCapability(
+      session.roleCode,
+      AppCapability.startInspection,
+    );
     final workshopsAsync = ref.watch(inspectionWorkshopsProvider);
 
     return Scaffold(
@@ -273,7 +290,9 @@ class AndroidWorkshopSelectionScreen extends ConsumerWidget {
               data: (workshops) {
                 if (workshops.isEmpty) {
                   return const Center(
-                    child: Text('Синхронизированные цеха с изделиями пока недоступны.'),
+                    child: Text(
+                      'Синхронизированные цеха с изделиями пока недоступны.',
+                    ),
                   );
                 }
 
@@ -295,8 +314,9 @@ class AndroidWorkshopSelectionScreen extends ConsumerWidget {
                           ].join(' • '),
                         ),
                         trailing: const Icon(Icons.chevron_right),
-                        onTap: () =>
-                            context.push(AndroidRoutes.products(workshop.workshopId)),
+                        onTap: () => context.push(
+                          AndroidRoutes.products(workshop.workshopId),
+                        ),
                       ),
                     );
                   },
@@ -309,18 +329,13 @@ class AndroidWorkshopSelectionScreen extends ConsumerWidget {
                 ),
               ),
             )
-          : const Center(
-              child: Text('Эта роль не может создавать проверки.'),
-            ),
+          : const Center(child: Text('Эта роль не может создавать проверки.')),
     );
   }
 }
 
 class AndroidProductSelectionScreen extends ConsumerWidget {
-  const AndroidProductSelectionScreen({
-    super.key,
-    required this.workshopId,
-  });
+  const AndroidProductSelectionScreen({super.key, required this.workshopId});
 
   final String workshopId;
 
@@ -331,9 +346,13 @@ class AndroidProductSelectionScreen extends ConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final productsAsync = ref.watch(inspectionProductsByWorkshopProvider(workshopId));
-    final workshops = ref.watch(inspectionWorkshopsProvider).valueOrNull ?? const [];
-    final workshopName = workshops
+    final productsAsync = ref.watch(
+      inspectionProductsByWorkshopProvider(workshopId),
+    );
+    final workshops =
+        ref.watch(inspectionWorkshopsProvider).valueOrNull ?? const [];
+    final workshopName =
+        workshops
             .where((workshop) => workshop.workshopId == workshopId)
             .map((workshop) => workshop.workshopName)
             .cast<String?>()
@@ -409,9 +428,13 @@ class AndroidTargetSelectionScreen extends ConsumerWidget {
     }
 
     final targetsAsync = ref.watch(inspectionTargetsProvider(productId));
-    final products = ref.watch(inspectionProductsByWorkshopProvider(workshopId)).valueOrNull ??
+    final products =
+        ref
+            .watch(inspectionProductsByWorkshopProvider(workshopId))
+            .valueOrNull ??
         const [];
-    final productName = products
+    final productName =
+        products
             .where((product) => product.productObjectId == productId)
             .map((product) => product.productName)
             .cast<String?>()
@@ -487,7 +510,8 @@ class AndroidComponentsScreen extends ConsumerStatefulWidget {
       _AndroidComponentsScreenState();
 }
 
-class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScreen> {
+class _AndroidComponentsScreenState
+    extends ConsumerState<AndroidComponentsScreen> {
   bool _isStarting = false;
 
   @override
@@ -497,10 +521,14 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final canStartInspection =
-        roleHasCapability(session.roleCode, AppCapability.startInspection);
+    final canStartInspection = roleHasCapability(
+      session.roleCode,
+      AppCapability.startInspection,
+    );
     final targetsAsync = ref.watch(inspectionTargetsProvider(widget.productId));
-    final componentsAsync = ref.watch(inspectionComponentsProvider(widget.targetId));
+    final componentsAsync = ref.watch(
+      inspectionComponentsProvider(widget.targetId),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -537,7 +565,9 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
                         ),
                         const SizedBox(height: 8),
                         Text('Изделие: ${selectedTarget.productName}'),
-                        Text('Тип объекта: ${_objectTypeLabel(selectedTarget.targetType)}'),
+                        Text(
+                          'Тип объекта: ${_objectTypeLabel(selectedTarget.targetType)}',
+                        ),
                         Text('Компонентов: ${components.length}'),
                       ],
                     ),
@@ -564,16 +594,20 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
                             onPressed: _isStarting
                                 ? null
                                 : () => _startDraft(
-                                      session: session,
-                                      target: selectedTarget,
-                                    ),
+                                    session: session,
+                                    target: selectedTarget,
+                                  ),
                             icon: _isStarting
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   )
-                                : const Icon(Icons.playlist_add_check_circle_outlined),
+                                : const Icon(
+                                    Icons.playlist_add_check_circle_outlined,
+                                  ),
                             label: const Text('Открыть черновик'),
                           ),
                       ],
@@ -596,13 +630,17 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
                   for (final component in components) ...[
                     Card(
                       child: ListTile(
-                        leading: const Icon(Icons.precision_manufacturing_outlined),
+                        leading: const Icon(
+                          Icons.precision_manufacturing_outlined,
+                        ),
                         title: Text(component.name),
                         subtitle: Text(
                           [
                             if ((component.code ?? '').isNotEmpty)
                               'Код: ${component.code}',
-                            component.isRequired ? 'Обязательный' : 'Необязательный',
+                            component.isRequired
+                                ? 'Обязательный'
+                                : 'Необязательный',
                             'Изображений: ${component.imagePaths.length}',
                           ].join(' • '),
                         ),
@@ -645,7 +683,9 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
   }) async {
     setState(() => _isStarting = true);
     try {
-      final detail = await ref.read(syncServiceProvider).startInspectionDraft(
+      final detail = await ref
+          .read(syncServiceProvider)
+          .startInspectionDraft(
             request: InspectionStartRequest(
               userId: session.userId,
               productObjectId: widget.productId,
@@ -683,10 +723,7 @@ class _AndroidComponentsScreenState extends ConsumerState<AndroidComponentsScree
 }
 
 class AndroidComponentDetailsScreen extends ConsumerWidget {
-  const AndroidComponentDetailsScreen({
-    super.key,
-    required this.componentId,
-  });
+  const AndroidComponentDetailsScreen({super.key, required this.componentId});
 
   final String componentId;
 
@@ -752,7 +789,9 @@ class AndroidComponentDetailsScreen extends ConsumerWidget {
               if (component.imagePaths.isEmpty)
                 const Card(
                   child: ListTile(
-                    title: Text('Для этого компонента нет локальных изображений.'),
+                    title: Text(
+                      'Для этого компонента нет локальных изображений.',
+                    ),
                   ),
                 )
               else
@@ -809,8 +848,10 @@ class AndroidDraftsScreen extends ConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final canStartInspection =
-        roleHasCapability(session.roleCode, AppCapability.startInspection);
+    final canStartInspection = roleHasCapability(
+      session.roleCode,
+      AppCapability.startInspection,
+    );
     final draftsAsync = ref.watch(inspectionDraftsProvider(session.userId));
 
     return Scaffold(
@@ -855,8 +896,9 @@ class AndroidDraftsScreen extends ConsumerWidget {
                           '${draft.productName} | ${draft.answeredItems}/${draft.totalItems} отвечено | ${draft.updatedAt}',
                         ),
                         trailing: const Icon(Icons.chevron_right),
-                        onTap: () =>
-                            context.push(AndroidRoutes.inspection(draft.inspectionId)),
+                        onTap: () => context.push(
+                          AndroidRoutes.inspection(draft.inspectionId),
+                        ),
                       ),
                     );
                   },
@@ -870,7 +912,9 @@ class AndroidDraftsScreen extends ConsumerWidget {
               ),
             )
           : const Center(
-              child: Text('Эта роль не может создавать или редактировать черновики проверок.'),
+              child: Text(
+                'Эта роль не может создавать или редактировать черновики проверок.',
+              ),
             ),
     );
   }
@@ -886,8 +930,10 @@ class AndroidResultsScreen extends ConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final canViewResults =
-        roleHasCapability(session.roleCode, AppCapability.viewResults);
+    final canViewResults = roleHasCapability(
+      session.roleCode,
+      AppCapability.viewResults,
+    );
     final resultsAsync = ref.watch(inspectionResultsProvider(session.userId));
 
     return Scaffold(
@@ -926,14 +972,17 @@ class AndroidResultsScreen extends ConsumerWidget {
                     final result = results[index];
                     return Card(
                       child: ListTile(
-                        leading: const Icon(Icons.assignment_turned_in_outlined),
+                        leading: const Icon(
+                          Icons.assignment_turned_in_outlined,
+                        ),
                         title: Text(result.targetName),
                         subtitle: Text(
                           '${result.productName} | ${_inspectionStatusLabel(result.status)} / ${_syncStatusLabel(result.syncStatus)} | подписей: ${result.signatureCount} | PDF: ${result.hasPdf ? 'да' : 'нет'}',
                         ),
                         trailing: Text(result.completedAt),
-                        onTap: () =>
-                            context.push(AndroidRoutes.inspection(result.inspectionId)),
+                        onTap: () => context.push(
+                          AndroidRoutes.inspection(result.inspectionId),
+                        ),
                       ),
                     );
                   },
@@ -947,7 +996,9 @@ class AndroidResultsScreen extends ConsumerWidget {
               ),
             )
           : const Center(
-              child: Text('Эта роль не может просматривать результаты проверок.'),
+              child: Text(
+                'Эта роль не может просматривать результаты проверок.',
+              ),
             ),
     );
   }
@@ -970,8 +1021,13 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final canRunSync = roleHasCapability(session.roleCode, AppCapability.runSync);
-    final inspectionDiagnostics = ref.watch(androidInspectionDiagnosticsProvider);
+    final canRunSync = roleHasCapability(
+      session.roleCode,
+      AppCapability.runSync,
+    );
+    final inspectionDiagnostics = ref.watch(
+      androidInspectionDiagnosticsProvider,
+    );
     final syncDiagnostics = ref.watch(syncDiagnosticsProvider);
 
     return Scaffold(
@@ -1005,12 +1061,16 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
                       runSpacing: 12,
                       children: [
                         FilledButton.icon(
-                          onPressed: _isSyncing ? null : () => _runSync(session),
+                          onPressed: _isSyncing
+                              ? null
+                              : () => _runSync(session),
                           icon: _isSyncing
                               ? const SizedBox(
                                   width: 16,
                                   height: 16,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : const Icon(Icons.sync),
                           label: const Text('Синхронизировать'),
@@ -1021,7 +1081,8 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
                           label: const Text('Настройки'),
                         ),
                         OutlinedButton.icon(
-                          onPressed: () => context.push(AndroidRoutes.diagnostics),
+                          onPressed: () =>
+                              context.push(AndroidRoutes.diagnostics),
                           icon: const Icon(Icons.monitor_heart_outlined),
                           label: const Text('Диагностика'),
                         ),
@@ -1065,7 +1126,10 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
                 ),
             ],
             loading: () => const [
-              _InfoCard(title: 'Рабочее место проверки', lines: ['Загрузка...']),
+              _InfoCard(
+                title: 'Рабочее место проверки',
+                lines: ['Загрузка...'],
+              ),
             ],
             error: (error, _) => [
               _InfoCard(
@@ -1097,7 +1161,10 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
                 ),
             ],
             loading: () => const [
-              _InfoCard(title: 'Диагностика транспорта', lines: ['Загрузка...']),
+              _InfoCard(
+                title: 'Диагностика транспорта',
+                lines: ['Загрузка...'],
+              ),
             ],
             error: (error, _) => [
               _InfoCard(
@@ -1119,7 +1186,9 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
   Future<void> _runSync(AuthSession session) async {
     setState(() => _isSyncing = true);
     try {
-      final report = await ref.read(syncServiceProvider).runManualSync(
+      final report = await ref
+          .read(syncServiceProvider)
+          .runManualSync(
             platform: AppPlatform.android,
             actorUserId: session.userId,
           );
@@ -1131,9 +1200,9 @@ class _AndroidSyncScreenState extends ConsumerState<AndroidSyncScreen> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(report.summaryLabel())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(report.summaryLabel())));
     } catch (error) {
       if (!mounted) {
         return;
@@ -1165,7 +1234,7 @@ List<String> _syncLines(SyncDiagnosticsSnapshot diagnostics) {
     'Последняя попытка: ${diagnostics.lastSyncAttemptAt ?? 'н/д'}',
     'Последний повтор: ${diagnostics.lastRetryAt ?? 'н/д'}',
     'Последний конфликт: ${diagnostics.lastConflictAt ?? 'н/д'}',
-    'Последняя ошибка: ${diagnostics.lastError ?? 'н/д'}',
+    'Последняя ошибка: ${diagnostics.lastError == null ? 'н/д' : userMessageFromText(diagnostics.lastError, fallback: 'Ошибка синхронизации.')}',
     'Ожидает отправки: ${diagnostics.pendingOutgoingCount}',
     'Ожидает получения: ${diagnostics.pendingIncomingCount}',
     'Ошибки очереди: ${diagnostics.failedQueueCount}',
@@ -1262,10 +1331,7 @@ class _ModeCard extends StatelessWidget {
 }
 
 class _InfoCard extends StatelessWidget {
-  const _InfoCard({
-    required this.title,
-    required this.lines,
-  });
+  const _InfoCard({required this.title, required this.lines});
 
   final String title;
   final List<String> lines;
@@ -1278,10 +1344,7 @@ class _InfoCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text(title, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 12),
             for (final line in lines) ...[
               Text(line),
@@ -1295,10 +1358,7 @@ class _InfoCard extends StatelessWidget {
 }
 
 class _StatusCard extends StatelessWidget {
-  const _StatusCard({
-    required this.title,
-    required this.lines,
-  });
+  const _StatusCard({required this.title, required this.lines});
 
   final String title;
   final List<String> lines;

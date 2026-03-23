@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/user_message.dart';
 import '../../auth/data/auth_service.dart';
 import '../data/master_data_repositories.dart';
 
@@ -16,7 +17,8 @@ class ChecklistsAdminScreen extends ConsumerWidget {
 
     return checklistsAsync.when(
       data: (checklists) {
-        final selectedChecklistId = ref.watch(_selectedChecklistIdProvider) ??
+        final selectedChecklistId =
+            ref.watch(_selectedChecklistIdProvider) ??
             (checklists.isNotEmpty ? checklists.first.id : null);
         final detailAsync = selectedChecklistId == null
             ? null
@@ -51,7 +53,9 @@ class ChecklistsAdminScreen extends ConsumerWidget {
                               ),
                             ),
                             FilledButton.icon(
-                              onPressed: canEdit ? () => _editChecklist(context, ref) : null,
+                              onPressed: canEdit
+                                  ? () => _editChecklist(context, ref)
+                                  : null,
                               icon: const Icon(Icons.add),
                               label: const Text('Создать'),
                             ),
@@ -71,12 +75,20 @@ class ChecklistsAdminScreen extends ConsumerWidget {
                                     child: ListTile(
                                       title: Text(checklist.name),
                                       subtitle: Text(
-                                        checklist.isActive ? 'Активен' : 'Неактивен',
+                                        checklist.isActive
+                                            ? 'Активен'
+                                            : 'Неактивен',
                                       ),
-                                      selected: checklist.id == selectedChecklistId,
-                                      onTap: () => ref
-                                          .read(_selectedChecklistIdProvider.notifier)
-                                          .state = checklist.id,
+                                      selected:
+                                          checklist.id == selectedChecklistId,
+                                      onTap: () =>
+                                          ref
+                                                  .read(
+                                                    _selectedChecklistIdProvider
+                                                        .notifier,
+                                                  )
+                                                  .state =
+                                              checklist.id,
                                     ),
                                   ),
                               ],
@@ -110,40 +122,51 @@ class ChecklistsAdminScreen extends ConsumerWidget {
                                         Expanded(
                                           child: Text(
                                             detail.checklist.name,
-                                            style: Theme.of(context).textTheme.titleLarge,
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.titleLarge,
                                           ),
                                         ),
                                         IconButton(
                                           onPressed: canEdit
                                               ? () => _editChecklist(
-                                                    context,
-                                                    ref,
-                                                    checklist: detail.checklist,
-                                                  )
+                                                  context,
+                                                  ref,
+                                                  checklist: detail.checklist,
+                                                )
                                               : null,
                                           icon: const Icon(Icons.edit_outlined),
                                         ),
                                         IconButton(
                                           onPressed: canEdit
                                               ? () => _deleteChecklist(
-                                                    ref,
-                                                    detail.checklist.id,
-                                                  )
+                                                  ref,
+                                                  detail.checklist.id,
+                                                )
                                               : null,
-                                          icon: const Icon(Icons.delete_outline),
+                                          icon: const Icon(
+                                            Icons.delete_outline,
+                                          ),
                                         ),
                                       ],
                                     ),
                                     const SizedBox(height: 12),
-                                    Text(detail.checklist.description ?? 'Без описания'),
+                                    Text(
+                                      detail.checklist.description ??
+                                          'Без описания',
+                                    ),
                                     const SizedBox(height: 24),
                                     Text(
                                       'Пункты',
-                                      style: Theme.of(context).textTheme.titleMedium,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleMedium,
                                     ),
                                     const SizedBox(height: 8),
                                     if (detail.items.isEmpty)
-                                      const Text('В этом чек-листе нет пунктов.')
+                                      const Text(
+                                        'В этом чек-листе нет пунктов.',
+                                      )
                                     else
                                       ...detail.items.map(
                                         (item) => Card(
@@ -158,11 +181,15 @@ class ChecklistsAdminScreen extends ConsumerWidget {
                                     const SizedBox(height: 24),
                                     Text(
                                       'Привязки',
-                                      style: Theme.of(context).textTheme.titleMedium,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleMedium,
                                     ),
                                     const SizedBox(height: 8),
                                     if (detail.bindings.isEmpty)
-                                      const Text('Для этого чек-листа нет привязок.')
+                                      const Text(
+                                        'Для этого чек-листа нет привязок.',
+                                      )
                                     else
                                       ...detail.bindings.map(
                                         (binding) => Card(
@@ -178,9 +205,12 @@ class ChecklistsAdminScreen extends ConsumerWidget {
                                 ),
                               );
                             },
-                            loading: () => const Center(child: CircularProgressIndicator()),
-                            error: (error, _) =>
-                                Text('Не удалось загрузить редактор чек-листа: $error'),
+                            loading: () => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                            error: (error, _) => Text(
+                              'Не удалось загрузить редактор чек-листа. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+                            ),
                           ),
                   ),
                 ),
@@ -190,8 +220,11 @@ class ChecklistsAdminScreen extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) =>
-          Center(child: Text('Не удалось загрузить чек-листы: $error')),
+      error: (error, _) => Center(
+        child: Text(
+          'Не удалось загрузить чек-листы. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+        ),
+      ),
     );
   }
 
@@ -201,8 +234,9 @@ class ChecklistsAdminScreen extends ConsumerWidget {
     Checklist? checklist,
   }) async {
     final nameController = TextEditingController(text: checklist?.name ?? '');
-    final descriptionController =
-        TextEditingController(text: checklist?.description ?? '');
+    final descriptionController = TextEditingController(
+      text: checklist?.description ?? '',
+    );
     var isActive = checklist?.isActive ?? true;
 
     final shouldSave = await showDialog<bool>(
@@ -252,7 +286,9 @@ class ChecklistsAdminScreen extends ConsumerWidget {
       return;
     }
 
-    final id = await ref.read(checklistsRepositoryProvider).saveChecklist(
+    final id = await ref
+        .read(checklistsRepositoryProvider)
+        .saveChecklist(
           id: checklist?.id,
           name: nameController.text,
           description: descriptionController.text,
@@ -265,7 +301,9 @@ class ChecklistsAdminScreen extends ConsumerWidget {
   }
 
   Future<void> _deleteChecklist(WidgetRef ref, String checklistId) async {
-    await ref.read(checklistsRepositoryProvider).deleteChecklist(
+    await ref
+        .read(checklistsRepositoryProvider)
+        .deleteChecklist(
           checklistId,
           actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
         );

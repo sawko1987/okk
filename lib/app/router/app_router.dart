@@ -13,15 +13,11 @@ import '../../features/sync/presentation/sync_diagnostics_screen.dart';
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const AppEntryScreen(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const AppEntryScreen()),
       GoRoute(
         path: '/windows',
-        builder: (context, state) => const WindowsAdminShell(
-          section: WindowsAdminSection.dashboard,
-        ),
+        builder: (context, state) =>
+            const WindowsAdminShell(section: WindowsAdminSection.dashboard),
       ),
       GoRoute(
         path: '/windows/:section',

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/user_message.dart';
 import '../../admin/data/admin_repositories.dart';
 import '../../auth/data/auth_service.dart';
 import '../data/master_data_repositories.dart';
 
-final _selectedComponentObjectIdProvider = StateProvider<String?>((ref) => null);
+final _selectedComponentObjectIdProvider = StateProvider<String?>(
+  (ref) => null,
+);
 final _selectedComponentIdProvider = StateProvider<String?>((ref) => null);
 
 class ComponentsAdminScreen extends ConsumerWidget {
@@ -18,13 +21,20 @@ class ComponentsAdminScreen extends ConsumerWidget {
 
     return screenDataAsync.when(
       data: (screenData) {
-        final selectedObjectId = ref.watch(_selectedComponentObjectIdProvider) ??
-            (screenData.objects.isNotEmpty ? screenData.objects.first.id : null);
+        final selectedObjectId =
+            ref.watch(_selectedComponentObjectIdProvider) ??
+            (screenData.objects.isNotEmpty
+                ? screenData.objects.first.id
+                : null);
         final selectedObject = screenData.objects.firstWhere(
           (object) => object.id == selectedObjectId,
-          orElse: () => screenData.objects.isNotEmpty ? screenData.objects.first : _emptyCatalogObject,
+          orElse: () => screenData.objects.isNotEmpty
+              ? screenData.objects.first
+              : _emptyCatalogObject,
         );
-        final componentsAsync = ref.watch(componentsByObjectProvider(selectedObjectId));
+        final componentsAsync = ref.watch(
+          componentsByObjectProvider(selectedObjectId),
+        );
 
         return Padding(
           padding: const EdgeInsets.all(24),
@@ -34,9 +44,7 @@ class ComponentsAdminScreen extends ConsumerWidget {
               if (!canEdit)
                 const Padding(
                   padding: EdgeInsets.only(bottom: 12),
-                  child: Text(
-                    'Редактирование доступно только администратору.',
-                  ),
+                  child: Text('Редактирование доступно только администратору.'),
                 ),
               Row(
                 children: [
@@ -54,8 +62,14 @@ class ComponentsAdminScreen extends ConsumerWidget {
                           ),
                       ],
                       onChanged: (value) {
-                        ref.read(_selectedComponentObjectIdProvider.notifier).state = value;
-                        ref.read(_selectedComponentIdProvider.notifier).state = null;
+                        ref
+                                .read(
+                                  _selectedComponentObjectIdProvider.notifier,
+                                )
+                                .state =
+                            value;
+                        ref.read(_selectedComponentIdProvider.notifier).state =
+                            null;
                       },
                     ),
                   ),
@@ -63,10 +77,10 @@ class ComponentsAdminScreen extends ConsumerWidget {
                   FilledButton.icon(
                     onPressed: canEdit && selectedObjectId != null
                         ? () => _editComponent(
-                              context,
-                              ref,
-                              objectId: selectedObjectId,
-                            )
+                            context,
+                            ref,
+                            objectId: selectedObjectId,
+                          )
                         : null,
                     icon: const Icon(Icons.add),
                     label: const Text('Добавить компонент'),
@@ -84,7 +98,7 @@ class ComponentsAdminScreen extends ConsumerWidget {
                     data: (components) {
                       final selectedComponentId =
                           ref.watch(_selectedComponentIdProvider) ??
-                              (components.isNotEmpty ? components.first.id : null);
+                          (components.isNotEmpty ? components.first.id : null);
                       final selectedComponent = components.firstWhere(
                         (component) => component.id == selectedComponentId,
                         orElse: () => components.isNotEmpty
@@ -93,7 +107,9 @@ class ComponentsAdminScreen extends ConsumerWidget {
                       );
                       final imagesAsync = selectedComponentId == null
                           ? null
-                          : ref.watch(componentImagesProvider(selectedComponentId));
+                          : ref.watch(
+                              componentImagesProvider(selectedComponentId),
+                            );
 
                       return Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,13 +124,17 @@ class ComponentsAdminScreen extends ConsumerWidget {
                                   children: [
                                     Text(
                                       'Компоненты объекта "${selectedObject.name}"',
-                                      style: Theme.of(context).textTheme.titleLarge,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleLarge,
                                     ),
                                     const SizedBox(height: 16),
                                     if (components.isEmpty)
                                       const Expanded(
                                         child: Center(
-                                          child: Text('Для этого объекта пока нет компонентов.'),
+                                          child: Text(
+                                            'Для этого объекта пока нет компонентов.',
+                                          ),
                                         ),
                                       )
                                     else
@@ -125,11 +145,21 @@ class ComponentsAdminScreen extends ConsumerWidget {
                                               Card(
                                                 child: ListTile(
                                                   title: Text(component.name),
-                                                  subtitle: Text(component.code ?? 'Без кода'),
-                                                  selected: component.id == selectedComponent.id,
-                                                  onTap: () => ref
-                                                      .read(_selectedComponentIdProvider.notifier)
-                                                      .state = component.id,
+                                                  subtitle: Text(
+                                                    component.code ??
+                                                        'Без кода',
+                                                  ),
+                                                  selected:
+                                                      component.id ==
+                                                      selectedComponent.id,
+                                                  onTap: () =>
+                                                      ref
+                                                          .read(
+                                                            _selectedComponentIdProvider
+                                                                .notifier,
+                                                          )
+                                                          .state = component
+                                                          .id,
                                                 ),
                                               ),
                                           ],
@@ -147,53 +177,67 @@ class ComponentsAdminScreen extends ConsumerWidget {
                               child: Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: components.isEmpty
-                                    ? const Text('Выберите или создайте компонент.')
+                                    ? const Text(
+                                        'Выберите или создайте компонент.',
+                                      )
                                     : Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Row(
                                             children: [
                                               Expanded(
                                                 child: Text(
                                                   selectedComponent.name,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleLarge,
+                                                  style: Theme.of(
+                                                    context,
+                                                  ).textTheme.titleLarge,
                                                 ),
                                               ),
                                               IconButton(
                                                 onPressed: canEdit
                                                     ? () => _editComponent(
-                                                          context,
-                                                          ref,
-                                                          objectId: selectedObjectId,
-                                                          component: selectedComponent,
-                                                        )
+                                                        context,
+                                                        ref,
+                                                        objectId:
+                                                            selectedObjectId,
+                                                        component:
+                                                            selectedComponent,
+                                                      )
                                                     : null,
-                                                icon: const Icon(Icons.edit_outlined),
+                                                icon: const Icon(
+                                                  Icons.edit_outlined,
+                                                ),
                                               ),
                                               IconButton(
                                                 onPressed: canEdit
                                                     ? () => _deleteComponent(
-                                                          context,
-                                                          ref,
-                                                          selectedComponent.id,
-                                                        )
+                                                        context,
+                                                        ref,
+                                                        selectedComponent.id,
+                                                      )
                                                     : null,
-                                                icon: const Icon(Icons.delete_outline),
+                                                icon: const Icon(
+                                                  Icons.delete_outline,
+                                                ),
                                               ),
                                             ],
                                           ),
                                           const SizedBox(height: 12),
                                           _ComponentDetailRow(
                                             'Код',
-                                            selectedComponent.code ?? 'Не указан',
+                                            selectedComponent.code ??
+                                                'Не указан',
                                           ),
                                           _ComponentDetailRow(
                                             'Обязательный',
-                                            selectedComponent.isRequired ? 'Да' : 'Нет',
+                                            selectedComponent.isRequired
+                                                ? 'Да'
+                                                : 'Нет',
                                           ),
-                                          if ((selectedComponent.description ?? '').isNotEmpty)
+                                          if ((selectedComponent.description ??
+                                                  '')
+                                              .isNotEmpty)
                                             _ComponentDetailRow(
                                               'Описание',
                                               selectedComponent.description!,
@@ -204,28 +248,34 @@ class ComponentsAdminScreen extends ConsumerWidget {
                                               Expanded(
                                                 child: Text(
                                                   'Изображения',
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleMedium,
+                                                  style: Theme.of(
+                                                    context,
+                                                  ).textTheme.titleMedium,
                                                 ),
                                               ),
                                               OutlinedButton.icon(
                                                 onPressed: canEdit
                                                     ? () => _importImages(
-                                                          context,
-                                                          ref,
-                                                          selectedComponent.id,
-                                                        )
+                                                        context,
+                                                        ref,
+                                                        selectedComponent.id,
+                                                      )
                                                     : null,
-                                                icon: const Icon(Icons.upload_file_outlined),
-                                                label: const Text('Импортировать'),
+                                                icon: const Icon(
+                                                  Icons.upload_file_outlined,
+                                                ),
+                                                label: const Text(
+                                                  'Импортировать',
+                                                ),
                                               ),
                                             ],
                                           ),
                                           const SizedBox(height: 8),
                                           Expanded(
-                                            child: imagesAsync?.when(
-                                                  data: (images) => images.isEmpty
+                                            child:
+                                                imagesAsync?.when(
+                                                  data: (images) =>
+                                                      images.isEmpty
                                                       ? const Center(
                                                           child: Text(
                                                             'Изображения пока не импортированы.',
@@ -233,35 +283,44 @@ class ComponentsAdminScreen extends ConsumerWidget {
                                                         )
                                                       : ListView(
                                                           children: [
-                                                            for (final image in images)
+                                                            for (final image
+                                                                in images)
                                                               Card(
                                                                 child: ListTile(
-                                                                  title: Text(image.fileName),
+                                                                  title: Text(
+                                                                    image
+                                                                        .fileName,
+                                                                  ),
                                                                   subtitle: Text(
-                                                                    image.localPath ?? '-',
+                                                                    image.localPath ??
+                                                                        '-',
                                                                   ),
                                                                   trailing: IconButton(
-                                                                    onPressed: canEdit
+                                                                    onPressed:
+                                                                        canEdit
                                                                         ? () => _deleteImage(
-                                                                              context,
-                                                                              ref,
-                                                                              selectedComponent.id,
-                                                                              image.id,
-                                                                            )
+                                                                            context,
+                                                                            ref,
+                                                                            selectedComponent.id,
+                                                                            image.id,
+                                                                          )
                                                                         : null,
                                                                     icon: const Icon(
-                                                                      Icons.delete_outline,
+                                                                      Icons
+                                                                          .delete_outline,
                                                                     ),
                                                                   ),
                                                                 ),
                                                               ),
                                                           ],
                                                         ),
-                                                  loading: () =>
-                                                      const Center(child: CircularProgressIndicator()),
+                                                  loading: () => const Center(
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  ),
                                                   error: (error, _) => Center(
                                                     child: Text(
-                                                      'Не удалось загрузить изображения: $error',
+                                                      'Не удалось загрузить изображения. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
                                                     ),
                                                   ),
                                                 ) ??
@@ -275,9 +334,13 @@ class ComponentsAdminScreen extends ConsumerWidget {
                         ],
                       );
                     },
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (error, _) =>
-                        Center(child: Text('Не удалось загрузить компоненты: $error')),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, _) => Center(
+                      child: Text(
+                        'Не удалось загрузить компоненты. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+                      ),
+                    ),
                   ),
                 ),
             ],
@@ -285,7 +348,11 @@ class ComponentsAdminScreen extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Не удалось загрузить объекты: $error')),
+      error: (error, _) => Center(
+        child: Text(
+          'Не удалось загрузить объекты. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+        ),
+      ),
     );
   }
 
@@ -304,7 +371,9 @@ class ComponentsAdminScreen extends ConsumerWidget {
     }
 
     try {
-      await ref.read(componentsRepositoryProvider).saveComponent(
+      await ref
+          .read(componentsRepositoryProvider)
+          .saveComponent(
             id: component?.id,
             objectId: objectId,
             name: result.name,
@@ -330,7 +399,9 @@ class ComponentsAdminScreen extends ConsumerWidget {
     String componentId,
   ) async {
     try {
-      await ref.read(componentsRepositoryProvider).deleteComponent(
+      await ref
+          .read(componentsRepositoryProvider)
+          .deleteComponent(
             componentId,
             actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
           );
@@ -359,7 +430,9 @@ class ComponentsAdminScreen extends ConsumerWidget {
     }
 
     try {
-      await ref.read(componentImagesRepositoryProvider).importImages(
+      await ref
+          .read(componentImagesRepositoryProvider)
+          .importImages(
             componentId: componentId,
             sourcePaths: result.paths,
             actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
@@ -380,7 +453,9 @@ class ComponentsAdminScreen extends ConsumerWidget {
     String componentId,
     String imageId,
   ) async {
-    await ref.read(componentImagesRepositoryProvider).deleteImage(
+    await ref
+        .read(componentImagesRepositoryProvider)
+        .deleteImage(
           imageId,
           actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
         );
@@ -466,9 +541,12 @@ class _ComponentEditorDialogState extends State<_ComponentEditorDialog> {
     super.initState();
     _nameController = TextEditingController(text: widget.component?.name ?? '');
     _codeController = TextEditingController(text: widget.component?.code ?? '');
-    _descriptionController =
-        TextEditingController(text: widget.component?.description ?? '');
-    _sortController = TextEditingController(text: '${widget.component?.sortOrder ?? 0}');
+    _descriptionController = TextEditingController(
+      text: widget.component?.description ?? '',
+    );
+    _sortController = TextEditingController(
+      text: '${widget.component?.sortOrder ?? 0}',
+    );
     _isRequired = widget.component?.isRequired ?? true;
   }
 
@@ -485,7 +563,9 @@ class _ComponentEditorDialogState extends State<_ComponentEditorDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
-        widget.component == null ? 'Новый компонент' : 'Редактирование компонента',
+        widget.component == null
+            ? 'Новый компонент'
+            : 'Редактирование компонента',
       ),
       content: Form(
         key: _formKey,
@@ -497,8 +577,9 @@ class _ComponentEditorDialogState extends State<_ComponentEditorDialog> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Название'),
-                validator: (value) =>
-                    value == null || value.trim().isEmpty ? 'Введите название' : null,
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? 'Введите название'
+                    : null,
               ),
               TextFormField(
                 controller: _codeController,
@@ -511,7 +592,9 @@ class _ComponentEditorDialogState extends State<_ComponentEditorDialog> {
               ),
               TextFormField(
                 controller: _sortController,
-                decoration: const InputDecoration(labelText: 'Порядок сортировки'),
+                decoration: const InputDecoration(
+                  labelText: 'Порядок сортировки',
+                ),
                 keyboardType: TextInputType.number,
               ),
               SwitchListTile(
@@ -635,7 +718,5 @@ class _ImageImportResult {
 }
 
 void _showComponentsMessage(BuildContext context, String message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message)),
-  );
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
 }

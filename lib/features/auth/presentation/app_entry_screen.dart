@@ -25,16 +25,15 @@ class AppEntryScreen extends ConsumerWidget {
         return switch (platform) {
           AppPlatform.android => const AndroidModeScreen(),
           AppPlatform.windows => const WindowsAdminShell(
-              section: WindowsAdminSection.dashboard,
-            ),
+            section: WindowsAdminSection.dashboard,
+          ),
           AppPlatform.unsupported => const Scaffold(
-              body: Center(child: Text('Платформа не поддерживается.')),
-            ),
+            body: Center(child: Text('Платформа не поддерживается.')),
+          ),
         };
       },
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, _) => Scaffold(
         body: Center(
           child: Text(

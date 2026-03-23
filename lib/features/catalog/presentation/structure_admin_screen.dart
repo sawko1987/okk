@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/user_message.dart';
 import '../../auth/data/auth_service.dart';
 import '../data/master_data_repositories.dart';
 
@@ -46,9 +47,7 @@ class StructureAdminScreen extends ConsumerWidget {
               if (!canEdit)
                 const Padding(
                   padding: EdgeInsets.only(bottom: 12),
-                  child: Text(
-                    'Редактирование доступно только администратору.',
-                  ),
+                  child: Text('Редактирование доступно только администратору.'),
                 ),
               Expanded(
                 child: Row(
@@ -58,32 +57,51 @@ class StructureAdminScreen extends ConsumerWidget {
                       child: _StructureColumn(
                         title: 'Подразделения',
                         addLabel: 'Добавить подразделение',
-                        onAdd: canEdit ? () => _editDepartment(context, ref) : null,
+                        onAdd: canEdit
+                            ? () => _editDepartment(context, ref)
+                            : null,
                         onEdit: !canEdit || tree.isEmpty
                             ? null
                             : () => _editDepartment(
-                                  context,
-                                  ref,
-                                  department: departmentNode.department,
-                                ),
+                                context,
+                                ref,
+                                department: departmentNode.department,
+                              ),
                         onDelete: !canEdit || tree.isEmpty
                             ? null
                             : () => _deleteDepartment(
-                                  context,
-                                  ref,
-                                  departmentNode.department.id,
-                                ),
+                                context,
+                                ref,
+                                departmentNode.department.id,
+                              ),
                         children: [
                           for (final node in tree)
                             _SelectableTile(
                               title: node.department.name,
                               subtitle: node.department.code ?? 'Без кода',
-                              selected: node.department.id == departmentNode.department.id,
+                              selected:
+                                  node.department.id ==
+                                  departmentNode.department.id,
                               onTap: () {
-                                ref.read(_selectedDepartmentIdProvider.notifier).state =
-                                    node.department.id;
-                                ref.read(_selectedWorkshopIdProvider.notifier).state = null;
-                                ref.read(_selectedSectionIdProvider.notifier).state = null;
+                                ref
+                                    .read(
+                                      _selectedDepartmentIdProvider.notifier,
+                                    )
+                                    .state = node
+                                    .department
+                                    .id;
+                                ref
+                                        .read(
+                                          _selectedWorkshopIdProvider.notifier,
+                                        )
+                                        .state =
+                                    null;
+                                ref
+                                        .read(
+                                          _selectedSectionIdProvider.notifier,
+                                        )
+                                        .state =
+                                    null;
                               },
                             ),
                         ],
@@ -97,37 +115,48 @@ class StructureAdminScreen extends ConsumerWidget {
                         onAdd: !canEdit || tree.isEmpty
                             ? null
                             : () => _editWorkshop(
-                                  context,
-                                  ref,
-                                  departments: tree,
-                                  initialDepartmentId: departmentNode.department.id,
-                                ),
+                                context,
+                                ref,
+                                departments: tree,
+                                initialDepartmentId:
+                                    departmentNode.department.id,
+                              ),
                         onEdit: !canEdit || departmentNode.workshops.isEmpty
                             ? null
                             : () => _editWorkshop(
-                                  context,
-                                  ref,
-                                  departments: tree,
-                                  workshop: workshopNode.workshop,
-                                  initialDepartmentId: departmentNode.department.id,
-                                ),
+                                context,
+                                ref,
+                                departments: tree,
+                                workshop: workshopNode.workshop,
+                                initialDepartmentId:
+                                    departmentNode.department.id,
+                              ),
                         onDelete: !canEdit || departmentNode.workshops.isEmpty
                             ? null
                             : () => _deleteWorkshop(
-                                  context,
-                                  ref,
-                                  workshopNode.workshop.id,
-                                ),
+                                context,
+                                ref,
+                                workshopNode.workshop.id,
+                              ),
                         children: [
                           for (final node in departmentNode.workshops)
                             _SelectableTile(
                               title: node.workshop.name,
                               subtitle: node.workshop.code ?? 'Без кода',
-                              selected: node.workshop.id == workshopNode.workshop.id,
+                              selected:
+                                  node.workshop.id == workshopNode.workshop.id,
                               onTap: () {
-                                ref.read(_selectedWorkshopIdProvider.notifier).state =
-                                    node.workshop.id;
-                                ref.read(_selectedSectionIdProvider.notifier).state = null;
+                                ref
+                                    .read(_selectedWorkshopIdProvider.notifier)
+                                    .state = node
+                                    .workshop
+                                    .id;
+                                ref
+                                        .read(
+                                          _selectedSectionIdProvider.notifier,
+                                        )
+                                        .state =
+                                    null;
                               },
                             ),
                         ],
@@ -141,27 +170,27 @@ class StructureAdminScreen extends ConsumerWidget {
                         onAdd: !canEdit || departmentNode.workshops.isEmpty
                             ? null
                             : () => _editSection(
-                                  context,
-                                  ref,
-                                  departments: tree,
-                                  initialWorkshopId: workshopNode.workshop.id,
-                                ),
+                                context,
+                                ref,
+                                departments: tree,
+                                initialWorkshopId: workshopNode.workshop.id,
+                              ),
                         onEdit: !canEdit || workshopNode.sections.isEmpty
                             ? null
                             : () => _editSection(
-                                  context,
-                                  ref,
-                                  departments: tree,
-                                  section: selectedSection,
-                                  initialWorkshopId: workshopNode.workshop.id,
-                                ),
+                                context,
+                                ref,
+                                departments: tree,
+                                section: selectedSection,
+                                initialWorkshopId: workshopNode.workshop.id,
+                              ),
                         onDelete: !canEdit || workshopNode.sections.isEmpty
                             ? null
                             : () => _deleteSection(
-                                  context,
-                                  ref,
-                                  selectedSection.id,
-                                ),
+                                context,
+                                ref,
+                                selectedSection.id,
+                              ),
                         children: [
                           for (final section in workshopNode.sections)
                             _SelectableTile(
@@ -169,8 +198,10 @@ class StructureAdminScreen extends ConsumerWidget {
                               subtitle: section.code ?? 'Без кода',
                               selected: section.id == selectedSection.id,
                               onTap: () {
-                                ref.read(_selectedSectionIdProvider.notifier).state =
-                                    section.id;
+                                ref
+                                    .read(_selectedSectionIdProvider.notifier)
+                                    .state = section
+                                    .id;
                               },
                             ),
                         ],
@@ -184,8 +215,11 @@ class StructureAdminScreen extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) =>
-          Center(child: Text('Не удалось загрузить структуру: $error')),
+      error: (error, _) => Center(
+        child: Text(
+          'Не удалось загрузить структуру. ${userMessageFromError(error, fallback: 'Повторите попытку позже.')}',
+        ),
+      ),
     );
   }
 
@@ -215,7 +249,9 @@ class StructureAdminScreen extends ConsumerWidget {
     await _runGuarded(
       context,
       ref,
-      () => ref.read(enterpriseStructureRepositoryProvider).saveDepartment(
+      () => ref
+          .read(enterpriseStructureRepositoryProvider)
+          .saveDepartment(
             id: department?.id,
             name: result.name,
             code: result.code,
@@ -260,7 +296,9 @@ class StructureAdminScreen extends ConsumerWidget {
     await _runGuarded(
       context,
       ref,
-      () => ref.read(enterpriseStructureRepositoryProvider).saveWorkshop(
+      () => ref
+          .read(enterpriseStructureRepositoryProvider)
+          .saveWorkshop(
             id: workshop?.id,
             departmentId: result.parentId,
             name: result.name,
@@ -309,7 +347,9 @@ class StructureAdminScreen extends ConsumerWidget {
     await _runGuarded(
       context,
       ref,
-      () => ref.read(enterpriseStructureRepositoryProvider).saveSection(
+      () => ref
+          .read(enterpriseStructureRepositoryProvider)
+          .saveSection(
             id: section?.id,
             workshopId: result.parentId,
             name: result.name,
@@ -328,7 +368,9 @@ class StructureAdminScreen extends ConsumerWidget {
     await _runGuarded(
       context,
       ref,
-      () => ref.read(enterpriseStructureRepositoryProvider).deleteDepartment(
+      () => ref
+          .read(enterpriseStructureRepositoryProvider)
+          .deleteDepartment(
             departmentId,
             actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
           ),
@@ -343,7 +385,9 @@ class StructureAdminScreen extends ConsumerWidget {
     await _runGuarded(
       context,
       ref,
-      () => ref.read(enterpriseStructureRepositoryProvider).deleteWorkshop(
+      () => ref
+          .read(enterpriseStructureRepositoryProvider)
+          .deleteWorkshop(
             workshopId,
             actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
           ),
@@ -358,7 +402,9 @@ class StructureAdminScreen extends ConsumerWidget {
     await _runGuarded(
       context,
       ref,
-      () => ref.read(enterpriseStructureRepositoryProvider).deleteSection(
+      () => ref
+          .read(enterpriseStructureRepositoryProvider)
+          .deleteSection(
             sectionId,
             actorUserId: ref.read(activeSessionProvider).valueOrNull?.userId,
           ),
@@ -477,7 +523,10 @@ class _StructureColumn extends StatelessWidget {
               label: Text(addLabel),
             ),
             const SizedBox(height: 16),
-            if (children.isEmpty) const Text('Здесь пока пусто.') else ...children,
+            if (children.isEmpty)
+              const Text('Здесь пока пусто.')
+            else
+              ...children,
           ],
         ),
       ),
@@ -564,8 +613,7 @@ class _NameCodeSortDialogState extends State<_NameCodeSortDialog> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Название'),
-                validator: (value) =>
-                    value == null || value.trim().isEmpty
+                validator: (value) => value == null || value.trim().isEmpty
                     ? 'Введите название'
                     : null,
               ),
@@ -670,14 +718,14 @@ class _ParentSelectionDialogState extends State<_ParentSelectionDialog> {
               DropdownButtonFormField<String>(
                 initialValue: _parentId,
                 items: widget.parentOptions,
-                onChanged: (value) => setState(() => _parentId = value ?? _parentId),
+                onChanged: (value) =>
+                    setState(() => _parentId = value ?? _parentId),
                 decoration: InputDecoration(labelText: widget.parentLabel),
               ),
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Название'),
-                validator: (value) =>
-                    value == null || value.trim().isEmpty
+                validator: (value) => value == null || value.trim().isEmpty
                     ? 'Введите название'
                     : null,
               ),
@@ -746,7 +794,5 @@ class _ParentFormResult extends _StructureFormResult {
 }
 
 void _showMessage(BuildContext context, String message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message)),
-  );
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
 }

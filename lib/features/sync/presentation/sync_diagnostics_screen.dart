@@ -19,7 +19,9 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
     final bootstrap = ref.watch(bootstrapDataProvider);
     final paths = ref.watch(appPathsProvider);
     final session = ref.watch(activeSessionProvider).valueOrNull;
-    final inspectionDiagnostics = ref.watch(androidInspectionDiagnosticsProvider);
+    final inspectionDiagnostics = ref.watch(
+      androidInspectionDiagnosticsProvider,
+    );
     final syncDiagnostics = ref.watch(syncDiagnosticsProvider);
     final isAndroid =
         getAppPlatform() == AppPlatform.android && session != null;
@@ -50,7 +52,10 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
           ],
-          _DiagnosticTile(title: 'Версия приложения', value: AppConstants.appVersion),
+          _DiagnosticTile(
+            title: 'Версия приложения',
+            value: AppConstants.appVersion,
+          ),
           _DiagnosticTile(
             title: 'Версия схемы базы данных',
             value: '${AppConstants.appSchemaVersion}',
@@ -63,7 +68,10 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
             title: 'Путь к локальной базе данных',
             value: paths.databaseFile.path,
           ),
-          _DiagnosticTile(title: 'Путь к файлу лога', value: paths.logFile.path),
+          _DiagnosticTile(
+            title: 'Путь к файлу лога',
+            value: paths.logFile.path,
+          ),
           _DiagnosticTile(
             title: 'Логгер',
             value: bootstrap.logger.runtimeType.toString(),
@@ -155,7 +163,12 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
               ),
               _DiagnosticTile(
                 title: 'Последняя ошибка синхронизации',
-                value: diagnostics.lastError ?? 'Недоступно',
+                value: diagnostics.lastError == null
+                    ? 'Недоступно'
+                    : userMessageFromText(
+                        diagnostics.lastError,
+                        fallback: 'Ошибка синхронизации.',
+                      ),
               ),
               _DiagnosticTile(
                 title: 'Ожидает отправки',
@@ -187,7 +200,10 @@ class SyncDiagnosticsScreen extends ConsumerWidget {
               ),
             ],
             loading: () => const [
-              _DiagnosticTile(title: 'Диагностика синхронизации', value: 'Загрузка...'),
+              _DiagnosticTile(
+                title: 'Диагностика синхронизации',
+                value: 'Загрузка...',
+              ),
             ],
             error: (error, _) => [
               _DiagnosticTile(

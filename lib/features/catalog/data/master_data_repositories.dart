@@ -42,8 +42,8 @@ const checklistBindingTypeOptions = <String>[
 
 final enterpriseStructureRepositoryProvider =
     Provider<EnterpriseStructureRepository>(
-  (ref) => EnterpriseStructureRepository(ref.watch(appDatabaseProvider)),
-);
+      (ref) => EnterpriseStructureRepository(ref.watch(appDatabaseProvider)),
+    );
 
 final objectsRepositoryProvider = Provider<ObjectsRepository>(
   (ref) => ObjectsRepository(ref.watch(appDatabaseProvider)),
@@ -79,12 +79,12 @@ final componentsScreenDataProvider = FutureProvider<ComponentsScreenData>(
 
 final componentsByObjectProvider =
     FutureProvider.family<List<Component>, String?>((ref, objectId) {
-  if (objectId == null || objectId.isEmpty) {
-    return Future.value(const []);
-  }
+      if (objectId == null || objectId.isEmpty) {
+        return Future.value(const []);
+      }
 
-  return ref.watch(componentsRepositoryProvider).listByObject(objectId);
-});
+      return ref.watch(componentsRepositoryProvider).listByObject(objectId);
+    });
 
 final checklistsProvider = FutureProvider<List<Checklist>>(
   (ref) => ref.watch(checklistsRepositoryProvider).listChecklists(),
@@ -92,38 +92,31 @@ final checklistsProvider = FutureProvider<List<Checklist>>(
 
 final checklistDetailProvider =
     FutureProvider.family<ChecklistEditorData?, String>((ref, checklistId) {
-  return ref.watch(checklistsRepositoryProvider).getChecklistDetail(checklistId);
-});
+      return ref
+          .watch(checklistsRepositoryProvider)
+          .getChecklistDetail(checklistId);
+    });
 
 final checklistReferenceDataProvider = FutureProvider<ChecklistReferenceData>(
   (ref) => ref.watch(checklistsRepositoryProvider).loadReferenceData(),
 );
 
 class DepartmentNode {
-  const DepartmentNode({
-    required this.department,
-    required this.workshops,
-  });
+  const DepartmentNode({required this.department, required this.workshops});
 
   final Department department;
   final List<WorkshopNode> workshops;
 }
 
 class WorkshopNode {
-  const WorkshopNode({
-    required this.workshop,
-    required this.sections,
-  });
+  const WorkshopNode({required this.workshop, required this.sections});
 
   final Workshop workshop;
   final List<Section> sections;
 }
 
 class ObjectTreeNode {
-  const ObjectTreeNode({
-    required this.object,
-    required this.children,
-  });
+  const ObjectTreeNode({required this.object, required this.children});
 
   final CatalogObject object;
   final List<ObjectTreeNode> children;
@@ -142,9 +135,7 @@ class ObjectsViewData {
 }
 
 class ComponentsScreenData {
-  const ComponentsScreenData({
-    required this.objects,
-  });
+  const ComponentsScreenData({required this.objects});
 
   final List<CatalogObject> objects;
 }
@@ -186,8 +177,8 @@ final Random _random = Random();
 
 String _generateId(String prefix) {
   final timestamp = DateTime.now().toUtc().microsecondsSinceEpoch.toRadixString(
-        36,
-      );
+    36,
+  );
   final suffix = _random.nextInt(1 << 32).toRadixString(36);
   return '$prefix-$timestamp-$suffix';
 }
@@ -198,27 +189,30 @@ class EnterpriseStructureRepository {
   final AppDatabase _db;
 
   Future<List<DepartmentNode>> loadTree() async {
-    final departments = await (_db.select(_db.departments)
-          ..where((tbl) => tbl.isDeleted.equals(false))
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.sortOrder),
-            (tbl) => OrderingTerm.asc(tbl.name),
-          ]))
-        .get();
-    final workshops = await (_db.select(_db.workshops)
-          ..where((tbl) => tbl.isDeleted.equals(false))
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.sortOrder),
-            (tbl) => OrderingTerm.asc(tbl.name),
-          ]))
-        .get();
-    final sections = await (_db.select(_db.sections)
-          ..where((tbl) => tbl.isDeleted.equals(false))
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.sortOrder),
-            (tbl) => OrderingTerm.asc(tbl.name),
-          ]))
-        .get();
+    final departments =
+        await (_db.select(_db.departments)
+              ..where((tbl) => tbl.isDeleted.equals(false))
+              ..orderBy([
+                (tbl) => OrderingTerm.asc(tbl.sortOrder),
+                (tbl) => OrderingTerm.asc(tbl.name),
+              ]))
+            .get();
+    final workshops =
+        await (_db.select(_db.workshops)
+              ..where((tbl) => tbl.isDeleted.equals(false))
+              ..orderBy([
+                (tbl) => OrderingTerm.asc(tbl.sortOrder),
+                (tbl) => OrderingTerm.asc(tbl.name),
+              ]))
+            .get();
+    final sections =
+        await (_db.select(_db.sections)
+              ..where((tbl) => tbl.isDeleted.equals(false))
+              ..orderBy([
+                (tbl) => OrderingTerm.asc(tbl.sortOrder),
+                (tbl) => OrderingTerm.asc(tbl.name),
+              ]))
+            .get();
 
     final sectionsByWorkshop = <String, List<Section>>{};
     for (final section in sections) {
@@ -227,7 +221,9 @@ class EnterpriseStructureRepository {
 
     final workshopsByDepartment = <String, List<WorkshopNode>>{};
     for (final workshop in workshops) {
-      workshopsByDepartment.putIfAbsent(workshop.departmentId, () => []).add(
+      workshopsByDepartment
+          .putIfAbsent(workshop.departmentId, () => [])
+          .add(
             WorkshopNode(
               workshop: workshop,
               sections: sectionsByWorkshop[workshop.id] ?? const [],
@@ -256,14 +252,17 @@ class EnterpriseStructureRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Только администратор может изменять структуру предприятия.',
+      deniedMessage:
+          'Только администратор может изменять структуру предприятия.',
     );
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
 
     if (id == null) {
       final departmentId = _generateId('department');
-      await _db.into(_db.departments).insert(
+      await _db
+          .into(_db.departments)
+          .insert(
             DepartmentsCompanion.insert(
               id: departmentId,
               name: name.trim(),
@@ -280,13 +279,15 @@ class EnterpriseStructureRepository {
         userId: actorUserId,
         entityType: 'department',
         entityId: departmentId,
-        message: 'Department created',
+        message: 'Подразделение создано.',
       );
       return;
     }
 
     final existing = await _getDepartment(id);
-    await (_db.update(_db.departments)..where((tbl) => tbl.id.equals(id))).write(
+    await (_db.update(
+      _db.departments,
+    )..where((tbl) => tbl.id.equals(id))).write(
       DepartmentsCompanion(
         name: Value(name.trim()),
         code: Value(cleanedCode),
@@ -302,7 +303,7 @@ class EnterpriseStructureRepository {
       userId: actorUserId,
       entityType: 'department',
       entityId: id,
-      message: 'Department updated',
+      message: 'Подразделение обновлено.',
     );
   }
 
@@ -311,13 +312,15 @@ class EnterpriseStructureRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Только администратор может изменять структуру предприятия.',
+      deniedMessage:
+          'Только администратор может изменять структуру предприятия.',
     );
-    final activeWorkshops = await (_db.select(_db.workshops)
-          ..where(
-            (tbl) => tbl.departmentId.equals(id) & tbl.isDeleted.equals(false),
-          ))
-        .get();
+    final activeWorkshops =
+        await (_db.select(_db.workshops)..where(
+              (tbl) =>
+                  tbl.departmentId.equals(id) & tbl.isDeleted.equals(false),
+            ))
+            .get();
 
     if (activeWorkshops.isNotEmpty) {
       throw StateError('Нельзя удалить подразделение, пока в нем есть цеха.');
@@ -325,7 +328,9 @@ class EnterpriseStructureRepository {
 
     final existing = await _getDepartment(id);
     final now = _nowIso();
-    await (_db.update(_db.departments)..where((tbl) => tbl.id.equals(id))).write(
+    await (_db.update(
+      _db.departments,
+    )..where((tbl) => tbl.id.equals(id))).write(
       DepartmentsCompanion(
         isDeleted: const Value(true),
         deletedAt: Value(now),
@@ -340,7 +345,11 @@ class EnterpriseStructureRepository {
       displayName: existing.name,
       deletedByUserId: actorUserId,
       deletedAt: now,
-      snapshot: {'id': existing.id, 'name': existing.name, 'code': existing.code},
+      snapshot: {
+        'id': existing.id,
+        'name': existing.name,
+        'code': existing.code,
+      },
     );
     await recordAudit(
       _db,
@@ -349,7 +358,7 @@ class EnterpriseStructureRepository {
       userId: actorUserId,
       entityType: 'department',
       entityId: id,
-      message: 'Department moved to trash',
+      message: 'Подразделение перемещено в корзину.',
     );
   }
 
@@ -365,14 +374,17 @@ class EnterpriseStructureRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Только администратор может изменять структуру предприятия.',
+      deniedMessage:
+          'Только администратор может изменять структуру предприятия.',
     );
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
 
     if (id == null) {
       final workshopId = _generateId('workshop');
-      await _db.into(_db.workshops).insert(
+      await _db
+          .into(_db.workshops)
+          .insert(
             WorkshopsCompanion.insert(
               id: workshopId,
               departmentId: departmentId,
@@ -390,7 +402,7 @@ class EnterpriseStructureRepository {
         userId: actorUserId,
         entityType: 'workshop',
         entityId: workshopId,
-        message: 'Workshop created',
+        message: 'Цех создан.',
       );
       return;
     }
@@ -413,7 +425,7 @@ class EnterpriseStructureRepository {
       userId: actorUserId,
       entityType: 'workshop',
       entityId: id,
-      message: 'Workshop updated',
+      message: 'Цех обновлен.',
     );
   }
 
@@ -422,13 +434,14 @@ class EnterpriseStructureRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Только администратор может изменять структуру предприятия.',
+      deniedMessage:
+          'Только администратор может изменять структуру предприятия.',
     );
-    final activeSections = await (_db.select(_db.sections)
-          ..where(
-            (tbl) => tbl.workshopId.equals(id) & tbl.isDeleted.equals(false),
-          ))
-        .get();
+    final activeSections =
+        await (_db.select(_db.sections)..where(
+              (tbl) => tbl.workshopId.equals(id) & tbl.isDeleted.equals(false),
+            ))
+            .get();
 
     if (activeSections.isNotEmpty) {
       throw StateError('Нельзя удалить цех, пока в нем есть участки.');
@@ -465,7 +478,7 @@ class EnterpriseStructureRepository {
       userId: actorUserId,
       entityType: 'workshop',
       entityId: id,
-      message: 'Workshop moved to trash',
+      message: 'Цех перемещен в корзину.',
     );
   }
 
@@ -481,14 +494,17 @@ class EnterpriseStructureRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Только администратор может изменять структуру предприятия.',
+      deniedMessage:
+          'Только администратор может изменять структуру предприятия.',
     );
     final now = _nowIso();
     final cleanedCode = _nullableText(code);
 
     if (id == null) {
       final sectionId = _generateId('section');
-      await _db.into(_db.sections).insert(
+      await _db
+          .into(_db.sections)
+          .insert(
             SectionsCompanion.insert(
               id: sectionId,
               workshopId: workshopId,
@@ -506,7 +522,7 @@ class EnterpriseStructureRepository {
         userId: actorUserId,
         entityType: 'section',
         entityId: sectionId,
-        message: 'Section created',
+        message: 'Участок создан.',
       );
       return;
     }
@@ -529,7 +545,7 @@ class EnterpriseStructureRepository {
       userId: actorUserId,
       entityType: 'section',
       entityId: id,
-      message: 'Section updated',
+      message: 'Участок обновлен.',
     );
   }
 
@@ -538,16 +554,19 @@ class EnterpriseStructureRepository {
       _db,
       actorUserId: actorUserId,
       capability: AppCapability.manageCatalog,
-      deniedMessage: 'Только администратор может изменять структуру предприятия.',
+      deniedMessage:
+          'Только администратор может изменять структуру предприятия.',
     );
-    final activeObjects = await (_db.select(_db.catalogObjects)
-          ..where(
-            (tbl) => tbl.sectionId.equals(id) & tbl.isDeleted.equals(false),
-          ))
-        .get();
+    final activeObjects =
+        await (_db.select(_db.catalogObjects)..where(
+              (tbl) => tbl.sectionId.equals(id) & tbl.isDeleted.equals(false),
+            ))
+            .get();
 
     if (activeObjects.isNotEmpty) {
-      throw StateError('Нельзя удалить участок, пока к нему привязаны объекты.');
+      throw StateError(
+        'Нельзя удалить участок, пока к нему привязаны объекты.',
+      );
     }
 
     final existing = await _getSection(id);
@@ -581,23 +600,26 @@ class EnterpriseStructureRepository {
       userId: actorUserId,
       entityType: 'section',
       entityId: id,
-      message: 'Section moved to trash',
+      message: 'Участок перемещен в корзину.',
     );
   }
 
   Future<Department> _getDepartment(String id) {
-    return (_db.select(_db.departments)..where((tbl) => tbl.id.equals(id)))
-        .getSingle();
+    return (_db.select(
+      _db.departments,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
   }
 
   Future<Workshop> _getWorkshop(String id) {
-    return (_db.select(_db.workshops)..where((tbl) => tbl.id.equals(id)))
-        .getSingle();
+    return (_db.select(
+      _db.workshops,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
   }
 
   Future<Section> _getSection(String id) {
-    return (_db.select(_db.sections)..where((tbl) => tbl.id.equals(id)))
-        .getSingle();
+    return (_db.select(
+      _db.sections,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
   }
 }
 
@@ -619,10 +641,8 @@ class ObjectsRepository {
       final children = childrenByParent[parentId] ?? const <CatalogObject>[];
       return children
           .map(
-            (object) => ObjectTreeNode(
-              object: object,
-              children: buildNodes(object.id),
-            ),
+            (object) =>
+                ObjectTreeNode(object: object, children: buildNodes(object.id)),
           )
           .toList(growable: false);
     }
@@ -695,7 +715,9 @@ class ObjectsRepository {
     await _db.transaction(() async {
       if (id == null) {
         final newId = _generateId('object');
-        await _db.into(_db.catalogObjects).insert(
+        await _db
+            .into(_db.catalogObjects)
+            .insert(
               CatalogObjectsCompanion.insert(
                 id: newId,
                 type: type,
@@ -721,15 +743,15 @@ class ObjectsRepository {
           userId: actorUserId,
           entityType: 'object',
           entityId: newId,
-          message: 'Object created',
+          message: 'Объект создан.',
         );
         return;
       }
 
       final existing = await _getObject(id);
-      await (_db.update(_db.catalogObjects)
-            ..where((tbl) => tbl.id.equals(id)))
-          .write(
+      await (_db.update(
+        _db.catalogObjects,
+      )..where((tbl) => tbl.id.equals(id))).write(
         CatalogObjectsCompanion(
           type: Value(type),
           sectionId: Value(cleanedSectionId),
@@ -743,10 +765,7 @@ class ObjectsRepository {
           updatedAt: Value(now),
         ),
       );
-      await _replaceParentRelation(
-        childId: id,
-        newParentId: cleanedParentId,
-      );
+      await _replaceParentRelation(childId: id, newParentId: cleanedParentId);
       await recordAudit(
         _db,
         actionType: 'object.update',
@@ -754,7 +773,7 @@ class ObjectsRepository {
         userId: actorUserId,
         entityType: 'object',
         entityId: id,
-        message: 'Object updated',
+        message: 'Объект обновлен.',
       );
     });
   }
@@ -766,18 +785,22 @@ class ObjectsRepository {
       capability: AppCapability.manageCatalog,
       deniedMessage: 'Только администратор может изменять объекты справочника.',
     );
-    final children = await (_db.select(_db.catalogObjects)
-          ..where(
-            (tbl) => tbl.parentId.equals(id) & tbl.isDeleted.equals(false),
-          ))
-        .get();
+    final children =
+        await (_db.select(_db.catalogObjects)..where(
+              (tbl) => tbl.parentId.equals(id) & tbl.isDeleted.equals(false),
+            ))
+            .get();
     if (children.isNotEmpty) {
-      throw StateError('Нельзя удалить объект, пока у него есть дочерние узлы.');
+      throw StateError(
+        'Нельзя удалить объект, пока у него есть дочерние узлы.',
+      );
     }
 
-    final components = await (_db.select(_db.components)
-          ..where((tbl) => tbl.objectId.equals(id) & tbl.isDeleted.equals(false)))
-        .get();
+    final components =
+        await (_db.select(_db.components)..where(
+              (tbl) => tbl.objectId.equals(id) & tbl.isDeleted.equals(false),
+            ))
+            .get();
     if (components.isNotEmpty) {
       throw StateError('Нельзя удалить объект, пока у него есть компоненты.');
     }
@@ -785,35 +808,35 @@ class ObjectsRepository {
     final existing = await _getObject(id);
     final now = _nowIso();
     await _db.transaction(() async {
-      await (_db.update(_db.catalogObjects)
-            ..where((tbl) => tbl.id.equals(id)))
-          .write(
+      await (_db.update(
+        _db.catalogObjects,
+      )..where((tbl) => tbl.id.equals(id))).write(
         CatalogObjectsCompanion(
-            isDeleted: const Value(true),
-            deletedAt: Value(now),
-            updatedAt: Value(now),
-            version: Value(existing.version + 1),
+          isDeleted: const Value(true),
+          deletedAt: Value(now),
+          updatedAt: Value(now),
+          version: Value(existing.version + 1),
         ),
       );
 
-      final relations = await (_db.select(_db.objectRelations)
-            ..where(
-              (tbl) =>
-                  tbl.childObjectId.equals(id) & tbl.isDeleted.equals(false),
-            ))
-          .get();
+      final relations =
+          await (_db.select(_db.objectRelations)..where(
+                (tbl) =>
+                    tbl.childObjectId.equals(id) & tbl.isDeleted.equals(false),
+              ))
+              .get();
 
       for (final relation in relations) {
-        await (_db.update(_db.objectRelations)
-              ..where((tbl) => tbl.id.equals(relation.id)))
-            .write(
+        await (_db.update(
+          _db.objectRelations,
+        )..where((tbl) => tbl.id.equals(relation.id))).write(
           ObjectRelationsCompanion(
             isDeleted: const Value(true),
             deletedAt: Value(now),
             updatedAt: Value(now),
             version: Value(relation.version + 1),
-              ),
-            );
+          ),
+        );
       }
     });
     await addTrashEntry(
@@ -837,7 +860,7 @@ class ObjectsRepository {
       userId: actorUserId,
       entityType: 'object',
       entityId: id,
-      message: 'Object moved to trash',
+      message: 'Объект перемещен в корзину.',
     );
   }
 
@@ -846,17 +869,18 @@ class ObjectsRepository {
     required String? newParentId,
   }) async {
     final now = _nowIso();
-    final existingRelations = await (_db.select(_db.objectRelations)
-          ..where(
-            (tbl) =>
-                tbl.childObjectId.equals(childId) & tbl.isDeleted.equals(false),
-          ))
-        .get();
+    final existingRelations =
+        await (_db.select(_db.objectRelations)..where(
+              (tbl) =>
+                  tbl.childObjectId.equals(childId) &
+                  tbl.isDeleted.equals(false),
+            ))
+            .get();
 
     for (final relation in existingRelations) {
-      await (_db.update(_db.objectRelations)
-            ..where((tbl) => tbl.id.equals(relation.id)))
-          .write(
+      await (_db.update(
+        _db.objectRelations,
+      )..where((tbl) => tbl.id.equals(relation.id))).write(
         ObjectRelationsCompanion(
           isDeleted: const Value(true),
           deletedAt: Value(now),
@@ -870,7 +894,9 @@ class ObjectsRepository {
       return;
     }
 
-    await _db.into(_db.objectRelations).insert(
+    await _db
+        .into(_db.objectRelations)
+        .insert(
           ObjectRelationsCompanion.insert(
             id: _generateId('relation'),
             parentObjectId: newParentId,
@@ -900,8 +926,9 @@ class ObjectsRepository {
   }
 
   Future<CatalogObject> _getObject(String id) {
-    return (_db.select(_db.catalogObjects)..where((tbl) => tbl.id.equals(id)))
-        .getSingle();
+    return (_db.select(
+      _db.catalogObjects,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
   }
 }
 
@@ -911,13 +938,14 @@ class ComponentsRepository {
   final AppDatabase _db;
 
   Future<ComponentsScreenData> loadScreenData() async {
-    final objects = await (_db.select(_db.catalogObjects)
-          ..where((tbl) => tbl.isDeleted.equals(false))
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.sortOrder),
-            (tbl) => OrderingTerm.asc(tbl.name),
-          ]))
-        .get();
+    final objects =
+        await (_db.select(_db.catalogObjects)
+              ..where((tbl) => tbl.isDeleted.equals(false))
+              ..orderBy([
+                (tbl) => OrderingTerm.asc(tbl.sortOrder),
+                (tbl) => OrderingTerm.asc(tbl.name),
+              ]))
+            .get();
 
     return ComponentsScreenData(objects: objects);
   }
@@ -925,7 +953,8 @@ class ComponentsRepository {
   Future<List<Component>> listByObject(String objectId) {
     return (_db.select(_db.components)
           ..where(
-            (tbl) => tbl.objectId.equals(objectId) & tbl.isDeleted.equals(false),
+            (tbl) =>
+                tbl.objectId.equals(objectId) & tbl.isDeleted.equals(false),
           )
           ..orderBy([
             (tbl) => OrderingTerm.asc(tbl.sortOrder),
@@ -956,7 +985,9 @@ class ComponentsRepository {
 
     if (id == null) {
       final componentId = _generateId('component');
-      await _db.into(_db.components).insert(
+      await _db
+          .into(_db.components)
+          .insert(
             ComponentsCompanion.insert(
               id: componentId,
               objectId: objectId,
@@ -976,7 +1007,7 @@ class ComponentsRepository {
         userId: actorUserId,
         entityType: 'component',
         entityId: componentId,
-        message: 'Component created',
+        message: 'Компонент создан.',
       );
       return;
     }
@@ -1001,7 +1032,7 @@ class ComponentsRepository {
       userId: actorUserId,
       entityType: 'component',
       entityId: id,
-      message: 'Component updated',
+      message: 'Компонент обновлен.',
     );
   }
 
@@ -1012,14 +1043,16 @@ class ComponentsRepository {
       capability: AppCapability.manageCatalog,
       deniedMessage: 'Только администратор может изменять компоненты.',
     );
-    final checklistItems = await (_db.select(_db.checklistItems)
-          ..where(
-            (tbl) => tbl.componentId.equals(id) & tbl.isDeleted.equals(false),
-          ))
-        .get();
+    final checklistItems =
+        await (_db.select(_db.checklistItems)..where(
+              (tbl) => tbl.componentId.equals(id) & tbl.isDeleted.equals(false),
+            ))
+            .get();
 
     if (checklistItems.isNotEmpty) {
-      throw StateError('Нельзя удалить компонент, пока он используется в чек-листе.');
+      throw StateError(
+        'Нельзя удалить компонент, пока он используется в чек-листе.',
+      );
     }
 
     final existing = await _getComponent(id);
@@ -1053,13 +1086,14 @@ class ComponentsRepository {
       userId: actorUserId,
       entityType: 'component',
       entityId: id,
-      message: 'Component moved to trash',
+      message: 'Компонент перемещен в корзину.',
     );
   }
 
   Future<Component> _getComponent(String id) {
-    return (_db.select(_db.components)..where((tbl) => tbl.id.equals(id)))
-        .getSingle();
+    return (_db.select(
+      _db.components,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
   }
 }
 
@@ -1071,45 +1105,43 @@ class ChecklistsRepository {
   Future<List<Checklist>> listChecklists() {
     return (_db.select(_db.checklists)
           ..where((tbl) => tbl.isDeleted.equals(false))
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.name),
-          ]))
+          ..orderBy([(tbl) => OrderingTerm.asc(tbl.name)]))
         .get();
   }
 
   Future<ChecklistEditorData?> getChecklistDetail(String checklistId) async {
-    final checklist = await (_db.select(_db.checklists)
-          ..where(
-            (tbl) => tbl.id.equals(checklistId) & tbl.isDeleted.equals(false),
-          ))
-        .getSingleOrNull();
+    final checklist =
+        await (_db.select(_db.checklists)..where(
+              (tbl) => tbl.id.equals(checklistId) & tbl.isDeleted.equals(false),
+            ))
+            .getSingleOrNull();
 
     if (checklist == null) {
       return null;
     }
 
-    final items = await (_db.select(_db.checklistItems)
-          ..where(
-            (tbl) =>
-                tbl.checklistId.equals(checklistId) &
-                tbl.isDeleted.equals(false),
-          )
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.sortOrder),
-            (tbl) => OrderingTerm.asc(tbl.title),
-          ]))
-        .get();
+    final items =
+        await (_db.select(_db.checklistItems)
+              ..where(
+                (tbl) =>
+                    tbl.checklistId.equals(checklistId) &
+                    tbl.isDeleted.equals(false),
+              )
+              ..orderBy([
+                (tbl) => OrderingTerm.asc(tbl.sortOrder),
+                (tbl) => OrderingTerm.asc(tbl.title),
+              ]))
+            .get();
 
-    final bindings = await (_db.select(_db.checklistBindings)
-          ..where(
-            (tbl) =>
-                tbl.checklistId.equals(checklistId) &
-                tbl.isDeleted.equals(false),
-          )
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.priority),
-          ]))
-        .get();
+    final bindings =
+        await (_db.select(_db.checklistBindings)
+              ..where(
+                (tbl) =>
+                    tbl.checklistId.equals(checklistId) &
+                    tbl.isDeleted.equals(false),
+              )
+              ..orderBy([(tbl) => OrderingTerm.asc(tbl.priority)]))
+            .get();
 
     return ChecklistEditorData(
       checklist: checklist,
@@ -1119,18 +1151,16 @@ class ChecklistsRepository {
   }
 
   Future<ChecklistReferenceData> loadReferenceData() async {
-    final objects = await (_db.select(_db.catalogObjects)
-          ..where((tbl) => tbl.isDeleted.equals(false))
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.name),
-          ]))
-        .get();
-    final components = await (_db.select(_db.components)
-          ..where((tbl) => tbl.isDeleted.equals(false))
-          ..orderBy([
-            (tbl) => OrderingTerm.asc(tbl.name),
-          ]))
-        .get();
+    final objects =
+        await (_db.select(_db.catalogObjects)
+              ..where((tbl) => tbl.isDeleted.equals(false))
+              ..orderBy([(tbl) => OrderingTerm.asc(tbl.name)]))
+            .get();
+    final components =
+        await (_db.select(_db.components)
+              ..where((tbl) => tbl.isDeleted.equals(false))
+              ..orderBy([(tbl) => OrderingTerm.asc(tbl.name)]))
+            .get();
 
     return ChecklistReferenceData(objects: objects, components: components);
   }
@@ -1153,7 +1183,9 @@ class ChecklistsRepository {
 
     if (id == null) {
       final newId = _generateId('checklist');
-      await _db.into(_db.checklists).insert(
+      await _db
+          .into(_db.checklists)
+          .insert(
             ChecklistsCompanion.insert(
               id: newId,
               name: name.trim(),
@@ -1170,7 +1202,7 @@ class ChecklistsRepository {
         userId: actorUserId,
         entityType: 'checklist',
         entityId: newId,
-        message: 'Checklist created',
+        message: 'Чек-лист создан.',
       );
       return newId;
     }
@@ -1192,7 +1224,7 @@ class ChecklistsRepository {
       userId: actorUserId,
       entityType: 'checklist',
       entityId: id,
-      message: 'Checklist updated',
+      message: 'Чек-лист обновлен.',
     );
     return id;
   }
@@ -1208,7 +1240,9 @@ class ChecklistsRepository {
     final now = _nowIso();
 
     await _db.transaction(() async {
-      await (_db.update(_db.checklists)..where((tbl) => tbl.id.equals(id))).write(
+      await (_db.update(
+        _db.checklists,
+      )..where((tbl) => tbl.id.equals(id))).write(
         ChecklistsCompanion(
           isDeleted: const Value(true),
           deletedAt: Value(now),
@@ -1217,15 +1251,16 @@ class ChecklistsRepository {
         ),
       );
 
-      final items = await (_db.select(_db.checklistItems)
-            ..where(
-              (tbl) => tbl.checklistId.equals(id) & tbl.isDeleted.equals(false),
-            ))
-          .get();
+      final items =
+          await (_db.select(_db.checklistItems)..where(
+                (tbl) =>
+                    tbl.checklistId.equals(id) & tbl.isDeleted.equals(false),
+              ))
+              .get();
       for (final item in items) {
-        await (_db.update(_db.checklistItems)
-              ..where((tbl) => tbl.id.equals(item.id)))
-            .write(
+        await (_db.update(
+          _db.checklistItems,
+        )..where((tbl) => tbl.id.equals(item.id))).write(
           ChecklistItemsCompanion(
             isDeleted: const Value(true),
             deletedAt: Value(now),
@@ -1235,15 +1270,16 @@ class ChecklistsRepository {
         );
       }
 
-      final bindings = await (_db.select(_db.checklistBindings)
-            ..where(
-              (tbl) => tbl.checklistId.equals(id) & tbl.isDeleted.equals(false),
-            ))
-          .get();
+      final bindings =
+          await (_db.select(_db.checklistBindings)..where(
+                (tbl) =>
+                    tbl.checklistId.equals(id) & tbl.isDeleted.equals(false),
+              ))
+              .get();
       for (final binding in bindings) {
-        await (_db.update(_db.checklistBindings)
-              ..where((tbl) => tbl.id.equals(binding.id)))
-            .write(
+        await (_db.update(
+          _db.checklistBindings,
+        )..where((tbl) => tbl.id.equals(binding.id))).write(
           ChecklistBindingsCompanion(
             isDeleted: const Value(true),
             deletedAt: Value(now),
@@ -1269,7 +1305,7 @@ class ChecklistsRepository {
       userId: actorUserId,
       entityType: 'checklist',
       entityId: id,
-      message: 'Checklist moved to trash',
+      message: 'Чек-лист перемещен в корзину.',
     );
   }
 
@@ -1298,7 +1334,9 @@ class ChecklistsRepository {
 
     if (id == null) {
       final itemId = _generateId('checkitem');
-      await _db.into(_db.checklistItems).insert(
+      await _db
+          .into(_db.checklistItems)
+          .insert(
             ChecklistItemsCompanion.insert(
               id: itemId,
               checklistId: checklistId,
@@ -1320,15 +1358,15 @@ class ChecklistsRepository {
         userId: actorUserId,
         entityType: 'checklist_item',
         entityId: itemId,
-        message: 'Checklist item created',
+        message: 'Пункт чек-листа создан.',
       );
       return;
     }
 
     final existing = await _getChecklistItem(id);
-    await (_db.update(_db.checklistItems)
-          ..where((tbl) => tbl.id.equals(id)))
-        .write(
+    await (_db.update(
+      _db.checklistItems,
+    )..where((tbl) => tbl.id.equals(id))).write(
       ChecklistItemsCompanion(
         componentId: Value(cleanedComponentId),
         title: Value(title.trim()),
@@ -1348,7 +1386,7 @@ class ChecklistsRepository {
       userId: actorUserId,
       entityType: 'checklist_item',
       entityId: id,
-      message: 'Checklist item updated',
+      message: 'Пункт чек-листа обновлен.',
     );
   }
 
@@ -1361,7 +1399,9 @@ class ChecklistsRepository {
     );
     final existing = await _getChecklistItem(id);
     final now = _nowIso();
-    await (_db.update(_db.checklistItems)..where((tbl) => tbl.id.equals(id))).write(
+    await (_db.update(
+      _db.checklistItems,
+    )..where((tbl) => tbl.id.equals(id))).write(
       ChecklistItemsCompanion(
         isDeleted: const Value(true),
         deletedAt: Value(now),
@@ -1389,7 +1429,7 @@ class ChecklistsRepository {
       userId: actorUserId,
       entityType: 'checklist_item',
       entityId: id,
-      message: 'Checklist item moved to trash',
+      message: 'Пункт чек-листа перемещен в корзину.',
     );
   }
 
@@ -1414,7 +1454,9 @@ class ChecklistsRepository {
     final cleanedTargetObjectType = _nullableText(targetObjectType);
 
     if (targetType == 'object' && cleanedTargetId == null) {
-      throw StateError('Для привязки к объекту нужно выбрать конкретный объект.');
+      throw StateError(
+        'Для привязки к объекту нужно выбрать конкретный объект.',
+      );
     }
 
     if (targetType == 'product' && cleanedTargetId == null) {
@@ -1427,7 +1469,9 @@ class ChecklistsRepository {
 
     if (id == null) {
       final bindingId = _generateId('binding');
-      await _db.into(_db.checklistBindings).insert(
+      await _db
+          .into(_db.checklistBindings)
+          .insert(
             ChecklistBindingsCompanion.insert(
               id: bindingId,
               checklistId: checklistId,
@@ -1447,15 +1491,15 @@ class ChecklistsRepository {
         userId: actorUserId,
         entityType: 'checklist_binding',
         entityId: bindingId,
-        message: 'Checklist binding created',
+        message: 'Привязка чек-листа создана.',
       );
       return;
     }
 
     final existing = await _getChecklistBinding(id);
-    await (_db.update(_db.checklistBindings)
-          ..where((tbl) => tbl.id.equals(id)))
-        .write(
+    await (_db.update(
+      _db.checklistBindings,
+    )..where((tbl) => tbl.id.equals(id))).write(
       ChecklistBindingsCompanion(
         targetType: Value(targetType),
         targetId: Value(cleanedTargetId),
@@ -1473,7 +1517,7 @@ class ChecklistsRepository {
       userId: actorUserId,
       entityType: 'checklist_binding',
       entityId: id,
-      message: 'Checklist binding updated',
+      message: 'Привязка чек-листа обновлена.',
     );
   }
 
@@ -1486,9 +1530,9 @@ class ChecklistsRepository {
     );
     final existing = await _getChecklistBinding(id);
     final now = _nowIso();
-    await (_db.update(_db.checklistBindings)
-          ..where((tbl) => tbl.id.equals(id)))
-        .write(
+    await (_db.update(
+      _db.checklistBindings,
+    )..where((tbl) => tbl.id.equals(id))).write(
       ChecklistBindingsCompanion(
         isDeleted: const Value(true),
         deletedAt: Value(now),
@@ -1500,7 +1544,8 @@ class ChecklistsRepository {
       _db,
       entityType: 'checklist_binding',
       entityId: id,
-      displayName: '${existing.targetType}:${existing.targetId ?? existing.targetObjectType ?? '-'}',
+      displayName:
+          '${existing.targetType}:${existing.targetId ?? existing.targetObjectType ?? '-'}',
       deletedByUserId: actorUserId,
       deletedAt: now,
       snapshot: {
@@ -1516,22 +1561,25 @@ class ChecklistsRepository {
       userId: actorUserId,
       entityType: 'checklist_binding',
       entityId: id,
-      message: 'Checklist binding moved to trash',
+      message: 'Привязка чек-листа перемещена в корзину.',
     );
   }
 
   Future<Checklist> _getChecklist(String id) {
-    return (_db.select(_db.checklists)..where((tbl) => tbl.id.equals(id)))
-        .getSingle();
+    return (_db.select(
+      _db.checklists,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
   }
 
   Future<ChecklistItem> _getChecklistItem(String id) {
-    return (_db.select(_db.checklistItems)..where((tbl) => tbl.id.equals(id)))
-        .getSingle();
+    return (_db.select(
+      _db.checklistItems,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
   }
 
   Future<ChecklistBinding> _getChecklistBinding(String id) {
-    return (_db.select(_db.checklistBindings)..where((tbl) => tbl.id.equals(id)))
-        .getSingle();
+    return (_db.select(
+      _db.checklistBindings,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
   }
 }

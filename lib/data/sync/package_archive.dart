@@ -9,7 +9,9 @@ class PackageArchive {
     required File destinationFile,
   }) async {
     if (!await sourceDirectory.exists()) {
-      throw StateError('Source directory does not exist: ${sourceDirectory.path}');
+      throw StateError(
+        'Source directory does not exist: ${sourceDirectory.path}',
+      );
     }
 
     await destinationFile.parent.create(recursive: true);
